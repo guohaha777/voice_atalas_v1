@@ -10,14 +10,30 @@
 
 | 层 | 负责 | 后续扩展方式 |
 | --- | --- | --- |
-| app | 页面入口、全局错误反馈 | 第二页开始补真正的路由和前进 / 返回 |
+| app | 页面入口、无依赖的 history 路由（`router.ts`）、主流程四步与入口类型（`navigation.ts`）、全局错误反馈 | 新页面验收后在 `navigation.ts` 打开对应入口，并在路由里加一条 |
 | pages/<页面> | 页面布局、页面内组件与流程状态 | 每个页面独立验收，避免在首页追加全流程 |
 | config | 图片、坐标、透明度、动画参数 | 视觉调整不改播放与开场状态逻辑 |
-| shared/ui、media、audio、platform | 基础组件、资源、声音、设备提示 | 后续页面按需复用，避免直接依赖其他页面内部实现 |
-| packages/contracts（预留） | 前后端共同的数据契约 | 在真实领域数据开发时先写 schema 和版本，再加存储 |
+| shared/ui、media、audio、markers、scene、platform | 基础组件与图标、资源加载、声音录放与塑形、声音标记、首页场景素材清单、设备提示 | 后续页面按需复用；页面之间不互相引用内部实现 |
+| packages/contracts（`@wanwu-v2/contracts`） | 前后端共同的数据契约；已有 `sound-v1` | 以包名引用，新增领域先写类型和校验，再加存储 |
 | 后端（未开发） | 身份、音源与作品、文件存储、AI 网关 | 接在仓库 / 服务端口之后，页面不直接访问云资源 |
 
 没有为了预留而实现假的服务器、数据库、账号或空 API。当前首页只使用本站静态资源，不收集个人信息，不向模型发送内容。
+
+## 开始方式弹窗与后续接入
+
+- `pages/start/StartDialog.tsx` 组合界面；`components/` 有选项、手绘标题与角落装饰；`config/entries.ts` 集中入口文案与插画映射；`model/` 管理选择和未开放反馈。
+- 弹窗通过 `onContinue({entry})` 向 app 提交导航意图（类型 `CreationEntry` 定义在 `app/navigation.ts`）。app 跳转到 `/create?from=card|upload|library`，声音诞生页按入口打开对应状态。组件不依赖数据库、对象存储或业务服务。
+- 这只是前端导航契约，不是后端 API 或声卡数据结构；音源、上传和声卡领域契约到对应页面开发时在 `packages/contracts/` 定义和验证，再通过仓库 / 服务端口接入，不在选项组件中发请求。
+- `shared/ui/Dialog.tsx` 复用原生 modal 的焦点约束、Esc 与背景关闭，管理滚动锁和关闭后的焦点恢复；`NoticeDialog` 复用该基础层。打开应用弹窗时暂停首页试听与当前角色动作，不在关闭后自动续播。
+- 弹窗本身是首页上的临时 UI，没有自己的 URL；700px 以下纵向选项，小屏高度不足时弹窗内部滚动。插画在首页空闲时低优先级预取。
+
+## 声音诞生页
+
+- 路由 `/create`，代码单独分包，弹窗打开时预取。`pages/sound-birth/` 分为 `components/`（声音条、我的声卡、声卡信息、五行选择、录音 / 声音库 / 纸卡对话框）、`model/`（纯 reducer `soundBirthState.ts` + 编排 hook `useSoundBirth.ts`）、`config/`（文案、五项、示例声音、向导动物、提示文案、背景）、`services/`（声音库端口、本机来源档案、向导提示端口）。
+- 数据走 `@wanwu-v2/contracts/sound`：来源与溯源信息、五项、交给声场的 `SoundUnitDraft`。原声只读，塑形在浏览器离线渲染（`shared/audio/`）。
+- 向导提示走 `services/soundHints.ts` 的 `SoundHintProvider` 接口，当前是本地预设文案；接模型时实现同一接口即可。
+- 首页场景的素材清单放在 `shared/scene/`（`homeScene.ts` + 生成的 JSON），首页、弹窗和声音诞生页都通过它取同一批已缓存的文件。
+- 图标分两套：首页和弹窗用细线 `shared/ui/Icon.tsx`；工作页用圆润童趣的 `shared/ui/KidIcon.tsx`。工作页配色令牌是 `styles/global.css` 里的 `--wk-*`。
 
 ## 产品原则与字段预留方向
 
@@ -30,3 +46,9 @@
 ## 需求优先顺序
 
 用户当前约定 > 最新确认首页 > `docs/product/` 两份文件。指南中的“沿用现有视觉”、十天排期、旧 Next.js 目录和已有库路径属于旧工程背景，不约束本次独立 React 工程。指南与使用流程存在缓存 / PWA 口径差异，后续功能设计前明确，不在首页迁移时悄悄实现。
+
+## 手绘标题资源与动画边界
+
+`HandwrittenTitle` 负责组合字形及后方装饰，`TitleSprite` 只渲染透明图集。位置、角度、尺寸比例和时序集中在 `config/title.ts`。`titleMotionState.ts` 决定 waiting / entering / settled / fallback 状态，`useTitleMotion.ts` 负责入场计时、轻量策略及页面可见性；文字完成入场后没有持续动画，循环只作用于装饰。
+
+`shared/media/useDecodedImage.ts` 单独处理响应式资源、解码、兼容回退、超时与取消；文字不等待装饰资源。加载时不逐帧请求资源，不在网页里提取轮廓或处理像素。图集与 SVG 泡泡由独立构建脚本生成，有原件、配方、来源和哈希记录。整个标题资源组合各规格不得超过 120 KiB。

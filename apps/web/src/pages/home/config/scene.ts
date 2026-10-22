@@ -1,12 +1,11 @@
-import data from './home-assets.generated.json';
-import type {HomeManifest} from '../../../shared/media/types';
-export const homeAssets = data as HomeManifest;
+import {homeScene} from '../../../shared/scene/homeScene';
+export const homeAssets = homeScene;
 export const sceneLayers = homeAssets.layers.filter(layer=>layer.kind!=='foreground');
 export const introLayers = homeAssets.layers.filter(layer=>layer.kind==='foreground');
 export const foliageOpacity:Record<string,number> = {
  'env-upper-left':.32,'env-canopy-right':.46,'env-perch-left':.56,'env-bank-right':.58,'env-pond-left':.75,
 };
-export const homeMotion = {deadlineMs:650,durationMs:1500,foregroundOpacity:.94,storageKey:'wanwu:home:intro:v1'};
+export const homeMotion = {deadlineMs:1800,durationMs:1500,foregroundOpacity:.94,storageKey:'wanwu:home:intro:v2'};
 
 // Keep each character in the same coordinate space as its supporting branch or bank.
 export const sceneGroups = [

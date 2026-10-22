@@ -24,5 +24,5 @@ export function useForestOpening(scene:RefObject<HTMLDivElement|null>,curtain:Re
   document.addEventListener('visibilitychange',hidden);const unsubscribe=subscribeReducedMotion(reduced);
   return()=>{opening.dispose();document.removeEventListener('visibilitychange',hidden);unsubscribe();};
  },[attempt,scene,curtain]);
- return {state,skip:useCallback(()=>controller.current?.stop(),[]),replay:useCallback(()=>setAttempt(n=>n+1),[])};
+ return {state,cycle:attempt,skip:useCallback(()=>controller.current?.stop(),[]),replay:useCallback(()=>setAttempt(n=>n+1),[])};
 }

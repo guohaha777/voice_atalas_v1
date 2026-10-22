@@ -1,6 +1,7 @@
 export type IntroState = {phase:'waiting'|'playing'|'settled';reason:string|null};
 export type IntroPolicy = {reduced?:boolean;saveData?:boolean;seen?:boolean;weak?:boolean;lowDevice?:boolean};
 export type IntroEvent = {type:'READY';elapsed:number}|{type:'SKIP'|'TIMEOUT'|'HIDDEN'|'REDUCED'|'FINISH'|'FAILED'};
+export function shouldRememberIntro(state:IntroState){return state.phase==='playing'||(state.phase==='settled'&&['finish','skip'].includes(state.reason||''));}
 export function initialIntro(policy:IntroPolicy = {}):IntroState {
  const reason=policy.reduced?'reduced':policy.saveData?'save-data':policy.lowDevice?'low-device':policy.seen?'seen':policy.weak?'weak':null;
  return reason?{phase:'settled',reason}:{phase:'waiting',reason:null};

@@ -1,0 +1,89 @@
+{
+ "version": "start-dialog-a-v1",
+ "approved": "万物声谱_视觉过程稿/定稿页面参考/2026-10-22-四步流程/01-home-start-dialog.png",
+ "processing": "Trim transparent padding (alpha > 8) with a small margin, resize each group as a whole, encode WebP for mobile / desktop and a palette PNG fallback. Illustration groups share one scale per tier so their relative size from the source frames is kept.",
+ "output": {
+  "publicDir": "/media/start",
+  "manifest": "apps/web/src/pages/start/config/start-assets.generated.json",
+  "release": "docs/assets/start-release-manifest.json"
+ },
+ "budgets": {
+  "mobile": 184320,
+  "desktop": 337920,
+  "fallback": 368640
+ },
+ "groups": [
+  {
+   "id": "illustrations",
+   "scale": {
+    "mobile": 0.22,
+    "desktop": 0.44
+   },
+   "quality": {
+    "mobile": 68,
+    "desktop": 68
+   },
+   "assets": [
+    {
+     "id": "start-card",
+     "label": "松鼠与声卡",
+     "source": "assets-source/start/illustrations/start-card.png"
+    },
+    {
+     "id": "start-upload",
+     "label": "水滴与录音设备",
+     "source": "assets-source/start/illustrations/start-upload.png"
+    },
+    {
+     "id": "start-library",
+     "label": "小鸟与自然书册",
+     "source": "assets-source/start/illustrations/start-library.png"
+    }
+   ]
+  },
+  {
+   "id": "environment",
+   "scale": {
+    "mobile": 0.2,
+    "desktop": 0.4
+   },
+   "quality": {
+    "mobile": 66,
+    "desktop": 68
+   },
+   "assets": [
+    {
+     "id": "corner-pond-left",
+     "label": "左下池塘草叶",
+     "source": "assets-source/start/environment/corner-pond-left.png"
+    },
+    {
+     "id": "corner-fern-right",
+     "label": "右下浅色蕨草",
+     "source": "assets-source/start/environment/corner-fern-right.png"
+    }
+   ]
+  },
+  {
+   "id": "title",
+   "scale": {
+    "mobile": 0.3,
+    "desktop": 0.56
+   },
+   "quality": {
+    "mobile": 78,
+    "desktop": 80
+   },
+   "assets": [
+    {
+     "id": "start-heading",
+     "label": "手绘标题：这一次，想从哪里开始？",
+     "source": "assets-source/start/title/start-heading.png"
+    }
+   ]
+  }
+ ],
+ "reused": {
+  "env-upper-left": "apps/web/src/shared/scene/home-assets.generated.json"
+ }
+}

@@ -5,7 +5,7 @@ import {SingleSoundPlayer} from '../../../shared/audio/SingleSoundPlayer';
 import {readPerformanceHints,subscribeReducedMotion} from '../../../shared/platform/capabilities';
 import {homeAssets} from '../config/scene';
 import {animateSticker} from '../config/motions';
-export function useHomeSound(audioRef:RefObject<HTMLAudioElement|null>){
+export function useHomeSound(audioRef:RefObject<HTMLAudioElement|null>,suspended=false){
  const player=useRef<SingleSoundPlayer|null>(null),animation=useRef<Animation|null>(null);
  const timer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined);
  const [active,setActive]=useState<{id:string|null;phase:'idle'|'loading'|'playing'|'error'}>({id:null,phase:'idle'});
@@ -32,6 +32,7 @@ export function useHomeSound(audioRef:RefObject<HTMLAudioElement|null>){
   document.addEventListener('visibilitychange',hidden);const unsubscribe=subscribeReducedMotion(reduce);
   return()=>{alive=false;sound.dispose();player.current=null;animation.current?.cancel();clearTimeout(timer.current);document.removeEventListener('visibilitychange',hidden);unsubscribe();};
  },[audioRef,notify]);
+ useEffect(()=>{if(suspended){player.current?.stop();animation.current?.cancel();clearTimeout(timer.current);setStatus({message:'',visible:false});}},[suspended]);
  const interact=(asset:SceneLayer,el:HTMLElement)=>{
   const reduced=readPerformanceHints().reduced;
   animation.current?.cancel();if(asset.motion)animation.current=animateSticker(el,asset.motion,reduced);

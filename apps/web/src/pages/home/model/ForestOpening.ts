@@ -1,5 +1,5 @@
 import {homeMotion,introLayers} from '../config/scene';
-import {initialIntro,transitionIntro} from './introState';
+import {initialIntro,transitionIntro,shouldRememberIntro} from './introState';
 import type {IntroPolicy,IntroState,IntroEvent} from './introState';
 import {writeSessionFlag} from '../../../shared/platform/capabilities';
 
@@ -23,8 +23,9 @@ export class ForestOpening {
   this.state=transitionIntro(this.state,event,homeMotion.deadlineMs);
   if(this.state.phase==='settled'){
    clearTimeout(this.timer);this.animations.forEach(a=>a.cancel());this.animations=[];
-   this.host.hidden=true;this.host.textContent='';writeSessionFlag(homeMotion.storageKey);
+   this.host.hidden=true;this.host.textContent='';
   }
+  if(shouldRememberIntro(this.state))writeSessionFlag(homeMotion.storageKey);
   this.report({...this.state});
  }
  async start(manual=false){
@@ -33,9 +34,6 @@ export class ForestOpening {
   if(!this.scene.animate){this.emit({type:'FAILED'});return;}
   const start=performance.now();
   this.timer=setTimeout(()=>this.emit({type:'TIMEOUT'}),manual?5000:homeMotion.deadlineMs);
-  const ready=await Promise.all([...this.scene.querySelectorAll('img')].map(decodeImage));
-  if(!this.alive||this.state.phase!=='waiting')return;
-  if(!ready.every(Boolean)){this.emit({type:'FAILED'});return;}
   const images:HTMLImageElement[]=[];
   for(const [index,asset] of introLayers.entries()){
    const layer=document.createElement('div');layer.className=`${this.styles.fore} ${index===0?this.styles.left:this.styles.right}`;
@@ -44,12 +42,13 @@ export class ForestOpening {
     const source=document.createElement('source');source.type='image/webp';source.srcset=asset.variants[tier].url;
     if(media)source.media=media;picture.append(source);
    }
-   const image=document.createElement('img');image.alt='';image.decoding='async';image.src=asset.variants.fallback.url;
+   const image=document.createElement('img');image.alt='';image.decoding='async';image.fetchPriority='high';image.src=asset.variants.fallback.url;
    let retried=false;
    image.addEventListener('error',()=>{if(!retried){retried=true;picture.querySelectorAll('source').forEach(s=>s.remove());image.src=asset.variants.fallback.url;}});
    picture.append(image);layer.append(picture);this.host.append(layer);images.push(image);
   }
-  const foregroundReady=await Promise.all(images.map(decodeImage));
+  // Request foreground and scene together; avoid a second network round trip after the scene decodes.
+  const foregroundReady=await Promise.all([...images,...this.scene.querySelectorAll('img')].map(decodeImage));
   if(!this.alive||this.state.phase!=='waiting')return;
   if(!foregroundReady.every(Boolean)){this.emit({type:'FAILED'});return;}
   clearTimeout(this.timer);this.emit({type:'READY',elapsed:manual?0:performance.now()-start});

@@ -8,9 +8,9 @@ import {useForestOpening} from './model/useForestOpening';
 import {useHomeSound} from './model/useHomeSound';
 import {readPerformanceHints} from '../../shared/platform/capabilities';
 import styles from './HomePage.module.css';
-export function HomePage({onNavigate}:{onNavigate:(page:HomeDestination)=>void}){
+export function HomePage({onNavigate,suspended=false}:{onNavigate:(page:HomeDestination)=>void;suspended?:boolean}){
  const scene=useRef<HTMLDivElement>(null),curtain=useRef<HTMLDivElement>(null),audio=useRef<HTMLAudioElement>(null);
- const opening=useForestOpening(scene,curtain),sound=useHomeSound(audio);
+ const opening=useForestOpening(scene,curtain),sound=useHomeSound(audio,suspended);
  const reduced=readPerformanceHints().reduced;
  return <>
   <main className={[styles.homepage,reduced?styles['reduced-motion']:''].join(' ')} id="homepage" aria-label="万物声谱首页"
@@ -18,7 +18,7 @@ export function HomePage({onNavigate}:{onNavigate:(page:HomeDestination)=>void})
    <HomeScene sceneRef={scene} waiting={opening.state.phase==='waiting'} active={sound.active} onInteract={sound.interact}/>
    <div ref={curtain} className={styles.intro} aria-hidden="true"/>
    {opening.state.phase!=='settled'&&<button type="button" className={styles['skip-intro']} onClick={opening.skip}>跳过开场</button>}
-   <HomeHeader onNavigate={onNavigate}/><HomeHero onStart={()=>onNavigate('create')} feedback={sound.status}/>
+   <HomeHeader onNavigate={onNavigate}/><HomeHero onStart={()=>onNavigate('create')} feedback={sound.status} opening={opening.state} cycle={opening.cycle}/>
    <div className={`${styles['sound-label']} ${styles['bird-label']}`} aria-hidden="true">鸟鸣</div>
    <div className={`${styles['sound-label']} ${styles['frog-label']}`} aria-hidden="true">蛙鸣</div>
    <div className={`${styles['sound-label']} ${styles['drop-label']}`} aria-hidden="true">雨滴</div>

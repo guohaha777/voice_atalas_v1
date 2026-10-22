@@ -1,0 +1,23 @@
+.header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:24px;height:64px;padding:0 max(24px,calc((100vw - 1216px) / 2));background:#fffffff0;backdrop-filter:saturate(1.4) blur(12px);box-shadow:0 1px 0 var(--wk-line,#e8ece7)}
+.brand{font-size:20px;font-weight:800;letter-spacing:.1em;text-decoration:none;color:var(--wk-primary,#1f2a24);min-height:44px;display:flex;align-items:center;white-space:nowrap}
+.header nav{flex:1;display:flex;justify-content:center}
+.steps{display:flex;list-style:none;margin:0;padding:4px;gap:4px;border-radius:26px;background:var(--wk-soft,#f4f6f3)}
+.steps li{display:flex;align-items:center}
+.steps a,.steps span{display:flex;align-items:center;gap:8px;min-height:38px;padding:0 14px 0 5px;font-size:15px;font-weight:600;color:var(--wk-muted,#7b857e);text-decoration:none;border-radius:20px;transition:background .16s,color .16s}
+.num{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#fff;font-style:normal;font-size:12px;font-weight:700;line-height:1;color:var(--wk-muted,#7b857e)}
+.stepLabel{font-weight:inherit;white-space:nowrap}
+.steps a{color:#5c635d}.steps a:hover{background:#fff;color:#fff}
+.steps [data-state=done] .num{background:var(--wk-green,#c0e64f);color:var(--wk-on-fill,#2f3b10)}
+.steps [data-state=current] span{background:var(--wk-primary,#1f2a24);color:#fff;box-shadow:0 6px 16px #1f2a2426}
+.steps [data-state=current] .num{background:var(--wk-green,#c0e64f);color:var(--wk-on-fill,#2f3b10)}
+.compact{display:none;margin:0;padding:6px 12px;border-radius:16px;background:var(--wk-soft,#f4f6f3);font-size:13px;font-weight:700;color:var(--wk-muted,#7b857e);font-variant-numeric:tabular-nums}
+.aside{display:flex;justify-content:flex-end;gap:6px;min-width:96px}
+.aside button{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 14px;border:0;border-radius:19px;background:var(--wk-soft,#f4f6f3);color:#5c635d;font-size:14px;font-weight:600;white-space:nowrap;transition:background .16s,transform .12s}
+.aside button:hover{background:#eceee8;color:#fff}.aside button:active{transform:scale(.96)}.aside svg{width:16px;height:16px}
+@media(max-width:1000px){.steps li:not([data-state=current]) .stepLabel{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.steps li:not([data-state=current]) a,.steps li:not([data-state=current]) span{padding:0 6px}.aside{min-width:0}.aside button{padding:0 10px;font-size:13px}}
+@media(max-width:700px){
+ .header{height:64px;gap:12px;padding:0 16px}.brand{font-size:18px}
+ .steps{padding:0;background:none}.steps li:not([data-state=current]){display:none}
+ .header nav{justify-content:flex-start}
+ .compact{display:block}.aside{display:none}
+}

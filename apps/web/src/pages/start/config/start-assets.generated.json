@@ -1,0 +1,190 @@
+{
+  "version": "start-dialog-a-v1",
+  "assets": {
+    "start-card": {
+      "label": "松鼠与声卡",
+      "group": "illustrations",
+      "crop": {
+        "left": 49,
+        "top": 12,
+        "width": 1447,
+        "height": 1001
+      },
+      "variants": {
+        "mobile": {
+          "url": "/media/start/mobile/start-card.a01795d000.webp",
+          "width": 318,
+          "height": 220,
+          "bytes": 21628
+        },
+        "desktop": {
+          "url": "/media/start/desktop/start-card.f8ddd2ed57.webp",
+          "width": 637,
+          "height": 441,
+          "bytes": 56246
+        },
+        "fallback": {
+          "url": "/media/start/fallback/start-card.a1b2fc84ba.png",
+          "width": 318,
+          "height": 220,
+          "bytes": 31607
+        }
+      }
+    },
+    "start-upload": {
+      "label": "水滴与录音设备",
+      "group": "illustrations",
+      "crop": {
+        "left": 128,
+        "top": 107,
+        "width": 1333,
+        "height": 834
+      },
+      "variants": {
+        "mobile": {
+          "url": "/media/start/mobile/start-upload.6a1dbba65d.webp",
+          "width": 293,
+          "height": 183,
+          "bytes": 19966
+        },
+        "desktop": {
+          "url": "/media/start/desktop/start-upload.42a7e84124.webp",
+          "width": 587,
+          "height": 367,
+          "bytes": 53908
+        },
+        "fallback": {
+          "url": "/media/start/fallback/start-upload.acfdc87d80.png",
+          "width": 293,
+          "height": 183,
+          "bytes": 26189
+        }
+      }
+    },
+    "start-library": {
+      "label": "小鸟与自然书册",
+      "group": "illustrations",
+      "crop": {
+        "left": 86,
+        "top": 45,
+        "width": 1364,
+        "height": 949
+      },
+      "variants": {
+        "mobile": {
+          "url": "/media/start/mobile/start-library.58494568d3.webp",
+          "width": 300,
+          "height": 209,
+          "bytes": 20414
+        },
+        "desktop": {
+          "url": "/media/start/desktop/start-library.8187cebb78.webp",
+          "width": 600,
+          "height": 417,
+          "bytes": 54924
+        },
+        "fallback": {
+          "url": "/media/start/fallback/start-library.9ec95ce4db.png",
+          "width": 300,
+          "height": 209,
+          "bytes": 28233
+        }
+      }
+    },
+    "corner-pond-left": {
+      "label": "左下池塘草叶",
+      "group": "environment",
+      "crop": {
+        "left": 48,
+        "top": 79,
+        "width": 1643,
+        "height": 788
+      },
+      "variants": {
+        "mobile": {
+          "url": "/media/start/mobile/corner-pond-left.58416ae139.webp",
+          "width": 329,
+          "height": 158,
+          "bytes": 12374
+        },
+        "desktop": {
+          "url": "/media/start/desktop/corner-pond-left.59be89a189.webp",
+          "width": 657,
+          "height": 315,
+          "bytes": 32960
+        },
+        "fallback": {
+          "url": "/media/start/fallback/corner-pond-left.ec41d346c1.png",
+          "width": 329,
+          "height": 158,
+          "bytes": 18374
+        }
+      }
+    },
+    "corner-fern-right": {
+      "label": "右下浅色蕨草",
+      "group": "environment",
+      "crop": {
+        "left": 547,
+        "top": 91,
+        "width": 910,
+        "height": 954
+      },
+      "variants": {
+        "mobile": {
+          "url": "/media/start/mobile/corner-fern-right.88abc7f123.webp",
+          "width": 182,
+          "height": 191,
+          "bytes": 10996
+        },
+        "desktop": {
+          "url": "/media/start/desktop/corner-fern-right.de09ef4dd3.webp",
+          "width": 364,
+          "height": 382,
+          "bytes": 29696
+        },
+        "fallback": {
+          "url": "/media/start/fallback/corner-fern-right.ef937d9a7e.png",
+          "width": 182,
+          "height": 191,
+          "bytes": 17176
+        }
+      }
+    },
+    "start-heading": {
+      "label": "手绘标题：这一次，想从哪里开始？",
+      "group": "title",
+      "crop": {
+        "left": 55,
+        "top": 251,
+        "width": 2076,
+        "height": 214
+      },
+      "variants": {
+        "mobile": {
+          "url": "/media/start/mobile/start-heading.58416b43f4.webp",
+          "width": 623,
+          "height": 64,
+          "bytes": 15606
+        },
+        "desktop": {
+          "url": "/media/start/desktop/start-heading.0a51eeb69b.webp",
+          "width": 1163,
+          "height": 120,
+          "bytes": 41010
+        },
+        "fallback": {
+          "url": "/media/start/fallback/start-heading.c726902cdd.png",
+          "width": 623,
+          "height": 64,
+          "bytes": 11429
+        }
+      }
+    }
+  },
+  "totals": {
+    "mobile": 100984,
+    "desktop": 268744,
+    "fallback": 133008
+  }
+}

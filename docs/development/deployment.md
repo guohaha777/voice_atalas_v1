@@ -1,6 +1,6 @@
 # 构建与后续部署
 
-当前仅本机验收，没有发布站点。用户已授权将正式工程提交至源码仓库：https://github.com/guohaha777/voice_atalas_v1 。推送代码不包含站点部署授权。
+用户已将此前首页部署至 https://voiceatalas.netlify.app/ 。本轮手绘标题及开场修正仅在本机验收，尚未更新线上。源码仓库：https://github.com/guohaha777/voice_atalas_v1 。此前首次推送授权不代表自动发布后续改动。
 
 1. `npm ci` 安装锁定依赖。
 2. `npm test`、`npm run build`。正式网页文件全部在 `apps/web/dist/`。

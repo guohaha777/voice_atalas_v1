@@ -42,7 +42,7 @@ for(const [tier,budget] of [['mobile',400*1024],['desktop',700*1024],['fallback'
 }
 // Validate everything before replacing release metadata or removing obsolete generated files.
 for(const file of files){const dest=path.join(root,file.filePath);await fs.mkdir(path.dirname(dest),{recursive:true});await fs.writeFile(dest,file.bytes);}
-await fs.writeFile(path.join(root,'apps/web/src/pages/home/config/home-assets.generated.json'),JSON.stringify(manifest,null,2)+'\n');
+await fs.writeFile(path.join(root,'apps/web/src/shared/scene/home-assets.generated.json'),JSON.stringify(manifest,null,2)+'\n');
 await fs.writeFile(path.join(root,'docs/assets/release-manifest.json'),JSON.stringify(release,null,2)+'\n');
 const live=new Set(release.map(item=>item.path));
 for(const old of current){if(!live.has(old.path)&&/^apps\/web\/public\/media\/.+\.[0-9a-f]{10}\.(png|webp|mp3)$/.test(old.path))await fs.rm(path.join(root,old.path),{force:true});}

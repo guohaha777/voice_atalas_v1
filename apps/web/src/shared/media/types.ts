@@ -12,3 +12,5 @@ export type HomeManifest = {
  sounds:Record<SoundId,SoundClip>;introDurationMs:number;
  totals:Record<'mobile'|'desktop'|'fallback',{all:number;scene:number;intro:number;decodedPixels:number}>;
 };
+/** Compressed derivatives of one transparent artwork: WebP per layout tier plus a PNG fallback. */
+export type ArtVariants = Record<'mobile'|'desktop'|'fallback',ImageVariant>;

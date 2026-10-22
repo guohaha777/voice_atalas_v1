@@ -1,0 +1,128 @@
+[
+  {
+    "id": "start-card",
+    "tier": "mobile",
+    "path": "apps/web/public/media/start/mobile/start-card.a01795d000.webp",
+    "bytes": 21628,
+    "sha256": "a01795d000c431289a466f82b5d9339079deb9cebe014303b5d435860604302a"
+  },
+  {
+    "id": "start-card",
+    "tier": "desktop",
+    "path": "apps/web/public/media/start/desktop/start-card.f8ddd2ed57.webp",
+    "bytes": 56246,
+    "sha256": "f8ddd2ed57e9d3b30b2ad060d68b677c3cb19b2f2e2dcab07ce60fc47e874756"
+  },
+  {
+    "id": "start-card",
+    "tier": "fallback",
+    "path": "apps/web/public/media/start/fallback/start-card.a1b2fc84ba.png",
+    "bytes": 31607,
+    "sha256": "a1b2fc84ba684c076e96b2af0aa443641c3bfdb385fbc11ccd590909fba64268"
+  },
+  {
+    "id": "start-upload",
+    "tier": "mobile",
+    "path": "apps/web/public/media/start/mobile/start-upload.6a1dbba65d.webp",
+    "bytes": 19966,
+    "sha256": "6a1dbba65d57d71153fcca4a12cea26bcbded353a7697f463502a41ff6a24b46"
+  },
+  {
+    "id": "start-upload",
+    "tier": "desktop",
+    "path": "apps/web/public/media/start/desktop/start-upload.42a7e84124.webp",
+    "bytes": 53908,
+    "sha256": "42a7e841243ce2829531fdef5559096165b222af32c2283968d9ba03f39a1acd"
+  },
+  {
+    "id": "start-upload",
+    "tier": "fallback",
+    "path": "apps/web/public/media/start/fallback/start-upload.acfdc87d80.png",
+    "bytes": 26189,
+    "sha256": "acfdc87d8061c4d835538ac9e5fdfb3049deda0a964239faece1711acdd1e02d"
+  },
+  {
+    "id": "start-library",
+    "tier": "mobile",
+    "path": "apps/web/public/media/start/mobile/start-library.58494568d3.webp",
+    "bytes": 20414,
+    "sha256": "58494568d38f300dc10a6ed281e17071c0d0e4d5445aee246db309dea9553faa"
+  },
+  {
+    "id": "start-library",
+    "tier": "desktop",
+    "path": "apps/web/public/media/start/desktop/start-library.8187cebb78.webp",
+    "bytes": 54924,
+    "sha256": "8187cebb789189cdd9116b3ca756f6b281e0b8e7ee0ad785b1ff17d7aca0fc92"
+  },
+  {
+    "id": "start-library",
+    "tier": "fallback",
+    "path": "apps/web/public/media/start/fallback/start-library.9ec95ce4db.png",
+    "bytes": 28233,
+    "sha256": "9ec95ce4dbdf53bf65060bdd00d09d3cdce32b41b06910f6a92480f8af37bb11"
+  },
+  {
+    "id": "corner-pond-left",
+    "tier": "mobile",
+    "path": "apps/web/public/media/start/mobile/corner-pond-left.58416ae139.webp",
+    "bytes": 12374,
+    "sha256": "58416ae139b4f8d00704b9f4fc3bf4821c360f0ad90e8d78c55813167b2a8be6"
+  },
+  {
+    "id": "corner-pond-left",
+    "tier": "desktop",
+    "path": "apps/web/public/media/start/desktop/corner-pond-left.59be89a189.webp",
+    "bytes": 32960,
+    "sha256": "59be89a18970bac560359006a1ce7115d0263af9256f075613325a88c3720cda"
+  },
+  {
+    "id": "corner-pond-left",
+    "tier": "fallback",
+    "path": "apps/web/public/media/start/fallback/corner-pond-left.ec41d346c1.png",
+    "bytes": 18374,
+    "sha256": "ec41d346c15c74f2050513cf651221783072edcf958fc4a56555523efb8dbfc0"
+  },
+  {
+    "id": "corner-fern-right",
+    "tier": "mobile",
+    "path": "apps/web/public/media/start/mobile/corner-fern-right.88abc7f123.webp",
+    "bytes": 10996,
+    "sha256": "88abc7f123b6c25f1aeb510a91aca708ec66c0d83b86920a723dda1c803e175c"
+  },
+  {
+    "id": "corner-fern-right",
+    "tier": "desktop",
+    "path": "apps/web/public/media/start/desktop/corner-fern-right.de09ef4dd3.webp",
+    "bytes": 29696,
+    "sha256": "de09ef4dd355dd467d2d0212ba0b7276a237c02d2f39f4a3966066a05577d474"
+  },
+  {
+    "id": "corner-fern-right",
+    "tier": "fallback",
+    "path": "apps/web/public/media/start/fallback/corner-fern-right.ef937d9a7e.png",
+    "bytes": 17176,
+    "sha256": "ef937d9a7e5ed178b2e05a89b683f979ed22943df11d88d68f539ba8c1b3195a"
+  },
+  {
+    "id": "start-heading",
+    "tier": "mobile",
+    "path": "apps/web/public/media/start/mobile/start-heading.58416b43f4.webp",
+    "bytes": 15606,
+    "sha256": "58416b43f4c690a88b19b90195b6228863693421c818bfa81b81093a9cf1ef26"
+  },
+  {
+    "id": "start-heading",
+    "tier": "desktop",
+    "path": "apps/web/public/media/start/desktop/start-heading.0a51eeb69b.webp",
+    "bytes": 41010,
+    "sha256": "0a51eeb69bc391818ba297260b36002a358ecb4dbfa3a0c88770bd057749fe93"
+  },
+  {
+    "id": "start-heading",
+    "tier": "fallback",
+    "path": "apps/web/public/media/start/fallback/start-heading.c726902cdd.png",
+    "bytes": 11429,
+    "sha256": "c726902cddbe921f1e2b183aac506df499865fea8f239b17dfc25e67a4dfa926"
+  }
+]
