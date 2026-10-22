@@ -1,0 +1,23 @@
+import data from './home-assets.generated.json';
+import type {HomeManifest} from '../../../shared/media/types';
+export const homeAssets = data as HomeManifest;
+export const sceneLayers = homeAssets.layers.filter(layer=>layer.kind!=='foreground');
+export const introLayers = homeAssets.layers.filter(layer=>layer.kind==='foreground');
+export const foliageOpacity:Record<string,number> = {
+ 'env-upper-left':.32,'env-canopy-right':.46,'env-perch-left':.56,'env-bank-right':.58,'env-pond-left':.75,
+};
+export const homeMotion = {deadlineMs:650,durationMs:1500,foregroundOpacity:.94,storageKey:'wanwu:home:intro:v1'};
+
+// Keep each character in the same coordinate space as its supporting branch or bank.
+export const sceneGroups = [
+ {id:'twig',rect:[0,0,174,142],members:['env-upper-left']},
+ {id:'canopy',rect:[1027,0,413,543],members:['env-canopy-right','bird','cicada']},
+ {id:'perch',rect:[0,178,385,410],members:['env-perch-left','squirrel']},
+ {id:'pond',rect:[0,476,578,484],members:['env-pond-left','frog','snail']},
+ {id:'bank',rect:[1083,615,357,345],members:['env-bank-right','drop']},
+] as const;
+export const mobilePlacement:Record<string,readonly number[]> = {
+ cicada:[265,32,73,89],
+ bird:[154,201,196,152], frog:[96,104,232,202],
+ snail:[442.5,301.4,101,77.6], drop:[143,-214,123,168],
+};

@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>万物声谱 公测开发指南</title>
+<style>
+/* Layout: 单列长文档，顶部吸附目录；每节一个主图或主表，说明文字放在图表之后。色板与字体沿用《完整工作流程》页。 */
+:root {
+  --paper:#f7f3e8; --surface:#fffefa; --soft:#f0ede4; --ink:#25261f; --muted:#6d7068; --line:#d7d1c4;
+  --green:#58745d; --green-soft:#e1eadf; --green-line:#b9cbb7; --on-green:#ffffff;
+  --yellow:#efce70; --orange:#e18a6d; --orange-soft:#f4e5df; --blue:#dce5eb; --purple:#c9b7d6;
+  --pill-ink:#25261f; --code-bg:#25261f; --code-ink:#f7f3e8;
+  --shadow:0 12px 35px rgba(51,49,42,.07);
+  --font:"Avenir Next","PingFang SC","Microsoft YaHei",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper:#1b1c17; --surface:#24261f; --soft:#2b2d25; --ink:#ece8dc; --muted:#a5a89c; --line:#3b3d34;
+  --green:#8fb394; --green-soft:#263629; --green-line:#41574500; --on-green:#16200f;
+  --yellow:#d9b85a; --orange:#d9856a; --orange-soft:#3a2b26; --blue:#2f4352; --purple:#4d405c;
+  --pill-ink:#1b1c17; --code-bg:#121310; --code-ink:#ece8dc;
+  --shadow:0 12px 35px rgba(0,0,0,.35); color-scheme:dark; } }
+:root[data-theme="dark"] {
+  --paper:#1b1c17; --surface:#24261f; --soft:#2b2d25; --ink:#ece8dc; --muted:#a5a89c; --line:#3b3d34;
+  --green:#8fb394; --green-soft:#263629; --green-line:#41574500; --on-green:#16200f;
+  --yellow:#d9b85a; --orange:#d9856a; --orange-soft:#3a2b26; --blue:#2f4352; --purple:#4d405c;
+  --pill-ink:#1b1c17; --code-bg:#121310; --code-ink:#ece8dc;
+  --shadow:0 12px 35px rgba(0,0,0,.35); color-scheme:dark; }
+
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:64px; }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--font); line-height:1.6; padding-inline:16px; }
+main { width:min(1180px,100%); margin:0 auto; padding-block:40px 80px; }
+a { color:var(--green); }
+code { font-family:var(--mono); font-size:.86em; background:var(--soft); padding:1px 5px; border-radius:5px; word-break:break-all; }
+h1,h2,h3,h4 { text-wrap:balance; }
+
+header.top { padding-bottom:24px; border-bottom:2px solid var(--ink); }
+.eyebrow { color:var(--green); font-size:12px; font-weight:850; letter-spacing:.16em; }
+h1 { margin:8px 0; font-size:clamp(34px,5vw,58px); line-height:1.08; letter-spacing:-.04em; }
+.lead { margin:0; color:var(--muted); font-size:17px; }
+.meta { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+
+.pill { display:inline-flex; align-items:center; width:max-content; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:800; line-height:1.4; color:var(--pill-ink); white-space:nowrap; }
+.pm { background:var(--yellow); } .dev { background:var(--blue); color:var(--ink); } .mu { background:var(--orange); }
+.ok { background:var(--green-soft); color:var(--green); } .net { background:var(--yellow); } .must { background:var(--orange); }
+.new { background:var(--orange); } .have { background:var(--green); color:var(--on-green); } .tbd { border:1px dashed var(--muted); color:var(--muted); }
+.model { background:var(--purple); color:var(--ink); }
+
+nav.toc { position:sticky; top:env(safe-area-inset-top,0px); z-index:10; margin:0 -16px; padding:10px 16px; background:var(--paper); border-bottom:1px solid var(--line); display:flex; gap:6px; overflow-x:auto; }
+nav.toc a { flex:none; padding:5px 11px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13px; font-weight:700; text-decoration:none; }
+nav.toc a:hover, nav.toc a:focus-visible { background:var(--green-soft); border-color:var(--green); outline:none; }
+
+section.sec { margin-top:56px; }
+.sec-head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:6px; }
+.sec-no { font-family:var(--mono); font-size:13px; font-weight:800; color:var(--green); letter-spacing:.08em; }
+h2 { margin:0; font-size:clamp(24px,3vw,31px); letter-spacing:-.02em; }
+.sec-lead { margin:0 0 18px; color:var(--muted); }
+p, li, td, figcaption { text-wrap:pretty; }
+h3 { margin:26px 0 10px; font-size:18px; }
+h4 { margin:0 0 6px; font-size:14px; }
+p { margin:0 0 10px; }
+
+.card { padding:18px 20px; border:1px solid var(--line); border-radius:18px; background:var(--surface); }
+.card.shadow { box-shadow:var(--shadow); }
+.card p:last-child, .card ul:last-child { margin-bottom:0; }
+.card ul, ul.plain { margin:0; padding-left:18px; color:var(--muted); font-size:14px; }
+.card li, ul.plain li { margin:4px 0; }
+.grid { display:grid; gap:14px; }
+.g2 { grid-template-columns:repeat(2,minmax(0,1fr)); } .g3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.g4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.card .small, .small { font-size:13px; color:var(--muted); }
+.k { display:block; margin-bottom:6px; color:var(--green); font-size:11px; font-weight:850; letter-spacing:.11em; }
+
+.note { margin-top:18px; padding:15px 18px; border-left:5px solid var(--orange); background:var(--orange-soft); border-radius:0 12px 12px 0; }
+.note strong { display:block; margin-bottom:2px; }
+.note p { margin:0; color:var(--muted); font-size:14px; }
+.note.green { border-left-color:var(--green); background:var(--green-soft); }
+
+.scroll { overflow-x:auto; border:1px solid var(--line); border-radius:16px; background:var(--surface); }
+table { width:100%; border-collapse:collapse; font-size:13.5px; }
+th { padding:10px 12px; text-align:left; background:var(--ink); color:var(--paper); font-size:12px; letter-spacing:.05em; white-space:nowrap; }
+td { padding:10px 12px; border-top:1px solid var(--line); vertical-align:top; color:var(--ink); }
+td.m, td .muted { color:var(--muted); }
+tr.grp td { background:var(--soft); font-weight:850; font-size:12px; letter-spacing:.08em; color:var(--green); }
+.mono { font-family:var(--mono); font-size:12px; word-break:break-all; }
+.scroll table { min-width:640px; }
+td.mono:first-child { white-space:nowrap; }
+
+figure { margin:0; }
+figure.fig { padding:18px; border:1px solid var(--line); border-radius:20px; background:var(--surface); }
+figcaption { margin-top:12px; color:var(--muted); font-size:13px; }
+.svgwrap { overflow-x:auto; }
+.svgwrap svg { display:block; width:100%; height:auto; min-width:760px; color:var(--ink); }
+svg text { font-family:var(--font); fill:var(--ink); }
+svg .t-sub { fill:var(--muted); }
+svg .box { fill:var(--surface); stroke:var(--ink); stroke-width:1.5; }
+svg .box.core { fill:var(--green-soft); stroke:var(--green); }
+svg .box.model { fill:var(--purple); stroke:var(--ink); }
+svg .box.warn { fill:var(--orange-soft); stroke:var(--orange); }
+svg .lane { fill:var(--soft); stroke:none; }
+svg .ln { stroke:var(--ink); stroke-width:1.5; fill:none; }
+svg .ln.dash { stroke-dasharray:6 5; }
+svg .ah { fill:var(--ink); }
+
+/* gantt */
+.gantt { min-width:820px; display:grid; gap:0; font-size:12.5px; }
+.gantt .row { display:grid; grid-template-columns:170px repeat(10,minmax(0,1fr)); border-top:1px solid var(--line); align-items:center; min-height:38px; }
+.gantt .row.head { border-top:0; background:var(--soft); min-height:50px; }
+.gantt .lab { padding:6px 12px; font-weight:750; }
+.gantt .day { text-align:center; padding:6px 0; font-size:12px; line-height:1.25; border-left:1px solid var(--line); height:100%; display:flex; flex-direction:column; justify-content:center; }
+.gantt .day b { display:block; font-size:13px; }
+.gantt .day.wk { color:var(--muted); background:repeating-linear-gradient(135deg,transparent 0 6px,var(--line) 6px 7px); }
+.gantt .bar { margin:6px 3px; padding:3px 9px; border-radius:8px; font-size:11.5px; font-weight:750; color:var(--pill-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gantt .bar.dev { background:var(--blue); color:var(--ink); } .gantt .bar.pm { background:var(--yellow); } .gantt .bar.mu { background:var(--orange); }
+.gantt .bar.all { background:var(--green); color:var(--on-green); }
+.gantt .ms { margin:4px 0; text-align:center; font-weight:900; font-size:12px; }
+.gantt .ms span { display:inline-block; padding:2px 8px; border-radius:999px; background:var(--ink); color:var(--paper); }
+.gates { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:14px; }
+.gate { padding:14px 16px; border:1px solid var(--line); border-radius:14px; background:var(--surface); font-size:13px; }
+.gate b { display:block; font-size:14px; margin-bottom:2px; }
+.gate .d { font-family:var(--mono); color:var(--green); font-size:12px; font-weight:800; }
+
+.mx td.c, .mx th.c { text-align:center; white-space:nowrap; }
+.dot { font-weight:900; } .dot.a { color:var(--green); } .dot.b { color:var(--muted); }
+
+pre.code { margin:0; padding:16px 18px; border-radius:14px; background:var(--code-bg); color:var(--code-ink); font-family:var(--mono); font-size:12.5px; line-height:1.55; overflow-x:auto; }
+
+.ladder { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:0; margin-bottom:14px; }
+.ladder div { padding:12px 10px; text-align:center; border:1px solid var(--line); background:var(--surface); font-size:13px; font-weight:800; position:relative; }
+.ladder div small { display:block; font-weight:500; color:var(--muted); font-size:11.5px; margin-top:2px; }
+.ladder div:nth-child(1) { background:var(--yellow); color:var(--pill-ink); } .ladder div:nth-child(1) small { color:var(--pill-ink); }
+.ladder div:nth-child(2) { background:var(--green-soft); } .ladder div:nth-child(3) { background:var(--blue); }
+.ladder div:nth-child(4) { background:var(--purple); } .ladder div:nth-child(5) { background:var(--soft); }
+.ladder div:first-child { border-radius:12px 0 0 12px; } .ladder div:last-child { border-radius:0 12px 12px 0; }
+
+@media (max-width:900px) {
+  .g2,.g3,.g4,.gates { grid-template-columns:1fr; }
+  .ladder { grid-template-columns:1fr; } .ladder div:first-child { border-radius:12px 12px 0 0; } .ladder div:last-child { border-radius:0 0 12px 12px; }
+  main { padding-block:28px 60px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+
+@page { size:A4 landscape; margin:10mm; background:#f7f3e8; }
+@media print {
+  html { -webkit-print-color-adjust:exact; print-color-adjust:exact; scroll-behavior:auto; zoom:.77; }
+  * { box-shadow:none !important; text-shadow:none !important; }
+  body { padding-inline:0; }
+  nav.toc { display:none; }
+  main { width:100%; padding-block:0; }
+  section.sec { margin-top:14px; }
+  .scroll, .svgwrap { overflow:visible; }
+  .svgwrap svg, .scroll table, .gantt { min-width:0; }
+  figure.fig, .card, .gate, .step, .note, pre.code, tr, .keep { break-inside:avoid; }
+  tr.grp { break-after:avoid; }
+  h2, h3, .sec-head, .sec-lead { break-after:avoid; }
+  .sec-lead { break-inside:avoid; margin-bottom:10px; }
+  td { padding:6px 12px; } th { padding:6px 12px; }
+  .card { padding:14px 16px; } h3 { margin:18px 0 8px; } .step { padding:12px 10px; }
+  .gantt .row { min-height:19px; } .gantt .row.head { min-height:34px; } .gantt .lab { padding:3px 12px; } figcaption { margin-top:6px; } .gantt .bar { margin:3px 3px; padding:1px 9px; font-size:11px; } .gate { padding:10px 14px; }
+  .svgwrap svg { max-width:82%; margin-inline:auto; }
+  figure.fig { padding:8px 10px; }
+  .g2 { grid-template-columns:repeat(2,minmax(0,1fr)); } .g3 { grid-template-columns:repeat(3,minmax(0,1fr)); } .g4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .gates { grid-template-columns:repeat(4,minmax(0,1fr)); } .steps { grid-template-columns:repeat(6,minmax(0,1fr)); }
+  .step:not(:last-child)::after { display:block; }
+  .ladder { grid-template-columns:repeat(5,minmax(0,1fr)); }
+  .ladder div:first-child, .ladder div:nth-child(1) { border-radius:12px 0 0 12px; } .ladder div:last-child, .ladder div:nth-child(5) { border-radius:0 12px 12px 0; }
+  .ladder div:nth-child(2), .ladder div:nth-child(3), .ladder div:nth-child(4) { border-radius:0; }
+}
+</style>
+</head>
+<body>
+
+
+<main>
+<header class="top">
+  <span class="eyebrow">NEW MEMBER GUIDE · PUBLIC TEST BUILD · 2026.10</span>
+  <h1>万物声谱｜公测版开发指南</h1>
+  <p class="lead">从一张纸卡到一首曲子，十月底的公开测试版要做成什么样、怎么分工、十天怎么走，这一页都讲到了。</p>
+  <div class="meta">
+    <span class="pill pm">产品</span><span class="pill dev">研发</span><span class="pill mu">音乐专业</span>
+    <span class="pill ok">不联网可用</span><span class="pill net">联网更好</span><span class="pill must">必须联网</span>
+    <span class="pill model">模型</span><span class="pill new">新增</span><span class="pill have">已有</span><span class="pill tbd">待定</span>
+  </div>
+</header>
+
+<nav class="toc" aria-label="目录">
+  <a href="#s0">总览</a><a href="#s1">角色</a><a href="#s2">排期</a><a href="#s3">可调节文件</a><a href="#s4">模型</a>
+  <a href="#s5">用户流程</a><a href="#s6">课本音乐</a><a href="#s7">存储内容</a><a href="#s8">产品形态</a><a href="#s9">开工前</a><a href="#tester">测试者</a>
+</nav>
+
+<!-- 00 总览 -->
+<section class="sec" id="s0">
+  <div class="sec-head"><span class="sec-no">00</span><h2>总览：这一版是什么</h2></div>
+  <p class="sec-lead">万物声谱让乡村低年级孩子用纸笔记录听见的声音，老师用一部手机录入，系统把声音编排成一首短曲，并用孩子听得懂的话讲出来。10 月底这一版是放在公开的 H5 网页上的完整流程体验版，为后面进入公益组织的学校做准备。整体结构图见第 08 节。</p>
+
+  <div class="grid g3">
+    <article class="card"><span class="k">本版要做到</span><ul>
+      <li>国内手机和电脑能直接打开网址，走完整条流程</li>
+      <li>老师用手机浏览器（H5）现场录音，音源库里能看到并使用</li>
+      <li>公共音源库：任何人可上传，孩子在校园端调用</li>
+      <li>班级、学校、地域共享音源和曲子</li>
+      <li>新板块：课本音乐接入创作</li>
+    </ul></article>
+    <article class="card"><span class="k">本版不做，留到下一阶段</span><ul>
+      <li>信息保护细则、同意流程</li>
+      <li>内容审核机制</li>
+      <li>本地小模型、离线缓存（PWA）</li>
+      <li>复杂的班级管理后台、数据看板</li>
+      <li>多个教材版本、音频导出</li><li>微信小程序（待定，不排期）</li>
+    </ul></article>
+    <article class="card"><span class="k">不能动的原则</span><ul>
+      <li>孩子的原声永远是主角，原始录音不覆盖</li>
+      <li>AI 不替孩子做决定，只在后台降低门槛</li>
+      <li>每个 AI 环节都有不联网的降级方案</li>
+      <li>来源如实标注，本地方案不冒充模型</li>
+    </ul></article>
+  </div>
+
+</section>
+
+<!-- 01 角色 -->
+<section class="sec" id="s1">
+  <div class="sec-head"><span class="sec-no">01</span><h2>开发角色</h2></div>
+  <p class="sec-lead">三类角色各自把关一个方向，也各是一块工作的主责人。主责人对结果负责，其他人按需协助。</p>
+  <div class="grid g3">
+    <article class="card shadow"><span class="pill pm">产品</span>
+      <h4 style="margin-top:10px">把关：体验与范围</h4>
+      <ul><li>流程是否顺、界面和文案是否对</li><li>冻结范围，决定什么砍、什么留</li><li>对接公益组织：学校、教材版本、授权</li><li>域名备案所需材料</li><li>每晚验收当天版本，决定能否上线</li></ul></article>
+    <article class="card shadow"><span class="pill dev">研发</span>
+      <h4 style="margin-top:10px">把关：架构与稳定</h4>
+      <ul><li>云环境、数据怎么存、接口与登录</li><li>H5（含手机现场录音）、大屏、同步和弱网</li><li>模型接入、限额、失败降级</li><li>课本匹配的实现</li><li>构建、测试、发布与回滚</li></ul></article>
+    <article class="card shadow"><span class="pill mu">音乐专业</span>
+      <h4 style="margin-top:10px">把关：听感与内容</h4>
+      <ul><li>提示词：智能音符、作品理解、背景描述、课本讲解</li><li>编曲与混音参数的听感校准</li><li>课本特征：用耳朵核对提取结果，把握讲解的语气</li><li>每天听评，写调参记录</li><li>12 组标准作品的验收</li></ul></article>
+  </div>
+
+  <h3>模块与主责</h3>
+  <div class="scroll mx"><table>
+    <thead><tr><th>模块</th><th class="c">产品</th><th class="c">研发</th><th class="c">音乐</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>范围、流程、验收清单</td><td class="c"><span class="dot a">◎</span></td><td class="c"><span class="dot b">○</span></td><td class="c"><span class="dot b">○</span></td><td class="m">10/26 功能冻结后只修问题</td></tr>
+      <tr><td>界面与文案（手机端、大屏）</td><td class="c"><span class="dot a">◎</span></td><td class="c"><span class="dot b">○</span></td><td class="c"><span class="dot b">○</span></td><td class="m">沿用现有视觉，不另做设计稿</td></tr>
+      <tr><td>云端、登录、班级、音源库</td><td class="c"><span class="dot b">○</span></td><td class="c"><span class="dot a">◎</span></td><td class="c"></td><td class="m">字段口径由产品和研发一起定</td></tr>
+      <tr><td>H5 手机录音与大屏模式</td><td class="c"><span class="dot b">○</span></td><td class="c"><span class="dot a">◎</span></td><td class="c"></td><td class="m">实机在手机和电子黑板上测</td></tr>
+      <tr><td>模型接入与降级（千问、Fun-Music）</td><td class="c"></td><td class="c"><span class="dot a">◎</span></td><td class="c"><span class="dot b">○</span></td><td class="m">限额、超时、来源标签</td></tr>
+      <tr><td>提示词、声音规律映射、混音参数</td><td class="c"><span class="dot b">○</span></td><td class="c"><span class="dot b">○</span></td><td class="c"><span class="dot a">◎</span></td><td class="m">改动由音乐把关，改完升版本号</td></tr>
+      <tr><td>课本特征提取（脚本、核对页）</td><td class="c"><span class="dot b">○</span></td><td class="c"><span class="dot a">◎</span></td><td class="c"><span class="dot b">○</span></td><td class="m">代码和 AI 提取，非专业者听一遍核对</td></tr>
+      <tr><td>课本讲解模板与表达方式</td><td class="c"><span class="dot b">○</span></td><td class="c"><span class="dot b">○</span></td><td class="c"><span class="dot a">◎</span></td><td class="m">产品确认教材版本与授权</td></tr>
+      <tr><td>课本匹配与背景依据的实现</td><td class="c"><span class="dot b">○</span></td><td class="c"><span class="dot a">◎</span></td><td class="c"><span class="dot b">○</span></td><td class="m">匹配权重放配置文件，音乐可调</td></tr>
+      <tr><td>联调、内测、验收</td><td class="c"><span class="dot a">◎</span></td><td class="c"><span class="dot b">○</span></td><td class="c"><span class="dot b">○</span></td><td class="m">产品验收体验，音乐验收听感</td></tr>
+    </tbody></table></div>
+  <p class="small" style="margin-top:8px">◎ 主责　○ 协助</p>
+</section>
+
+<!-- 02 排期 -->
+<section class="sec" id="s2">
+  <div class="sec-head"><span class="sec-no">02</span><h2>开发时间：10/21 – 10/30（暂定）</h2></div>
+  <p class="sec-lead">十天分四个阶段，设四道关口。弹性安排任务，以月底稳定跑完整个流程为验收标准。</p>
+  <figure class="fig">
+    <div class="scroll" style="border:0"><div class="gantt" role="img" aria-label="10月21日到30日的排期甘特图">
+      <div class="row head"><div class="lab">工作线</div>
+        <div class="day"><b>21</b>三</div><div class="day"><b>22</b>四</div><div class="day"><b>23</b>五</div><div class="day wk"><b>24</b>六</div><div class="day wk"><b>25</b>日</div>
+        <div class="day"><b>26</b>一</div><div class="day"><b>27</b>二</div><div class="day"><b>28</b>三</div><div class="day"><b>29</b>四</div><div class="day"><b>30</b>五</div></div>
+      <div class="row"><div class="lab">云端、登录、数据</div><div class="bar dev" style="grid-column:2/7">云环境 · 账号班级 · 音源库与作品上云</div></div>
+      <div class="row"><div class="lab">H5：录音、音源库与大屏</div><div class="bar dev" style="grid-column:2/8">现场录音上传 · 音源库调用 · 共享浏览 · 大屏模式</div></div>
+      <div class="row"><div class="lab">背景音乐 AI 上线</div><div class="bar dev" style="grid-column:2/6">切换 Fun-Music · 核对千问 · 降级链路</div></div>
+      <div class="row"><div class="lab">课本特征提取</div><div class="bar dev" style="grid-column:2/5">提取脚本 · 听感核对 · 特征模板</div></div>
+      <div class="row"><div class="lab">课本匹配与讲解</div><div class="bar dev" style="grid-column:4/8">匹配 · 背景依据 · 讲解接入</div></div>
+      <div class="row"><div class="lab">提示词与听感</div><div class="bar mu" style="grid-column:2/11">每天听评 · 三个提示词与混音参数 · 29 日冻结并登记版本号</div></div>
+      <div class="row"><div class="lab">联调与验收</div><div class="bar all" style="grid-column:7/10">内测 → 修复 → 验收</div></div>
+      <div class="row"><div class="lab">预发布与上线</div><div class="bar pm" style="grid-column:10/12">预发布 → 公开</div></div>
+      <div class="row" style="background:var(--soft)"><div class="lab">关口</div>
+        <div></div><div></div><div class="ms"><span>G1</span></div><div></div><div></div><div class="ms"><span>G2</span></div><div></div><div class="ms"><span>G3</span></div><div></div><div class="ms"><span>上线</span></div></div>
+    </div></div>
+    <figcaption>开工前（10/14–10/20）先办备案、云环境和模型密钥，见第 09 节。这些事等审核或排队，不受开发速度控制。</figcaption>
+  </figure>
+
+  <div class="gates pbr">
+    <div class="gate"><span class="d">G1 · 10/23</span><b>最小贯通</b>用手机打开 H5 录一段声音，上传到云端，在音源库看到，并放进声场。</div>
+    <div class="gate"><span class="d">G2 · 10/26</span><b>功能冻结</b>此后只修问题，新需求进“公测后”清单。</div>
+    <div class="gate"><span class="d">G3 · 10/28</span><b>验收</b>产品验收流程和文案，音乐验收听感，电子黑板实机走通。</div>
+    <div class="gate"><span class="d">10/29 – 10/30</span><b>预发布与上线</b>29 日回归并演练回滚，30 日公布地址和二维码。</div>
+  </div>
+
+  <h3>10/30 上线标准</h3>
+  <ul class="plain" style="columns:2; column-gap:32px">
+    <li>国内手机和电脑直接打开网址，4G 下首页几秒内可操作</li>
+    <li>老师用手机浏览器（H5）录音，音源库里能看到并使用</li>
+    <li>任何人可上传自然音源，孩子能调用并做五个维度塑造</li>
+    <li>课本模式：给出课本曲目、背景依据和讲解</li>
+    <li>班级、学校、地域能共享音源和作品</li>
+    <li>断网或模型失败时基础作品照样出，并写明用了哪种降级</li>
+    <li>电子黑板实机走完：声场 → 成曲 → 播放</li>
+    <li>12 组标准作品在手机外放和耳机上听评通过</li>
+  </ul>
+  <div class="note"><strong>落后时按这个顺序砍</strong><p>① 共享只读浏览　② 课本背景依据（保留匹配与讲解）　③ 大屏专属模式（保留响应式）　④ 同步简化为“保存时上传 + 失败重试”　⑤ 手机端录音只保留录音和上传，其余放下一阶段。</p></div>
+</section>
+
+<!-- 03 可调节文件 -->
+<section class="sec" id="s3">
+  <div class="sec-head"><span class="sec-no">03</span><h2>项目可调节文件</h2></div>
+  <p class="sec-lead">调整 AI 和音乐的表现，改的是下面三类文件，不需要动页面和接口。路径相对仓库根目录。</p>
+
+  <div class="grid g3" style="margin-bottom:20px">
+    <article class="card"><span class="k">A · 提示词存储</span><p class="small">给模型的文字指令，集中在 <code>src/prompts/</code>，一个模型任务一个文件。纯文本，不会写代码也能改。</p></article>
+    <article class="card"><span class="k">B · 声音规律分析</span><p class="small">把孩子的选择和编排算成数字与规则，相近的输入得到相近的结果。它既直接驱动本地方案，也生成提示词里的参数。</p></article>
+    <article class="card"><span class="k">C · 混音与配置</span><p class="small">响度、版本号、模型地址和密钥。响度要用手机外放听过才能定。</p></article>
+  </div>
+
+  <h3>A　提示词存储板块</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>文件</th><th>引导什么</th><th>用于</th><th>谁调</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">src/prompts/musicIdeaPrompt.ts</td><td>让千问写“一句动机 + 四段性格 + 低音律动”，程序再把它发展成伴奏（Plan B）。含“重新生成要换动机”的写法</td><td><span class="pill model">千问</span></td><td>音乐</td></tr>
+      <tr><td class="mono">src/prompts/compositionAdvicePrompt.ts</td><td>解释作品、给每个声音定角色、写“音乐小发现”和“下一次试试”。低年级用词、字数上限都在这里</td><td><span class="pill model">千问</span></td><td>音乐 · 产品</td></tr>
+      <tr><td class="mono">src/prompts/funMusicPromptV2.ts</td><td>背景音乐的描述词：时长、情绪、速度、能量、留白，以及“不要人声、不要主旋律”的约束</td><td><span class="pill model">Fun-Music</span></td><td>音乐</td></tr>
+      <tr><td class="mono">src/prompts/jsonOnlySystemMessage.ts</td><td>语言模型共用的返回格式约束，只管格式，一般不改</td><td><span class="pill model">千问</span></td><td>研发</td></tr>
+      <tr><td class="mono">src/prompts/textbookExplainPrompt.ts</td><td>课本讲解和特征变奏的润色指令，格式参照 compositionAdvicePrompt</td><td><span class="pill model">千问</span> <span class="pill new">新增</span></td><td>音乐</td></tr>
+      <tr><td class="mono">src/services/acestep/buildLegoCaptions.ts</td><td>英文描述词，只给本机 ACE-Step 用。公测不上线这条路，不需要调</td><td><span class="pill tbd">不用</span></td><td>—</td></tr>
+    </tbody></table></div>
+  <p class="small" style="margin-top:8px">每个提示词文件都有版本常量（如 <code>MUSIC_IDEA_PROMPT_VERSION</code>），改了提示词就升版本号，作品归档会记录用的是哪一版。<code>funMusicPromptV1.ts</code> 是旧版，保留不删。</p>
+
+  <h3>B　声音规律分析：规则文件</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>文件</th><th>算什么、定什么</th></tr></thead>
+    <tbody>
+      <tr class="grp"><td colspan="2">五个维度怎么变成声音</td></tr>
+      <tr><td class="mono">src/domain/music-mapping/mappingRulesV1.ts</td><td>高低 → 移调（高 +3、低 −3 半音）；长短 → 时值（0.5 / 1 / 3 拍）；轻响 → 音量（−10 / −5 / −1 dB）；变化 → 音色明暗走向。移调刻意保守，保留原声韵味</td></tr>
+      <tr><td class="mono">src/domain/music-mapping/mapCardToMusicIntent.ts</td><td>由五个选择推出声音的角色候选：低音、节奏、旋律感、铺底</td></tr>
+      <tr><td class="mono">src/domain/sound-card/explainCard.ts</td><td>“声音诞生”页孩子看到的解释：你听成了什么，这个选择在音乐里意味着什么</td></tr>
+      <tr class="grp"><td colspan="2">编排与时长</td></tr>
+      <tr><td class="mono">src/domain/composition/arrangeCompositionV2.ts</td><td>规则编曲：四段式（开头、发展、高潮、收束）里每类声音的落点</td></tr>
+      <tr><td class="mono">src/features/sound-world/worldArrangement.ts</td><td>万物声场：8 个位置、最多重复 4 次、高中低三条带</td></tr>
+      <tr><td class="mono">src/features/composition-duration/naturalSoundContinuity.ts</td><td>推荐 20 / 30 / 45 秒；自然声覆盖率目标 60%，两个自然声之间空隙不超过 4 秒</td></tr>
+      <tr><td class="mono">src/domain/composition/durationOptions.ts</td><td>时长档位的唯一来源，增删档位只改这里</td></tr>
+      <tr><td class="mono">src/features/composition-emotion/emotionMapping.ts</td><td>情绪二维坐标（愉悦、激动）→ 四个象限和关键词</td></tr>
+      <tr class="grp"><td colspan="2">背景音乐的分析与方向（Fun-Music 和 Plan B 共用）</td></tr>
+      <tr><td class="mono">src/features/music-polish/rules/buildMusicPolishBrief.ts</td><td>作品摘要，是“声音规律分析”的出口：速度、每个声音的出现位置、音区分布、轻响分布、出现方式、四段疏密、情绪。所有模型提示词和课本匹配都读它</td></tr>
+      <tr><td class="mono">src/features/music-polish/rules/deriveMusicPolishDirection.ts</td><td>由摘要算出能量、脉冲、张力、留白四个 0–1 的数</td></tr>
+      <tr><td class="mono">src/features/music-polish/rules/derivePitchMaterial.ts</td><td>主音、调式、和声进行。避免每首背景都是同一个调</td></tr>
+      <tr><td class="mono">src/features/music-polish/rules/deriveBackgroundVoicing.ts</td><td>背景的亮度、空间、音区，与孩子的音区反向，避免遮盖</td></tr>
+      <tr><td class="mono">src/features/music-polish/rules/developMusicIdea.ts</td><td>把模型给的动机发展成完整伴奏：重复、模进、倒影、紧缩、留白、收尾</td></tr>
+      <tr><td class="mono">src/features/music-polish/rules/validateBackgroundArrangement.ts<br>src/features/music-polish/rules/repairBackgroundArrangement.ts</td><td>三条硬规则：必须有可发声内容；与原声同时静默不超过 3.5 秒；背景领奏不超过全曲 30%。其余格式问题先修补，不丢弃</td></tr>
+      <tr><td class="mono">src/features/composition-advice/compositionAdvice.ts</td><td>发给千问的作品摘要格式，以及联网失败时的本地“音乐小发现”规则</td></tr>
+      <tr><td class="mono">src/services/capture/readPaperSoundCardV1.ts</td><td>纸卡读取：按固定模板的区域读圈选，不用 AI。改纸卡版式要同步改这里</td></tr>
+    </tbody></table></div>
+
+  <h3>C　混音与配置</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>文件</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">src/audio/mixing/mixPolicy.ts</td><td><code>BACKGROUND_OFFSET_DB</code>（当前 −6）是背景响度的唯一总开关：嫌轻调小，嫌吵调大。另有儿童总线电平、背景闪避深度和速度、背景尾巴秒数。推导理由记在 <code>docs/mixing-and-model-decisions.md</code></td></tr>
+      <tr><td class="mono">src/domain/shared/versions.ts</td><td>规则、提示词、编曲的版本号。改了听感规则就升版本，并更新对应的固定测试</td></tr>
+      <tr><td class="mono">.env.example</td><td>模型地址、模型名、密钥的变量清单。复制成 <code>.env.local</code> 填写，不提交</td></tr>
+    </tbody></table></div>
+
+  <h3>哪些板块用到声音分析，哪些用到提示词</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>流程板块</th><th>声音分析（规则）</th><th>提示词引导</th><th>对应文件</th></tr></thead>
+    <tbody>
+      <tr><td>纸卡读取</td><td>固定模板读取</td><td class="m">无</td><td class="mono">readPaperSoundCardV1.ts</td></tr>
+      <tr><td>声音诞生</td><td>五维度 → 移调、时值、音量、轮廓</td><td class="m">无</td><td class="mono">mappingRulesV1.ts · explainCard.ts</td></tr>
+      <tr><td>声场编排与时长</td><td>四段式落点、自然声覆盖</td><td class="m">无</td><td class="mono">arrangeCompositionV2.ts · naturalSoundContinuity.ts</td></tr>
+      <tr><td>背景：Fun-Music</td><td>作品摘要 + 能量脉冲张力留白</td><td><span class="pill model">有</span> 背景描述词</td><td class="mono">buildMusicPolishBrief.ts · deriveMusicPolishDirection.ts · funMusicPromptV2.ts</td></tr>
+      <tr><td>背景：智能音符（Plan B）</td><td>摘要 + 音高材料 + 动机发展 + 校验修补</td><td><span class="pill model">有</span> 动机提示词</td><td class="mono">derivePitchMaterial.ts · developMusicIdea.ts · musicIdeaPrompt.ts</td></tr>
+      <tr><td>背景：本地动态音符</td><td>同上，全部本地</td><td class="m">无</td><td class="mono">buildDeterministicSymbolicPlan.ts</td></tr>
+      <tr><td>作品理解、音乐小发现</td><td>作品摘要（角色、疏密、重叠）</td><td><span class="pill model">有</span> 讲解提示词</td><td class="mono">compositionAdvice.ts · compositionAdvicePrompt.ts</td></tr>
+      <tr><td>混音</td><td>最大重叠数 → 总线电平，原声 → 闪避</td><td class="m">无</td><td class="mono">mixPolicy.ts</td></tr>
+      <tr><td>课本音乐 <span class="pill new">新增</span></td><td>特征模板 + 匹配 + 变奏</td><td><span class="pill model">有</span> 讲解提示词，并追加进两个背景提示词</td><td class="mono">见第 06 节</td></tr>
+    </tbody></table></div>
+</section>
+
+<!-- 04 模型 -->
+<section class="sec" id="s4">
+  <div class="sec-head"><span class="sec-no">04</span><h2>会用到的模型</h2></div>
+  <p class="sec-lead">两类模型，都通过服务端调用。密钥只在服务端环境变量里，浏览器代码和仓库里都不能出现。</p>
+  <div class="grid g2">
+    <article class="card shadow"><span class="pill model">千问 · 语言模型</span>
+      <h4 style="margin-top:10px">阿里云百炼，OpenAI 兼容接口</h4>
+      <ul>
+        <li><b>当前配置</b>：<code>qwen3.7-flash-2026-07-15</code>（见 <code>.env.example</code>）</li>
+        <li><b>任务</b>：作品理解与音乐小发现、智能音符 Plan B；本版新增课本讲解润色</li>
+        <li><b>输入</b>：匿名的音乐结构摘要，不含录音、姓名、照片、地点</li>
+        <li><b>输出</b>：严格 JSON，经 zod 校验；格式问题由程序修补</li>
+        <li><b>失败时</b>：本地规则生成同类内容，来源标为 <code>local_fallback</code></li>
+        <li><b>接口</b>：<code>app/api/composition/advice/route.ts</code>、<code>app/api/music/plan/route.ts</code></li>
+      </ul></article>
+    <article class="card shadow"><span class="pill model">Fun-Music · 音乐模型</span>
+      <h4 style="margin-top:10px">阿里云百炼，模型名 <code>fun-music-preview</code></h4>
+      <ul>
+        <li><b>任务</b>：生成无人声、无歌词的纯音乐背景垫音</li>
+        <li><b>输入</b>：由作品摘要推出的一段文字描述。它听不到孩子的声音，只按描述生成</li>
+        <li><b>输出</b>：mp3 和一个会过期的临时链接，必须转存到自己的对象存储</li>
+        <li><b>入口限制</b>：邀测权限；单访客限频 3 次、同一访客同时只允许 1 个请求、单实例每日 30 次、超时 180 秒</li>
+        <li><b>失败时</b>：由用户选重试、千问智能音符，或只听儿童声音</li>
+        <li><b>接口</b>：<code>app/api/music/generate/route.ts</code></li>
+      </ul></article>
+  </div>
+  <div class="note"><strong>接手前要知道：背景音乐目前默认走的是本机 ACE-Step，不是 Fun-Music</strong>
+    <p><code>src/app/CompositionRoot.tsx</code> 里背景生成器现在创建的是 <code>AceStepPolishGenerator</code>，它请求本机 <code>127.0.0.1:8001</code>，权重约 14GB，只能在开发者电脑上跑，能听到孩子的混音。<code>FunMusicPolishGenerator</code> 和云端接口代码已经写好，但不在默认路径上，也还没有用真实密钥跑通。本版要把默认切到 Fun-Music，并保留“千问智能音符 → 本地动态音符 → 只听儿童声音”的降级链。上线前先确认 Fun-Music 的邀测权限和额度，没有就以智能音符为本版背景。</p></div>
+</section>
+
+<!-- 05 用户流程 -->
+<section class="sec" id="s5">
+  <div class="sec-head"><span class="sec-no">05</span><h2>用户使用流程：网络与 AI</h2></div>
+  <p class="sec-lead">写任何功能前，先想它属于哪一列。带 * 的行指页面加载完成之后；目前没有离线缓存，断网时重新打开网页会打不开。</p>
+  <div class="scroll"><table>
+    <thead><tr><th>#</th><th>环节</th><th>谁 · 在哪</th><th>网络</th><th>AI</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>听、画、圈</td><td>孩子 · 纸笔</td><td><span class="pill ok">不需要</span></td><td class="m">无</td><td class="m">一张纸全班同时用</td></tr>
+      <tr><td>2</td><td>现场录音 ≤30 秒</td><td>老师 · H5（手机）</td><td><span class="pill ok">不需要</span></td><td class="m">无</td><td class="m">先存手机，有网再上传，上传时才要网</td></tr>
+      <tr><td>3</td><td>拍纸卡、读取、确认</td><td>老师 · H5</td><td><span class="pill ok">不需要</span></td><td class="m">无</td><td class="m">固定模板在本机读取，照片不上传</td></tr>
+      <tr><td>4a</td><td>选声音：用已在本机的音源（个人、本班常用）</td><td>孩子 · 网页</td><td><span class="pill ok">不需要*</span></td><td class="m">无</td><td class="m">音源第一次用到时自动存进本机，之后离线也能选、能听</td></tr>
+      <tr><td>4b</td><td>浏览云端音源库，取新的音源</td><td>孩子 · 网页</td><td><span class="pill must">必须联网</span></td><td class="m">无</td><td class="m">老师可以课前预下载本班要用的音源 <span class="pill new">新增</span></td></tr>
+      <tr><td>5</td><td>声音诞生：五个维度塑造</td><td>孩子 · 网页</td><td><span class="pill ok">不需要*</span></td><td class="m">无</td><td class="m">规则 + 浏览器音频引擎</td></tr>
+      <tr><td>6</td><td>万物声场：摆先后、高低、重复</td><td>孩子 · 网页</td><td><span class="pill ok">不需要*</span></td><td class="m">无</td><td class="m">全在浏览器里</td></tr>
+      <tr><td>7</td><td>课本模式：匹配课本曲目 <span class="pill new">新增</span></td><td>系统</td><td><span class="pill ok">不需要*</span></td><td class="m">无</td><td class="m">曲库特征表随网页下发，本地计算</td></tr>
+      <tr><td>8</td><td>基础成曲 20 / 30 / 45 秒</td><td>系统</td><td><span class="pill ok">不需要*</span></td><td class="m">无</td><td class="m">基础作品在这一步完成，不依赖 AI</td></tr>
+      <tr><td>9a</td><td>背景：Fun-Music 音频</td><td>系统</td><td><span class="pill must">必须联网</span></td><td><span class="pill model">有</span></td><td class="m">要上传混音再下载音频，弱网吃力</td></tr>
+      <tr><td>9b</td><td>背景：千问智能音符</td><td>系统</td><td><span class="pill net">联网更好</span></td><td><span class="pill model">有</span></td><td class="m">请求只有几 KB，弱网也跑得动</td></tr>
+      <tr><td>9c</td><td>背景：本地动态音符</td><td>系统</td><td><span class="pill ok">不需要*</span></td><td class="m">规则，非 AI</td><td class="m">完全离线，按作品动态变化</td></tr>
+      <tr><td>10</td><td>音乐小发现、课本讲解</td><td>系统</td><td><span class="pill net">联网更好</span></td><td><span class="pill model">千问</span></td><td class="m">失败用本地规则和讲解模板</td></tr>
+      <tr><td>11</td><td>保存到本机</td><td>系统</td><td><span class="pill ok">不需要*</span></td><td class="m">无</td><td class="m">浏览器 IndexedDB</td></tr>
+      <tr><td>12</td><td>同步云端、班级与共享、作品墙</td><td>系统</td><td><span class="pill must">必须联网</span></td><td class="m">无</td><td class="m">弱网时排队，恢复后自动补传 <span class="pill new">新增</span></td></tr>
+    </tbody></table></div>
+  <div class="grid g3" style="margin-top:14px">
+    <article class="card"><h4>主链路不靠网络，也不靠 AI</h4><p class="small">从听到基础成曲全在本地。AI 只出现在三处：背景音乐、作品讲解、课本讲解润色，每处都有降级。</p></article>
+    <article class="card"><h4>降级链路</h4><p class="small">Fun-Music → 千问智能音符 → 本地动态音符 → 只听儿童声音。界面写明这次用的是哪一种。</p></article>
+    <article class="card"><h4>弱网要做的三件事</h4><p class="small">录音先存手机再补传；上传带进度并自动重试；用过的音源缓存在本机，课前可预下载；模型请求设短超时，失败立即降级。</p></article>
+  </div>
+
+  <h3>如果本地部署小模型，不联网也能用 AI 吗？</h3>
+  <div class="card shadow">
+    <p><b>部分可以。文字类 AI 可以，音乐音频生成不行。</b>而且主流程本来就不需要 AI：没有网络时，系统用本地规则完成全流程，只是少了模型写的内容。</p>
+    <div class="scroll" style="margin:10px 0 14px"><table>
+      <thead><tr><th>AI 任务</th><th>本地小模型</th><th>结论</th></tr></thead>
+      <tbody>
+        <tr><td>作品理解、音乐小发现<br>课本讲解润色<br>智能音符动机（短 JSON）</td><td>任务短、输出是固定格式，1B–4B 量级的小模型有机会胜任。现有的校验和修补仍然适用。低年级措辞的质量需要实测，不能假设和千问一样</td><td><span class="pill net">可以，需实测</span></td></tr>
+        <tr><td>背景音乐音频</td><td>音频生成模型体积大、要显卡。本机 ACE-Step 权重约 14GB，手机和电子黑板跑不了</td><td><span class="pill must">不可行</span></td></tr>
+      </tbody></table></div>
+    <div class="grid g2">
+      <div><h4>两种部署方式</h4><ul class="plain">
+        <li><b>校内一台电脑或小主机</b>（Ollama、llama.cpp 等提供 OpenAI 兼容接口）。局域网内可用，不需要外网。适合下一阶段</li>
+        <li><b>浏览器或手机里直接跑</b>（WebGPU）。首次要下载数百 MB 到 1GB 以上，低端设备和电子黑板不稳定。不建议</li></ul></div>
+      <div><h4>代码上要改的地方</h4><ul class="plain">
+        <li>千问接口本来就是 OpenAI 兼容格式，换成本地小模型只改 <code>COMPOSITION_ADVISOR_*</code> 三个变量</li>
+        <li><code>app/api/music/plan/route.ts</code> 里的 <code>isPublicHttpsEndpoint</code> 会拒绝本机和内网地址，要加一个受控的开关</li></ul></div>
+    </div>
+    <p class="small" style="margin-top:10px"><b>本版建议</b>：不做本地小模型，保持云端千问加本地规则兜底。接口已经留好，等拿到真实学校的网络条件，再决定要不要做校内小主机。</p>
+  </div>
+</section>
+
+<!-- 06 课本音乐 -->
+<section class="sec" id="s6">
+  <div class="sec-head"><span class="sec-no">06</span><h2>新板块：把课本音乐纳入创作</h2><span class="pill new">新增</span></div>
+  <p class="sec-lead">让师生先从熟悉的课本走近万物声谱，再慢慢走向自由创作。后台的做法是：用代码和 AI 自动读出课本曲子的特征，存成一份固定的特征模板；孩子编排完以后，系统把这个特征换几种说法、放进背景里，让孩子听出“这首歌的特点，和我排的声音碰在一起会发生什么”。</p>
+
+  <figure class="fig">
+    <div class="svgwrap">
+    <svg viewBox="0 0 1000 440" role="img" aria-label="课本音乐流程：预处理阶段由代码提取、AI 补充、听感核对得到特征模板；运行阶段用孩子的作品摘要匹配模板，生成几种表达形式，再进入三条背景路径并写出讲解">
+      <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
+      <rect class="lane" x="0" y="0" width="1000" height="140" rx="14"/>
+      <text x="20" y="26" font-size="13" font-weight="800">预处理 · 开发期运行一次，不在用户设备上跑</text>
+      <rect class="box" x="20" y="48" width="170" height="72" rx="10"/><text x="34" y="76" font-size="13.5" font-weight="800">课本曲目</text><text x="34" y="96" font-size="11.5" class="t-sub">音频文件或电子谱</text>
+      <rect class="box core" x="220" y="48" width="170" height="72" rx="10"/><text x="234" y="76" font-size="13.5" font-weight="800">代码提取</text><text x="234" y="96" font-size="11.5" class="t-sub">速度·起音·音区·调式</text>
+      <rect class="box model" x="420" y="48" width="170" height="72" rx="10"/><text x="434" y="76" font-size="13.5" font-weight="800">AI 补充</text><text x="434" y="96" font-size="11.5">情绪·性格·孩子的话</text>
+      <rect class="box" x="620" y="48" width="170" height="72" rx="10"/><text x="634" y="76" font-size="13.5" font-weight="800">听感核对</text><text x="634" y="96" font-size="11.5" class="t-sub">非专业者听一遍点对错</text>
+      <rect class="box core" x="820" y="48" width="160" height="72" rx="10"/><text x="834" y="76" font-size="13.5" font-weight="800">特征模板</text><text x="834" y="96" font-size="11.5" class="t-sub">JSON，随网页下发</text>
+      <line class="ln" x1="190" y1="84" x2="218" y2="84" marker-end="url(#ah2)"/><line class="ln" x1="390" y1="84" x2="418" y2="84" marker-end="url(#ah2)"/>
+      <line class="ln" x1="590" y1="84" x2="618" y2="84" marker-end="url(#ah2)"/><line class="ln" x1="790" y1="84" x2="818" y2="84" marker-end="url(#ah2)"/>
+
+      <rect class="lane" x="0" y="160" width="1000" height="130" rx="14"/>
+      <text x="20" y="186" font-size="13" font-weight="800">运行时 · 每首作品，在浏览器本地计算</text>
+      <rect class="box" x="20" y="200" width="170" height="74" rx="10"/><text x="34" y="228" font-size="13.5" font-weight="800">孩子的编排</text><text x="34" y="248" font-size="11.5" class="t-sub">声场里的声音事件</text>
+      <rect class="box" x="220" y="200" width="170" height="74" rx="10"/><text x="234" y="228" font-size="13.5" font-weight="800">作品摘要</text><text x="234" y="248" font-size="11.5" class="t-sub">速度·疏密·音区·出现方式</text>
+      <rect class="box core" x="420" y="200" width="170" height="74" rx="10"/><text x="434" y="228" font-size="13.5" font-weight="800">匹配课本曲目</text><text x="434" y="248" font-size="11.5" class="t-sub">老师指定 / 系统挑 3 首</text>
+      <rect class="box core" x="620" y="200" width="170" height="74" rx="10"/><text x="634" y="228" font-size="13.5" font-weight="800">特征变奏</text><text x="634" y="248" font-size="11.5" class="t-sub">原型 + 两种不同表达</text>
+      <rect class="box" x="820" y="200" width="160" height="74" rx="10"/><text x="834" y="228" font-size="13.5" font-weight="800">背景 + 讲解</text><text x="834" y="248" font-size="11.5" class="t-sub">下面四条出口</text>
+      <line class="ln" x1="190" y1="237" x2="218" y2="237" marker-end="url(#ah2)"/><line class="ln" x1="390" y1="237" x2="418" y2="237" marker-end="url(#ah2)"/>
+      <line class="ln" x1="590" y1="237" x2="618" y2="237" marker-end="url(#ah2)"/><line class="ln" x1="790" y1="237" x2="818" y2="237" marker-end="url(#ah2)"/>
+      <polyline class="ln dash" points="900,120 900,150 505,150 505,198" marker-end="url(#ah2)"/><text x="520" y="144" font-size="11.5" class="t-sub">模板随网页下发，断网也能匹配</text>
+
+      <rect class="box" x="30" y="326" width="225" height="94" rx="10"/><text x="44" y="352" font-size="13" font-weight="800">本地规则 · 离线</text><text x="44" y="372" font-size="11.5" class="t-sub">变奏后的节奏型作动机时值，</text><text x="44" y="388" font-size="11.5" class="t-sub">调式交给 derivePitchMaterial</text>
+      <rect class="box model" x="275" y="326" width="225" height="94" rx="10"/><text x="289" y="352" font-size="13" font-weight="800">千问智能音符</text><text x="289" y="372" font-size="11.5">变奏写进动机提示词，</text><text x="289" y="388" font-size="11.5">借节奏和气质，不借旋律</text>
+      <rect class="box model" x="520" y="326" width="225" height="94" rx="10"/><text x="534" y="352" font-size="13" font-weight="800">Fun-Music 描述词</text><text x="534" y="372" font-size="11.5">把速度、节奏性格、</text><text x="534" y="388" font-size="11.5">调式译成一段描述</text>
+      <rect class="box warn" x="765" y="326" width="205" height="94" rx="10"/><text x="779" y="352" font-size="13" font-weight="800">讲解文案</text><text x="779" y="372" font-size="11.5">模板句 + 千问润色，</text><text x="779" y="388" font-size="11.5">联网失败用本地模板</text>
+      <polyline class="ln" points="900,274 900,300 142,300 142,324" marker-end="url(#ah2)"/>
+      <line class="ln" x1="387" y1="300" x2="387" y2="324" marker-end="url(#ah2)"/><line class="ln" x1="632" y1="300" x2="632" y2="324" marker-end="url(#ah2)"/><line class="ln" x1="867" y1="300" x2="867" y2="324" marker-end="url(#ah2)"/>
+    </svg>
+    </div>
+    <figcaption>预处理在开发机上运行一次，结果是一份 JSON；运行时只读这份 JSON，在本地计算。背景生成沿用现有三条路径，只是多了课本这一层约束。</figcaption>
+  </figure>
+
+  <h3>特征提取：交给代码和 AI，不靠人工标注</h3>
+  <p class="sec-lead" style="margin-bottom:12px">可以做到。分工原则是：<b>数值交给代码，语义交给 AI</b>。语言模型读不准速度和音高，这类数字由音频分析库算；情绪、性格和给孩子的那句话才交给 AI 写。</p>
+  <div class="scroll"><table>
+    <thead><tr><th>特征</th><th>怎么提取</th><th>可靠度</th><th>常见误差</th></tr></thead>
+    <tbody>
+      <tr><td>速度、拍号</td><td>节拍跟踪（librosa、essentia 等开源库）；有电子谱时直接读取</td><td>高</td><td>可能快一倍或慢一半</td></tr>
+      <tr><td>节奏型</td><td>起音检测，按拍量化，找出现最多的 2–4 拍组合</td><td>中</td><td>伴奏多时起音会混杂；有电子谱则精确</td></tr>
+      <tr><td>疏密、力度走向</td><td>每秒起音数、响度曲线</td><td>高</td><td>—</td></tr>
+      <tr><td>音区、明暗</td><td>音高分布，加频谱重心（也就是“频率”的那一面）</td><td>中</td><td>多声部时会偏</td></tr>
+      <tr><td>调式、主音</td><td>调性估计（五声、大调、小调）</td><td>中</td><td>大调和小调容易混</td></tr>
+      <tr><td>重复与段落</td><td>自相似矩阵</td><td>中</td><td>—</td></tr>
+      <tr><td>情绪、性格、一句话</td><td>千问：根据上面的数值写，或用百炼上的音频理解模型听一遍再写（可用型号要先确认）</td><td>主观</td><td>只作描述，不作数值来源</td></tr>
+    </tbody></table></div>
+
+  <div class="grid g2" style="margin-top:14px">
+    <article class="card"><span class="k">怎样把对专业度的要求降到最低</span><ul>
+      <li><b>优先拿电子谱</b>（MusicXML 或 MIDI）：代码直接读，速度、节奏、音高都是精确的。只有谱面图片时可先用识谱工具转换，准确率要实测</li>
+      <li><b>只有音频也能做</b>：用上表的方法提取，并给每项打一个置信度</li>
+      <li><b>核对只靠耳朵，不需要乐理</b>：核对页会叠加提取出的节拍音，问“拍子对得上吗？”，选“对 / 快一倍 / 慢一半”；再问“这句话像不像这首歌”。置信度低的项才会提醒看一眼</li>
+      <li>特征提取脚本放在 <code>tools/textbook-features/</code>，输出 <code>public/textbook/tracks-v1.json</code></li></ul></article>
+    <article class="card"><span class="k">版权与存储</span><ul>
+      <li>音频或谱面只在开发机上读取，不进仓库，不上云</li>
+      <li>模板里只有特征和出处（版本、页码、曲名）</li>
+      <li>有了自动提取，曲目数量不再受人工限制，首批仍建议 8–12 首，方便先把效果验证清楚</li>
+      <li>课本曲目能不能这样用，需要公益组织确认</li></ul></article>
+  </div>
+
+  <h3>特征模板：每首曲子一张卡</h3>
+  <div class="grid g2">
+    <pre class="code">{
+  "id": "tb-g1-u3-01",            // 示例，非真实曲目
+  "source": { "edition": "人音版", "grade": 1,
+              "unit": 3, "title": "（曲名）" },
+  "tempoBpm": 100,
+  "meter": "2/4",
+  "rhythmCell": [1, 0.5, 0.5, 2], // 核心节奏型，单位：拍
+  "onsetDensity": "medium",       // sparse | medium | busy
+  "pitchRange": { "low": 60, "high": 72 }, // MIDI 音高
+  "brightness": "mid",            // 频谱重心：暗 | 中 | 亮
+  "mode": "pentatonic",
+  "dynamics": "soft-to-medium",
+  "repetition": "high",
+  "mood": "lively",
+  "childLine": "像走路，一步一步",
+  "extraction": { "numbers": "code", "words": "ai",
+                  "confidence": 0.82, "earChecked": true }
+}</pre>
+    <div>
+      <div class="scroll"><table style="min-width:0">
+        <thead><tr><th>模板字段</th><th>用在哪里</th></tr></thead>
+        <tbody>
+          <tr><td><code>tempoBpm</code> <code>meter</code></td><td>背景速度；Fun-Music 描述词里的 BPM</td></tr>
+          <tr><td><code>rhythmCell</code></td><td>动机的时值序列（<code>motifBeats</code>），变奏的原料</td></tr>
+          <tr><td><code>pitchRange</code> <code>brightness</code> <code>mode</code></td><td>背景音区、明暗和调式（<code>derivePitchMaterial</code>）</td></tr>
+          <tr><td><code>onsetDensity</code> <code>repetition</code></td><td>和孩子编排的疏密对比，写进讲解</td></tr>
+          <tr><td><code>dynamics</code> <code>mood</code></td><td>能量与情绪方向</td></tr>
+          <tr><td><code>childLine</code></td><td>讲解里“这首曲子像……”那一句</td></tr>
+          <tr><td><code>extraction</code></td><td>记录哪些由代码、哪些由 AI 产生，以及是否听过核对</td></tr>
+        </tbody></table></div>
+    </div>
+  </div>
+
+  <h3>套用：不是照搬，而是换几种说法</h3>
+  <p class="sec-lead" style="margin-bottom:12px">背景用到的是模板的<b>相似版本</b>，由程序变奏、再由 AI 润色。目的是让孩子看到：一首歌的特征可以有不同的表达形式，而每一种和自己的编排碰在一起，都会有不一样的反应。</p>
+  <div class="grid g3">
+    <article class="card"><span class="k">① 观察特征</span><p class="small">先让孩子注意到这首歌的一个特征，比如“长—短短—长”的节奏，或“一小段一小段”的疏密。一次只讲一个。</p></article>
+    <article class="card"><span class="k">② 不同的表达形式</span><p class="small">程序对节奏型做变奏：原样、拉长（扩张）、压短（紧缩）、错开半拍、换到高音区或低音区。其中扩张、紧缩、倒影在 <code>developMusicIdea.ts</code> 里已有，错开和换音区按同样方式补上。AI 再把每种变化润色成孩子的话。孩子在“原型 / 变化一 / 变化二”之间切换对比听。</p></article>
+    <article class="card"><span class="k">③ 和我的编排碰在一起</span><p class="small">程序比较背景的节奏点和孩子声音出现的位置，归成三种反应：<b>对齐</b>（一起用力）、<b>错开</b>（一问一答）、<b>填空</b>（补在孩子的空隙里）。讲解里说出这次发生了哪一种。<span class="pill new">新增</span></p></article>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <span class="k">讲解示例</span>
+    <p class="small" style="margin-bottom:6px">孩子把雨滴声排成“一阵一阵、轻轻的”，系统匹配到一首节奏轻快的课本歌曲：</p>
+    <p style="margin:0">“这首歌的特点是<b>一小段一小段地走</b>。我们把它拉长了一点，背景听起来变得很悠闲。你的雨声一阵阵落下，正好落在背景的空隙里，像在和它一问一答。试试把雨声挪到前面，听听它们会不会撞在一起。”</p>
+    <p class="small" style="margin:8px 0 0">结构固定为：特征 → 这次的表达 → 和你的编排发生了什么 → 一个能马上试的小任务。沿用现有约束：不用专业术语，不评价孩子。</p>
+  </div>
+
+  <h3>匹配与三档路径</h3>
+  <div class="grid g2">
+    <article class="card"><span class="k">匹配：规则算相似度，本地完成</span>
+      <p class="small">孩子的作品摘要和模板用同一套字段：速度、疏密、重复方式、音区、情绪。加权求和排序，取前 3 首，每首带一句“为什么像”。老师指定了本周曲目时排第一。权重放在配置文件（建议 <code>public/textbook/match-weights.json</code>）里，方便调。</p></article>
+    <article class="card"><span class="k">三档路径：从课本走向自由</span>
+      <p class="small"><b>① 跟着课本</b>：老师先选本课曲目，页面先讲它的特征，孩子再编排。<br><b>② 系统帮你找</b>：孩子自由编排，系统挑最像的 3 首并解释。<br><b>③ 自由创作</b>：不选课本，就是现有流程。老师新建采集活动时可以绑定本周曲目，网页默认从 ① 开始。</p></article>
+  </div>
+
+  <div class="grid g2" style="margin-top:14px">
+    <article class="card"><span class="k">接入点（建议路径，均为新增）</span><ul>
+      <li><code>tools/textbook-features/</code>：提取脚本和听感核对页</li>
+      <li><code>src/domain/textbook/</code>：模板类型与校验</li>
+      <li><code>src/features/textbook-match/</code>：匹配、变奏、碰撞类型</li>
+      <li><code>public/textbook/tracks-v1.json</code>：特征模板</li>
+      <li><code>src/prompts/textbookExplainPrompt.ts</code>：讲解和变奏润色</li>
+      <li>在 <code>buildMusicPolishBrief</code> 加可选字段 <code>textbookReference</code>，随作品保存</li>
+      <li>成曲页加“课本模式”面板，可切换原型和两种变化</li></ul></article>
+    <article class="card"><span class="k">边界与验收</span><ul>
+      <li>背景借节奏和气质，不复制课本旋律</li>
+      <li>提取验收：每首曲子的速度、节奏型用耳朵核对通过，置信度低于阈值的必须过一遍</li>
+      <li>匹配回测：每首曲子造 2–3 组“应该匹配到它”的编排，看是否进前 3</li>
+      <li>孩子能否从中听出特征、比较不同表达，是设计目标，还没有课堂验证</li></ul></article>
+  </div>
+</section>
+
+<!-- 07 存储内容 -->
+<section class="sec" id="s7">
+  <div class="sec-head"><span class="sec-no">07</span><h2>会被存储的内容</h2></div>
+  <p class="sec-lead">产品不只给乡村孩子用，热爱户外和公益的人也可以上传自然音源，音源库因此持续丰富。孩子在校园端调用音源，做五个维度的塑造，再编排成自己的曲子。</p>
+
+  <div class="ladder" aria-label="可见范围从个人到公开">
+    <div>个人<small>只有自己</small></div><div>班级<small>本班师生</small></div><div>学校<small>全校</small></div><div>地域<small>县区共享</small></div><div>公开<small>所有访客</small></div>
+  </div>
+
+  <div class="scroll"><table>
+    <thead><tr><th>板块</th><th>存什么</th><th>存在哪</th><th>可见范围</th></tr></thead>
+    <tbody>
+      <tr><td><b>a · 公共音源库</b><br><span class="small">户外爱好者、公益人士、老师都能上传</span></td>
+        <td>原始音频（≤30 秒，不可覆盖）；名称、声音来源类型、标签（场景、季节）、贡献者昵称、大致地点、日期、时长</td>
+        <td>对象存储 + 数据库</td><td>默认个人；上传者选择班级 / 学校 / 地域 / 公开</td></tr>
+      <tr><td><b>b · 共享的音源和曲子</b><br><span class="small">班级、学校、地域之间</span></td>
+        <td>共享条目（引用音源，不复制文件）；曲子：编排事件、时长、情绪、背景层来源与版本、音乐小发现、课本映射。用了共享音源的曲子要标出处</td>
+        <td>数据库，引用对象存储</td><td>班级 → 学校 → 地域 → 公开，逐级放开</td></tr>
+      <tr><td><b>c · 老师和学生的录音</b></td>
+        <td>现场录音原件；纸卡照片（可选，确认后可删）；声卡与录音的编号对应、贡献者昵称、采集活动</td>
+        <td>对象存储 + 数据库</td><td>默认本班可见，老师可删</td></tr>
+      <tr><td><b>d · 支撑数据</b></td>
+        <td>学校、班级、班级码；老师和上传者的微信标识与昵称；课本曲库特征表；AI 用量与失败日志（不含录音）</td>
+        <td>数据库</td><td>后台</td></tr>
+    </tbody></table></div>
+
+  <div class="grid g2" style="margin-top:14px">
+    <article class="card"><span class="k">音源怎么进入孩子的创作</span>
+      <p class="small">现有声音来源是系统声音、历史声音、本次录音三种，本版增加第四种：音源库。孩子选中一段音源，仍按纸卡的五个维度（高低、长短、变化、轻响、出现方式）塑造，原始音频不改，参数另存。之后进入声场编排和成曲，流程不变。</p></article>
+    <article class="card"><span class="k">和现有代码的关系</span>
+      <p class="small">浏览器本地库（Dexie，见 <code>src/storage/db/WanwuDatabase.ts</code>）已有音频资产、声卡、声音单元、作品、贡献者等表，云端基本沿用，不重新设计。云端实现挂在 <code>src/features/ports/</code> 的仓库接口后面，页面不直接访问存储。本地继续作为缓存和待上传队列，用过的音源会留在本机，下次不联网也能用。</p></article>
+  </div>
+  <div class="note"><strong>本版和下一阶段</strong><p>信息保护和审核机制放在下一阶段，所以本版上传后直接进库，按测试数据处理，可能整批清理。上传页给一句提示，字段上不收孩子的真实姓名、人脸照片和精确位置，只留昵称和大致地点。授权记录、监护人同意、内容审核、保存期限和删除入口在下一阶段设计，但数据表里先留出“可见范围”和“来源”字段，后面不用迁移。</p></div>
+</section>
+
+<!-- 08 产品形态 -->
+<section class="sec" id="s8">
+  <div class="sec-head"><span class="sec-no">08</span><h2>产品形态：H5 网页</h2></div>
+  <p class="sec-lead">web 端决定用 H5 网页：手机、电脑、电子黑板的浏览器里直接打开，微信里也能用。老师带孩子在现场用手机录音，回到课堂在电子黑板上展示，作为课堂内容。微信小程序方案待定，不在这一版排期内。</p>
+
+  <h3>系统一张图：一套 H5，一个云端，两类模型</h3>
+  <figure class="fig">
+    <div class="svgwrap">
+    <svg viewBox="0 0 1000 470" role="img" aria-label="系统架构：H5 网页在手机现场采集和课堂展示两种场景下使用，读写同一个云端；云端的 AI 网关调用千问和 Fun-Music 两个模型">
+      <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
+      <!-- 入口 -->
+      <rect class="box" x="20" y="30" width="270" height="170" rx="14"/>
+      <text x="38" y="58" font-size="15" font-weight="800">H5 · 手机现场采集</text><text x="38" y="78" font-size="12" class="t-sub">老师的手机 · 校园现场</text>
+      <text x="38" y="106" font-size="12.5">· 登录、选班级</text><text x="38" y="126" font-size="12.5">· 录音 ≤30 秒，填名称和地点</text>
+      <text x="38" y="146" font-size="12.5">· 没网先存手机，有网再传</text><text x="38" y="166" font-size="12.5">· 看音源库、试听</text>
+      <rect class="box core" x="20" y="240" width="270" height="200" rx="14"/>
+      <text x="38" y="268" font-size="15" font-weight="800">H5 · 课堂创作与展示</text><text x="38" y="288" font-size="12" class="t-sub">电子黑板 · 电脑</text>
+      <text x="38" y="316" font-size="12.5">· 选声音、五个维度塑造、声场编排</text><text x="38" y="336" font-size="12.5">· 成曲、课本模式、音乐小发现</text>
+      <text x="38" y="356" font-size="12.5">· 音源库、班级作品墙</text>
+      <text x="38" y="384" font-size="12" font-weight="800" fill="currentColor">浏览器本地（不联网）</text>
+      <text x="38" y="404" font-size="12" class="t-sub">规则编曲 · Tone.js 音频引擎</text><text x="38" y="422" font-size="12" class="t-sub">IndexedDB 缓存与待上传队列</text>
+      <!-- 云端 -->
+      <rect class="box" x="390" y="30" width="270" height="410" rx="14"/>
+      <text x="408" y="58" font-size="15" font-weight="800">云端（国内部署）</text><text x="408" y="78" font-size="12" class="t-sub">需要备案的 HTTPS 域名</text>
+      <rect class="box" x="408" y="96" width="234" height="52" rx="10"/><text x="422" y="118" font-size="13" font-weight="700">登录 · 学校 · 班级</text><text x="422" y="136" font-size="11.5" class="t-sub">微信登录，班级码</text>
+      <rect class="box" x="408" y="160" width="234" height="52" rx="10"/><text x="422" y="182" font-size="13" font-weight="700">音源库</text><text x="422" y="200" font-size="11.5" class="t-sub">个人 · 班级 · 学校 · 地域 · 公开</text>
+      <rect class="box" x="408" y="224" width="234" height="52" rx="10"/><text x="422" y="246" font-size="13" font-weight="700">作品库</text><text x="422" y="264" font-size="11.5" class="t-sub">编排事件 · 背景层 · 小发现 · 课本映射</text>
+      <rect class="box" x="408" y="288" width="234" height="52" rx="10"/><text x="422" y="310" font-size="13" font-weight="700">对象存储 + 数据库</text><text x="422" y="328" font-size="11.5" class="t-sub">音频文件 / 元数据</text>
+      <rect class="box core" x="408" y="352" width="234" height="72" rx="10"/><text x="422" y="374" font-size="13" font-weight="800">AI 网关</text><text x="422" y="393" font-size="11.5" class="t-sub">密钥只在服务端 · 限额 · 失败降级</text><text x="422" y="410" font-size="11.5" class="t-sub">只发匿名结构摘要，不发录音</text>
+      <!-- 模型 -->
+      <rect class="box model" x="760" y="120" width="220" height="110" rx="14"/>
+      <text x="778" y="148" font-size="15" font-weight="800">千问（语言模型）</text><text x="778" y="170" font-size="12">作品理解 · 音乐小发现</text><text x="778" y="188" font-size="12">智能音符 Plan B</text><text x="778" y="206" font-size="12">课本讲解润色（新增）</text>
+      <rect class="box model" x="760" y="280" width="220" height="110" rx="14"/>
+      <text x="778" y="308" font-size="15" font-weight="800">Fun-Music（音乐模型）</text><text x="778" y="330" font-size="12">背景音乐音频</text><text x="778" y="348" font-size="12">无人声、无歌词的纯音乐</text><text x="778" y="366" font-size="12" class="t-sub">返回临时链接，需转存</text>
+      <!-- 箭头 -->
+      <line class="ln" x1="290" y1="115" x2="388" y2="115" marker-end="url(#ah1)"/><text x="296" y="106" font-size="11.5" class="t-sub">上传录音</text>
+      <line class="ln dash" x1="388" y1="150" x2="292" y2="150" marker-end="url(#ah1)"/><text x="300" y="168" font-size="11.5" class="t-sub">读音源库</text>
+      <line class="ln" x1="290" y1="320" x2="388" y2="320" marker-end="url(#ah1)" marker-start="url(#ah1)"/><text x="297" y="310" font-size="11.5" class="t-sub">读音源 · 存作品</text>
+      <line class="ln dash" x1="660" y1="388" x2="758" y2="200" marker-end="url(#ah1)"/><text x="690" y="270" font-size="11.5" class="t-sub" transform="rotate(-38 690 270)">匿名摘要 → JSON</text>
+      <line class="ln dash" x1="660" y1="392" x2="758" y2="360" marker-end="url(#ah1)"/><text x="672" y="418" font-size="11.5" class="t-sub">描述词 → 音频</text>
+    </svg>
+    </div>
+    <figcaption>实线是用户数据，虚线是云端调用模型。孩子编排和基础成曲发生在浏览器本地；联网部分只有云同步、音源库和模型调用。</figcaption>
+  </figure>
+
+  <div class="grid g2">
+    <article class="card shadow"><span class="pill dev">H5 · 手机</span><h4 style="margin-top:10px">老师的手机 · 校园现场</h4>
+      <ul>
+        <li><b>打开</b>：链接或二维码，微信里也能用，不用安装</li>
+        <li><b>做</b>：登录、选班级、建采集活动（可绑课本曲目）、录音（≤30 秒，可试听重录）、填名称昵称地点、上传、看音源库</li>
+        <li><b>弱网</b>：录音先存手机（IndexedDB），有网自动补传。页面要先加载完，目前没有离线缓存</li>
+        <li><b>可选</b>：拍纸卡读取</li>
+        <li><b>技术要点</b>：微信内置浏览器要在 iOS 和安卓真机上验证，重点是麦克风录音权限、音频必须由点击触发才能播放、Web Audio 的兼容；录音格式因系统而异，需要统一或在服务端转码</li>
+      </ul></article>
+    <article class="card shadow"><span class="pill ok">H5 · 课堂</span><h4 style="margin-top:10px">电子黑板 · 电脑</h4>
+      <ul>
+        <li><b>形态</b>：一套响应式 H5，手机竖屏、电脑和电子黑板横屏共用一个页面，更新后立刻生效</li>
+        <li><b>做</b>：完整创作流程、音源库、班级与共享浏览、课本模式、作品墙</li>
+        <li><b>课堂展示</b>：全屏、大字、触控目标放大；时间线放大，播放到哪个声音就高亮哪个；孩子上台点选和摆放</li>
+        <li><b>访客</b>：免登录可用示例声音走完全程，数据只存本机</li>
+        <li><b>技术要点</b>：横屏适配，要在真实电子黑板上测浏览器版本</li>
+      </ul></article>
+  </div>
+  <div class="scroll" style="margin-top:14px"><table>
+    <thead><tr><th>设备</th><th>谁在哪用</th><th>主要做什么</th><th>联网</th></tr></thead>
+    <tbody>
+      <tr><td>手机浏览器（含微信内）</td><td>老师，校园现场</td><td>登录、录音、填信息、上传、看音源库</td><td>录音不需要，上传需要</td></tr>
+      <tr><td>电子黑板</td><td>老师和孩子，课堂上</td><td>完整创作、音源库、作品墙、课本模式</td><td>页面加载后基础创作不需要，同步和音源库需要</td></tr>
+      <tr><td>电脑</td><td>老师，办公室</td><td>备课、整理音源、预览作品</td><td>同上</td></tr>
+      <tr><td>登录</td><td colspan="3">老师和上传者的登录方式待定（建议手机号验证码，微信授权登录放下一阶段）；访客免登录，只能体验示例声音</td></tr>
+    </tbody></table></div>
+  <div class="note"><strong>微信小程序：待定，不纳入本次排期</strong><p>原设想是作为老师的手机入口，用来现场录音和上传。是否做、什么时候做，等测试版的反馈和主体、备案条件明确后再定。本版先用 H5 承担现场采集，数据格式和接口按“以后可以接小程序”的方式设计，不另做开发。</p></div>
+</section>
+
+<!-- 09 开工前 -->
+<section class="sec" id="s9">
+  <div class="sec-head"><span class="sec-no">09</span><h2>开工前：先办的事与上手</h2></div>
+  <p class="sec-lead">下面这些要等审核或排队，越早越好。谁有空谁办，产品兜底。</p>
+  <div class="scroll"><table>
+    <thead><tr><th>事项</th><th>为什么现在做</th><th>建议负责</th></tr></thead>
+    <tbody>
+      <tr><td>提交域名备案</td><td>国内服务器上的正式域名需要备案；审核周期不受开发控制，来不及时先用现有地址上线，通过后再切换</td><td><span class="pill pm">产品</span></td></tr>
+      <tr><td>开通国内云：对象存储、数据库、服务器或函数</td><td>开工当天就要有环境可用，测试和正式各一套</td><td><span class="pill dev">研发</span></td></tr>
+      <tr><td>模型：千问密钥、Fun-Music 邀测权限与额度、费用硬上限</td><td>先核对线上千问能否调通；Fun-Music 没有开通就改用智能音符作为本版背景</td><td><span class="pill dev">研发</span></td></tr>
+      <tr><td>公益组织确认：试点学校、年级、教材版本、曲目使用边界</td><td>决定首批 8–12 首选哪个版本，也决定能不能这样用</td><td><span class="pill pm">产品</span></td></tr>
+      <tr><td>收集首批课本曲目的音频或电子谱</td><td>提取脚本要有素材才能跑；有电子谱（MusicXML 或 MIDI）最准</td><td><span class="pill pm">产品</span> <span class="pill mu">音乐</span></td></tr>
+      <tr><td>仓库权限，本地跑起来，读 README 和 docs</td><td>省掉开工当天的摸索</td><td><span class="pill dev">研发</span></td></tr>
+      <tr><td>换掉首页 17MB 的临时演示视频</td><td>弱网下首页会很慢。<code>public/temp/intro-video.mp4</code></td><td><span class="pill dev">研发</span></td></tr>
+    </tbody></table></div>
+
+  <h3>代码上手：五分钟</h3>
+  <div class="grid g2">
+    <pre class="code"># 仓库：github.com/guohaha777/nature_sound_atalas（私有）
+# 需要 Node.js ≥ 22.13
+npm install
+cp .env.example .env.local   # 不填模型密钥也能跑，走本地降级
+npm run dev
+
+npm run typecheck            # 提交前
+npm run test:domain          # 提交前
+npm run test                 # 合并前，含构建和防密钥泄露检查</pre>
+    <div class="card"><span class="k">仓库约定，人和 AI 助手都要守</span><ul>
+      <li>先读 <code>README.md</code>、<code>AGENTS.md</code>、<code>docs/</code>。这个版本的 Next.js 与常见版本不同，写代码前读 <code>node_modules/next/dist/docs/</code></li>
+      <li>密钥只放服务端环境变量，不用 <code>NEXT_PUBLIC_</code> 前缀</li>
+      <li>来源标签如实写：<code>live_ai</code>、<code>symbolic_ai</code>、<code>cached_demo_ai</code>、<code>local_fallback</code> 不混用</li>
+      <li>新数据结构先写 zod schema，再写存储；本地库改结构要加 Dexie 版本迁移</li>
+      <li>改了听感规则，升 <code>versions.ts</code> 里的版本并更新测试</li>
+      <li>页面不直接引入 Tone 和 Dexie，ESLint 会拦</li></ul></div>
+  </div>
+
+  <h3>需要尽快拍板</h3>
+  <div class="scroll keep"><table>
+    <thead><tr><th>事项</th><th>建议</th></tr></thead>
+    <tbody>
+      <tr><td>备案用谁的主体</td><td>公益组织主体</td></tr>
+      <tr><td>Fun-Music 能否在 10/23 前开通并跑通</td><td>能就作为首选背景；不能就以千问智能音符为本版背景，音频模型放下一阶段</td></tr>
+      <tr><td>谁可以上传音源</td><td>登录后即可上传，登录方式见下一行；访客只能体验示例声音</td></tr>
+      <tr><td>老师和上传者怎么登录</td><td>手机号验证码，最简单且不依赖公众号；微信授权登录放下一阶段</td></tr>
+      <tr><td>课本版本、年级、首批曲目、使用边界</td><td>向公益组织确认，先 8–12 首，只存特征和出处</td></tr>
+      <tr><td>AI 费用与限额</td><td>设每日硬上限，再设单个班级的额度。现有限频只在单个服务实例内有效，公开前要改成全局共享的限额</td></tr>
+    </tbody></table></div>
+</section>
+<section class="sec" id="tester">
+  <div class="sec-head"><span class="sec-no">10</span><h2>第一批测试者画像</h2></div>
+  <p class="sec-lead">第一批测试者分两类，分别检验项目对专业老师和代课老师的操作友好度与理解友好度。</p>
+  <div class="grid g2">
+    <article class="card shadow"><span class="pill teacher">专业小学音乐教师</span><h4 style="margin-top:10px">测专业老师的操作与理解</h4>
+      <ul><li>流程和操作是否顺手，能否融入已有的音乐课</li><li>课本模式的特点提取、讲解是否站得住脚</li><li>声音编排和背景音乐的听感是否合理</li></ul></article>
+    <article class="card shadow"><span class="pill system">非专业音乐教师（含代课老师）</span><h4 style="margin-top:10px">测不懂乐理的老师能否上手</h4>
+      <ul><li>不借助他人，能否独立走完从采集到成曲的流程</li><li>页面提示和音乐小发现的讲解是否看得懂</li><li>哪些步骤多余、卡住或容易出错</li></ul></article>
+  </div>
+</section>
+</main>
+
+</body>
+</html>

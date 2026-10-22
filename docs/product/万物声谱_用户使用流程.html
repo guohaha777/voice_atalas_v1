@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>万物声谱 用户使用流程</title>
+<style>
+
+/* Layout: 单列长文档，顶部吸附目录；每节一个主图或主表，说明文字放在图表之后。色板与字体沿用《完整工作流程》页。 */
+:root {
+  --paper:#f7f3e8; --surface:#fffefa; --soft:#f0ede4; --ink:#25261f; --muted:#6d7068; --line:#d7d1c4;
+  --green:#58745d; --green-soft:#e1eadf; --green-line:#b9cbb7; --on-green:#ffffff;
+  --yellow:#efce70; --orange:#e18a6d; --orange-soft:#f4e5df; --blue:#dce5eb; --purple:#c9b7d6;
+  --pill-ink:#25261f; --code-bg:#25261f; --code-ink:#f7f3e8;
+  --shadow:0 12px 35px rgba(51,49,42,.07);
+  --font:"Avenir Next","PingFang SC","Microsoft YaHei",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper:#1b1c17; --surface:#24261f; --soft:#2b2d25; --ink:#ece8dc; --muted:#a5a89c; --line:#3b3d34;
+  --green:#8fb394; --green-soft:#263629; --green-line:#41574500; --on-green:#16200f;
+  --yellow:#d9b85a; --orange:#d9856a; --orange-soft:#3a2b26; --blue:#2f4352; --purple:#4d405c;
+  --pill-ink:#1b1c17; --code-bg:#121310; --code-ink:#ece8dc;
+  --shadow:0 12px 35px rgba(0,0,0,.35); color-scheme:dark; } }
+:root[data-theme="dark"] {
+  --paper:#1b1c17; --surface:#24261f; --soft:#2b2d25; --ink:#ece8dc; --muted:#a5a89c; --line:#3b3d34;
+  --green:#8fb394; --green-soft:#263629; --green-line:#41574500; --on-green:#16200f;
+  --yellow:#d9b85a; --orange:#d9856a; --orange-soft:#3a2b26; --blue:#2f4352; --purple:#4d405c;
+  --pill-ink:#1b1c17; --code-bg:#121310; --code-ink:#ece8dc;
+  --shadow:0 12px 35px rgba(0,0,0,.35); color-scheme:dark; }
+
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:64px; }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--font); line-height:1.6; padding-inline:16px; }
+main { width:min(1180px,100%); margin:0 auto; padding-block:40px 80px; }
+a { color:var(--green); }
+code { font-family:var(--mono); font-size:.86em; background:var(--soft); padding:1px 5px; border-radius:5px; word-break:break-all; }
+h1,h2,h3,h4 { text-wrap:balance; }
+
+header.top { padding-bottom:24px; border-bottom:2px solid var(--ink); }
+.eyebrow { color:var(--green); font-size:12px; font-weight:850; letter-spacing:.16em; }
+h1 { margin:8px 0; font-size:clamp(34px,5vw,58px); line-height:1.08; letter-spacing:-.04em; }
+.lead { margin:0; color:var(--muted); font-size:17px; }
+.meta { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+
+.pill { display:inline-flex; align-items:center; width:max-content; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:800; line-height:1.4; color:var(--pill-ink); white-space:nowrap; }
+.pm { background:var(--yellow); } .dev { background:var(--blue); color:var(--ink); } .mu { background:var(--orange); }
+.ok { background:var(--green-soft); color:var(--green); } .net { background:var(--yellow); } .must { background:var(--orange); }
+.new { background:var(--orange); } .have { background:var(--green); color:var(--on-green); } .tbd { border:1px dashed var(--muted); color:var(--muted); }
+.model { background:var(--purple); color:var(--ink); }
+
+nav.toc { position:sticky; top:env(safe-area-inset-top,0px); z-index:10; margin:0 -16px; padding:10px 16px; background:var(--paper); border-bottom:1px solid var(--line); display:flex; gap:6px; overflow-x:auto; }
+nav.toc a { flex:none; padding:5px 11px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13px; font-weight:700; text-decoration:none; }
+nav.toc a:hover, nav.toc a:focus-visible { background:var(--green-soft); border-color:var(--green); outline:none; }
+
+section.sec { margin-top:56px; }
+.sec-head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:6px; }
+.sec-no { font-family:var(--mono); font-size:13px; font-weight:800; color:var(--green); letter-spacing:.08em; }
+h2 { margin:0; font-size:clamp(24px,3vw,31px); letter-spacing:-.02em; }
+.sec-lead { margin:0 0 18px; color:var(--muted); }
+p, li, td, figcaption { text-wrap:pretty; }
+h3 { margin:26px 0 10px; font-size:18px; }
+h4 { margin:0 0 6px; font-size:14px; }
+p { margin:0 0 10px; }
+
+.card { padding:18px 20px; border:1px solid var(--line); border-radius:18px; background:var(--surface); }
+.card.shadow { box-shadow:var(--shadow); }
+.card p:last-child, .card ul:last-child { margin-bottom:0; }
+.card ul, ul.plain { margin:0; padding-left:18px; color:var(--muted); font-size:14px; }
+.card li, ul.plain li { margin:4px 0; }
+.grid { display:grid; gap:14px; }
+.g2 { grid-template-columns:repeat(2,minmax(0,1fr)); } .g3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.g4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.card .small, .small { font-size:13px; color:var(--muted); }
+.k { display:block; margin-bottom:6px; color:var(--green); font-size:11px; font-weight:850; letter-spacing:.11em; }
+
+.note { margin-top:18px; padding:15px 18px; border-left:5px solid var(--orange); background:var(--orange-soft); border-radius:0 12px 12px 0; }
+.note strong { display:block; margin-bottom:2px; }
+.note p { margin:0; color:var(--muted); font-size:14px; }
+.note.green { border-left-color:var(--green); background:var(--green-soft); }
+
+.scroll { overflow-x:auto; border:1px solid var(--line); border-radius:16px; background:var(--surface); }
+table { width:100%; border-collapse:collapse; font-size:13.5px; }
+th { padding:10px 12px; text-align:left; background:var(--ink); color:var(--paper); font-size:12px; letter-spacing:.05em; white-space:nowrap; }
+td { padding:10px 12px; border-top:1px solid var(--line); vertical-align:top; color:var(--ink); }
+td.m, td .muted { color:var(--muted); }
+tr.grp td { background:var(--soft); font-weight:850; font-size:12px; letter-spacing:.08em; color:var(--green); }
+.mono { font-family:var(--mono); font-size:12px; word-break:break-all; }
+.scroll table { min-width:640px; }
+td.mono:first-child { white-space:nowrap; }
+
+figure { margin:0; }
+figure.fig { padding:18px; border:1px solid var(--line); border-radius:20px; background:var(--surface); }
+figcaption { margin-top:12px; color:var(--muted); font-size:13px; }
+.svgwrap { overflow-x:auto; }
+.svgwrap svg { display:block; width:100%; height:auto; min-width:760px; color:var(--ink); }
+svg text { font-family:var(--font); fill:var(--ink); }
+svg .t-sub { fill:var(--muted); }
+svg .box { fill:var(--surface); stroke:var(--ink); stroke-width:1.5; }
+svg .box.core { fill:var(--green-soft); stroke:var(--green); }
+svg .box.model { fill:var(--purple); stroke:var(--ink); }
+svg .box.warn { fill:var(--orange-soft); stroke:var(--orange); }
+svg .lane { fill:var(--soft); stroke:none; }
+svg .ln { stroke:var(--ink); stroke-width:1.5; fill:none; }
+svg .ln.dash { stroke-dasharray:6 5; }
+svg .ah { fill:var(--ink); }
+
+/* gantt */
+.gantt { min-width:820px; display:grid; gap:0; font-size:12.5px; }
+.gantt .row { display:grid; grid-template-columns:170px repeat(10,minmax(0,1fr)); border-top:1px solid var(--line); align-items:center; min-height:38px; }
+.gantt .row.head { border-top:0; background:var(--soft); min-height:50px; }
+.gantt .lab { padding:6px 12px; font-weight:750; }
+.gantt .day { text-align:center; padding:6px 0; font-size:12px; line-height:1.25; border-left:1px solid var(--line); height:100%; display:flex; flex-direction:column; justify-content:center; }
+.gantt .day b { display:block; font-size:13px; }
+.gantt .day.wk { color:var(--muted); background:repeating-linear-gradient(135deg,transparent 0 6px,var(--line) 6px 7px); }
+.gantt .bar { margin:6px 3px; padding:3px 9px; border-radius:8px; font-size:11.5px; font-weight:750; color:var(--pill-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gantt .bar.dev { background:var(--blue); color:var(--ink); } .gantt .bar.pm { background:var(--yellow); } .gantt .bar.mu { background:var(--orange); }
+.gantt .bar.all { background:var(--green); color:var(--on-green); }
+.gantt .ms { margin:4px 0; text-align:center; font-weight:900; font-size:12px; }
+.gantt .ms span { display:inline-block; padding:2px 8px; border-radius:999px; background:var(--ink); color:var(--paper); }
+.gates { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:14px; }
+.gate { padding:14px 16px; border:1px solid var(--line); border-radius:14px; background:var(--surface); font-size:13px; }
+.gate b { display:block; font-size:14px; margin-bottom:2px; }
+.gate .d { font-family:var(--mono); color:var(--green); font-size:12px; font-weight:800; }
+
+.mx td.c, .mx th.c { text-align:center; white-space:nowrap; }
+.dot { font-weight:900; } .dot.a { color:var(--green); } .dot.b { color:var(--muted); }
+
+pre.code { margin:0; padding:16px 18px; border-radius:14px; background:var(--code-bg); color:var(--code-ink); font-family:var(--mono); font-size:12.5px; line-height:1.55; overflow-x:auto; }
+
+.ladder { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:0; margin-bottom:14px; }
+.ladder div { padding:12px 10px; text-align:center; border:1px solid var(--line); background:var(--surface); font-size:13px; font-weight:800; position:relative; }
+.ladder div small { display:block; font-weight:500; color:var(--muted); font-size:11.5px; margin-top:2px; }
+.ladder div:nth-child(1) { background:var(--yellow); color:var(--pill-ink); } .ladder div:nth-child(1) small { color:var(--pill-ink); }
+.ladder div:nth-child(2) { background:var(--green-soft); } .ladder div:nth-child(3) { background:var(--blue); }
+.ladder div:nth-child(4) { background:var(--purple); } .ladder div:nth-child(5) { background:var(--soft); }
+.ladder div:first-child { border-radius:12px 0 0 12px; } .ladder div:last-child { border-radius:0 12px 12px 0; }
+
+@media (max-width:900px) {
+  .g2,.g3,.g4,.gates { grid-template-columns:1fr; }
+  .ladder { grid-template-columns:1fr; } .ladder div:first-child { border-radius:12px 12px 0 0; } .ladder div:last-child { border-radius:0 0 12px 12px; }
+  main { padding-block:28px 60px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+
+
+.child { background:var(--yellow); } .teacher { background:var(--orange); } .system { background:var(--blue); color:var(--ink); }
+.tg { display:inline-block; padding:4px 9px; border-radius:10px; font-size:11.5px; font-weight:750; line-height:1.45; color:var(--pill-ink); }
+.tg.ok { background:var(--green-soft); color:var(--green); } .tg.net { background:var(--yellow); } .tg.must { background:var(--orange); } .tg.ai { background:var(--purple); color:var(--ink); }
+.who { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 0; }
+.stage { display:grid; grid-template-columns:56px minmax(0,1fr); gap:14px; margin:14px 0; position:relative; }
+.stage-no { width:56px; height:56px; display:grid; place-items:center; border:2px solid var(--ink); border-radius:50%; background:var(--paper); font-weight:900; font-size:16px; position:relative; z-index:2; }
+.journey { position:relative; } .journey::before { content:""; position:absolute; left:27px; top:40px; bottom:40px; width:2px; background:var(--line); }
+.stage-card { border:1px solid var(--line); border-radius:20px; background:var(--surface); box-shadow:var(--shadow); padding:18px 20px; min-width:0; }
+.stage-card h3 { margin:2px 0 8px; font-size:20px; }
+.cols { display:grid; grid-template-columns:1.3fr 1fr; gap:22px; }
+.cols h4 { color:var(--green); font-size:12px; letter-spacing:.08em; }
+.cols ul { margin:0; padding-left:18px; font-size:14px; color:var(--muted); } .cols li { margin:3px 0; }
+.cols p { margin:0; font-size:14px; color:var(--muted); }
+.tagrow { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+.flow { display:flex; flex-wrap:wrap; align-items:stretch; gap:6px 0; }
+.node { flex:1 1 130px; min-width:0; padding:10px 12px; border:1px solid var(--line); border-radius:14px; background:var(--surface); font-size:13px; position:relative; margin-right:22px; }
+.node b { display:block; font-size:13.5px; margin-bottom:2px; }
+.node span { color:var(--muted); font-size:12px; line-height:1.45; display:block; }
+.node:not(:last-child)::after { content:"→"; position:absolute; right:-19px; top:50%; transform:translateY(-50%); color:var(--green); font-weight:900; }
+.node:last-child { margin-right:0; }
+.node.hl { background:var(--green-soft); border-color:var(--green); }
+.pathhead { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin:26px 0 10px; }
+.pathhead h3 { margin:0; font-size:18px; }
+.pathhead span.d { color:var(--muted); font-size:13.5px; }
+@media (max-width:900px) { .cols { grid-template-columns:1fr; } .journey::before { display:none; } .stage { grid-template-columns:44px minmax(0,1fr); gap:10px; } .stage-no { width:44px; height:44px; font-size:14px; } .node { flex-basis:100%; margin-right:0; } .node:not(:last-child)::after { content:"↓"; right:auto; left:50%; top:auto; bottom:-14px; transform:translateX(-50%); } .flow { gap:18px 0; } }
+</style>
+</head>
+<body>
+
+<main>
+<header class="top">
+  <span class="eyebrow">USER JOURNEY · 2026.10</span>
+  <h1>万物声谱｜用户使用流程</h1>
+  <p class="lead">从打开网页到作品归档，每一步谁来操作、页面给什么反馈、什么时候需要网络和 AI，以及几条常见的使用路径。</p>
+  <div class="who"><span class="pill child">孩子</span><span class="pill teacher">老师</span><span class="pill system">系统 / 访客</span><span class="pill ok">不需要网络</span><span class="pill net">联网更好</span><span class="pill must">必须联网</span><span class="pill" style="background:var(--purple);color:var(--ink)">用到 AI</span></div>
+</header>
+<nav class="toc" aria-label="目录"><a href="#roles">使用者</a><a href="#main">主流程</a><a href="#paths">使用路径</a><a href="#features">功能清单</a><a href="#fallback">异常与降级</a></nav>
+
+<section class="sec" id="roles">
+  <h2>谁在用</h2>
+  <p class="sec-lead">孩子不需要设备，老师用一部手机或电子黑板，公众可以贡献自然声音。AI 在后台降低门槛，不替孩子做决定。</p>
+  <div class="grid g3">
+    <article class="card"><span class="pill child">孩子</span><p class="small" style="margin-top:10px">听、画、圈、排：决定哪个声音进入作品、放在哪里、怎么出现。</p></article>
+    <article class="card"><span class="pill teacher">老师</span><p class="small" style="margin-top:10px">用手机现场录音，拍纸卡、确认、保存；课堂上用电子黑板展示，不需要懂乐理。</p></article>
+    <article class="card"><span class="pill system">公众贡献者与访客</span><p class="small" style="margin-top:10px">户外爱好者、公益人士登录后上传自然声音；访客免登录，用示例声音体验。</p></article>
+  </div>
+</section>
+
+<section class="sec" id="main">
+  <h2>主流程：从打开网页到作品归档</h2>
+  <p class="sec-lead">九个步骤，主线是用收集的自然声创作乐曲；第 07 步的课本滤镜是成曲前的可选项，可以不用。每一步都写明用户操作、页面反馈和网络、AI 的使用情况。</p>
+  <div class="journey">
+<article class="stage"><div class="stage-no">01</div><div class="stage-card"><span class="k">ENTER</span><h3>进入万物声谱</h3><div class="who" style="margin:0 0 12px"><span class="pill child">孩子</span><span class="pill teacher">老师</span><span class="pill system">访客</span></div><div class="cols"><div><h4>用户怎么操作</h4><ul><li>在手机、电脑或电子黑板的浏览器里打开链接，或扫二维码</li><li>点“开始成曲”，用示例声音直接走完整个流程</li><li>老师登录后可以建班级、上传和保存声音（登录方式待定）</li></ul></div><div><h4>页面反馈与结果</h4><p>访客不用登录，数据只存在本机；登录后声音和作品存到云端，换设备也能找回。</p></div></div><div class="tagrow"><span class="tg net">页面加载要联网</span><span class="tg ok">示例流程不用 AI</span></div></div></article>
+<article class="stage"><div class="stage-no">02</div><div class="stage-card"><span class="k">COLLECT</span><h3>采集声音</h3><div class="who" style="margin:0 0 12px"><span class="pill teacher">老师</span></div><div class="cols"><div><h4>用户怎么操作</h4><ul><li>新建一次采集活动（可绑定本周的课本曲目）</li><li>现场录音，不超过 30 秒，可试听重录</li><li>填写名称、昵称、地点，点上传</li><li>也可以直接选示例声音，或从公共音源库里取</li></ul></div><div><h4>页面反馈与结果</h4><p>录音原件不可覆盖，和声卡编号一一对应；没有网络时先存在手机里，有网再自动补传。</p></div></div><div class="tagrow"><span class="tg ok">录音不需要网络</span><span class="tg must">上传、取新音源要联网</span></div></div></article>
+<article class="stage"><div class="stage-no">03</div><div class="stage-card"><span class="k">CARD</span><h3>孩子纸上圈选，老师拍卡确认</h3><div class="who" style="margin:0 0 12px"><span class="pill child">孩子</span><span class="pill teacher">老师</span></div><div class="cols"><div><h4>用户怎么操作</h4><ul><li>孩子在纸卡上画下听见的声音，圈出高低、长短、变化、轻响、出现方式</li><li>老师拍摄或上传纸卡，系统按固定模板读取</li><li>老师逐项核对，读错的直接改，确认后继续</li></ul></div><div><h4>页面反馈与结果</h4><p>得到一张已确认的声卡和不可覆盖的原声引用；孩子的选择不会被 AI 改写。</p></div></div><div class="tagrow"><span class="tg ok">本机读取，不需要网络</span><span class="tg ok">不用 AI</span></div></div></article>
+<article class="stage"><div class="stage-no">04</div><div class="stage-card"><span class="k">BIRTH</span><h3>声音诞生：五个维度塑造</h3><div class="who" style="margin:0 0 12px"><span class="pill child">孩子</span><span class="pill system">系统</span></div><div class="cols"><div><h4>用户怎么操作</h4><ul><li>点击播放，听原声或声音单元</li><li>看声音生命体和播放状态</li><li>读孩子的话写的解释：为什么它高、低、长、短、重复或慢慢出现</li></ul></div><div><h4>页面反馈与结果</h4><p>按五个维度生成可试听、可回溯的声音单元，原始录音保持完整。</p></div></div><div class="tagrow"><span class="tg ok">规则 + 浏览器音频，不需要网络</span><span class="tg ok">不用 AI</span></div></div></article>
+<article class="stage"><div class="stage-no">05</div><div class="stage-card"><span class="k">CHOOSE</span><h3>选择声音</h3><div class="who" style="margin:0 0 12px"><span class="pill child">孩子</span></div><div class="cols"><div><h4>用户怎么操作</h4><ul><li>在个人、班级、公共音源库之间切换，逐个试听</li><li>查看声卡和贡献来源</li><li>至少选一个声音进入当前作品，可以只选自己的</li></ul></div><div><h4>页面反馈与结果</h4><p>形成本次作品的声音集合；用过的音源缓存在本机，之后离线也能选。</p></div></div><div class="tagrow"><span class="tg ok">已缓存的音源不需要网络</span><span class="tg must">取新音源要联网</span></div></div></article>
+<article class="stage"><div class="stage-no">06</div><div class="stage-card"><span class="k">WORLD</span><h3>万物声场：亲手编排</h3><div class="who" style="margin:0 0 12px"><span class="pill child">孩子</span></div><div class="cols"><div><h4>用户怎么操作</h4><ul><li>调整声音出现的先后和高、中、低位置</li><li>重复、删除或重新加入声音</li><li>试听时正在发声的声音会亮起</li><li>为整首作品选一次情绪，也可以跳过</li></ul></div><div><h4>页面反馈与结果</h4><p>得到孩子确认的基础布局、声音事件和情绪方向；之后自动编排不会改动孩子已摆好的位置。</p></div></div><div class="tagrow"><span class="tg ok">全在浏览器里，不需要网络</span><span class="tg ok">不用 AI</span></div></div></article>
+<article class="stage"><div class="stage-no">07</div><div class="stage-card"><span class="k">TEXTBOOK</span><h3>课本滤镜（可选，新增）</h3><div class="who" style="margin:0 0 12px"><span class="pill child">孩子</span><span class="pill teacher">老师</span><span class="pill system">系统</span></div><div class="cols"><div><h4>用户怎么操作</h4><ul><li>不想用就直接跳过，进入成曲</li><li>跟着课本：老师先选本课曲目，页面先讲它的特点</li><li>系统帮你找：系统挑出最像的三首，并说明为什么像</li><li>在“原来的样子”和两种变化之间切换对比听</li></ul></div><div><h4>页面反馈与结果</h4><p>滤镜只作用于成曲环节的背景和讲解：借用课本歌曲的节奏和气质，不复制旋律，不改孩子的声音和摆放。讲解会说出这首歌的特点，以及它和孩子编排碰在一起的反应。</p></div></div><div class="tagrow"><span class="tg ok">可跳过，主线不受影响</span><span class="tg ok">曲库特征表本地匹配</span><span class="tg net">讲解润色联网更好</span><span class="tg ai">AI：讲解润色</span></div></div></article>
+<article class="stage"><div class="stage-no">08</div><div class="stage-card"><span class="k">COMPOSE</span><h3>万物成曲：生成并试听</h3><div class="who" style="margin:0 0 12px"><span class="pill child">孩子</span><span class="pill system">系统</span></div><div class="cols"><div><h4>用户怎么操作</h4><ul><li>系统推荐 20、30 或 45 秒，也可以改选</li><li>等待背景准备完成，默认试听有背景的作品</li><li>可以随时关闭背景，对比只有孩子声音的版本</li><li>阅读“音乐小发现”和“下一次可以怎么试”</li></ul></div><div><h4>页面反馈与结果</h4><p>基础作品先成立，AI 背景是独立、低音量、可关闭的一层。背景失败时依次降级：AI 音乐模型 → 千问写音符 → 本地生成 → 只听孩子的声音。</p></div></div><div class="tagrow"><span class="tg ok">基础成曲不需要网络</span><span class="tg net">背景和讲解联网更好</span><span class="tg ai">AI：背景音乐、音乐小发现</span></div></div></article>
+<article class="stage"><div class="stage-no">09</div><div class="stage-card"><span class="k">SAVE</span><h3>保存、归档与共享</h3><div class="who" style="margin:0 0 12px"><span class="pill child">孩子</span><span class="pill teacher">老师</span></div><div class="cols"><div><h4>用户怎么操作</h4><ul><li>确认当前版本，点“保存这首作品”</li><li>在作品书架里播放，查看组成声音和来源</li><li>选择可见范围：个人、班级、学校、地域或公开</li><li>点“再来一首”开始新的作品</li></ul></div><div><h4>页面反馈与结果</h4><p>作品先存本机再同步云端，旧作品不会被覆盖；归档读取保存时的音乐发现，不会每次重新调用 AI。</p></div></div><div class="tagrow"><span class="tg ok">存在本机不需要网络</span><span class="tg must">同步、共享要联网</span></div></div></article>
+  </div>
+</section>
+
+<section class="sec" id="paths">
+  <h2>常见使用路径</h2>
+  <p class="sec-lead">同一套页面，不同的人从不同的入口走进来。高亮的节点是这条路径的关键时刻。</p>
+<div class="pathhead"><span class="pill new">路径 A</span><h3>访客体验</h3><span class="d">不登录，两分钟走完核心体验</span></div><div class="flow"><div class="node"><b>打开链接</b><span>手机或电脑浏览器</span></div><div class="node"><b>选示例声卡</b><span>牛、风、鸟、苹果、自行车</span></div><div class="node"><b>确认六个字段</b><span>老师核对</span></div><div class="node"><b>声场里摆放</b><span>先后和高低</span></div><div class="node"><b>选时长生成</b><span>20 / 30 / 45 秒</span></div><div class="node hl"><b>改一个选择再听</b><span>或关掉 AI 背景对比</span></div></div>
+<div class="pathhead"><span class="pill new">路径 B</span><h3>老师带孩子的完整课堂</h3><span class="d">主路径：现场采集到课堂展示</span></div><div class="flow"><div class="node"><b>课前建采集活动</b><span>可绑定课本曲目</span></div><div class="node"><b>户外录音</b><span>孩子听、画、圈</span></div><div class="node"><b>回教室入库</b><span>自动进入班级音源库</span></div><div class="node"><b>电子黑板创作</b><span>孩子上台摆声音</span></div><div class="node hl"><b>成曲（可选课本滤镜）</b><span>换几种样子，碰一碰</span></div><div class="node"><b>保存并分享</b><span>班级作品墙</span></div></div>
+<div class="pathhead"><span class="pill new">路径 C</span><h3>公众上传，孩子调用</h3><span class="d">丰富音源库</span></div><div class="flow"><div class="node"><b>登录</b><span>户外爱好者、公益人士</span></div><div class="node"><b>上传自然声音</b><span>≤30 秒，填名称、地点、场景</span></div><div class="node"><b>选可见范围</b><span>默认只有自己</span></div><div class="node"><b>进入音源库</b><span>记着谁录的、在哪、何时</span></div><div class="node hl"><b>孩子调用</b><span>五个维度塑造后编排</span></div></div>
+<div class="pathhead"><span class="pill new">路径 D</span><h3>课本滤镜（可选）</h3><span class="d">成曲前加不加，由老师和孩子决定</span></div><div class="flow"><div class="node"><b>不加滤镜</b><span>默认，直接成曲</span></div><div class="node"><b>跟着课本</b><span>老师选曲，先讲特点，再成曲</span></div><div class="node"><b>系统帮你找</b><span>挑最像的三首并解释</span></div></div>
+<div class="pathhead"><span class="pill new">路径 E</span><h3>共享</h3><span class="d">声音和曲子逐级放开</span></div><div class="flow"><div class="node"><b>个人</b><span>只有自己</span></div><div class="node"><b>班级</b><span>本班师生</span></div><div class="node"><b>学校</b><span>全校</span></div><div class="node"><b>地域</b><span>同一区域共享</span></div><div class="node"><b>公开</b><span>所有访客</span></div></div>
+</section>
+
+<section class="sec" id="features">
+  <h2>功能清单</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>功能</th><th>用户能做什么</th><th>网络</th><th>AI</th><th>本版</th></tr></thead>
+    <tbody><tr><td><b>公共音源库</b></td><td>任何人可上传自然声音；个人、班级、学校、地域、公开逐级共享；每段声音带来源记录</td><td class='m'>必须联网（用过的可离线）</td><td class='m'>—</td><td><span class='pill new'>新增</span></td></tr><tr><td><b>现场录音与上传</b></td><td>≤30 秒，可试听重录，没网先存手机</td><td class='m'>录音不需要</td><td class='m'>—</td><td><span class='pill new'>新增</span></td></tr><tr><td><b>纸卡读取与确认</b></td><td>固定模板读取六项选择，老师逐项核对</td><td class='m'>不需要</td><td class='m'>—</td><td><span class='pill ok'>已有</span></td></tr><tr><td><b>声音诞生</b></td><td>五个维度塑造声音，附孩子的话解释</td><td class='m'>不需要</td><td class='m'>—</td><td><span class='pill ok'>已有</span></td></tr><tr><td><b>万物声场编排</b></td><td>先后、高低、重复、情绪，保留孩子已有摆放</td><td class='m'>不需要</td><td class='m'>—</td><td><span class='pill ok'>已有</span></td></tr><tr><td><b>时长推荐</b></td><td>按素材推荐 20 / 30 / 45 秒</td><td class='m'>不需要</td><td class='m'>—</td><td><span class='pill ok'>已有</span></td></tr><tr><td><b>背景音乐</b></td><td>AI 背景，可关闭；失败自动降级到本地方案</td><td class='m'>联网更好</td><td class='m'>AI 音乐模型 / 千问</td><td><span class='pill ok'>已有</span></td></tr><tr><td><b>音乐小发现</b></td><td>一句孩子能懂的讲解加一个小任务</td><td class='m'>联网更好</td><td class='m'>千问</td><td><span class='pill ok'>已有</span></td></tr><tr><td><b>课本滤镜（可选）</b></td><td>成曲前可选：读出课本歌曲特点，换几种样子融入背景，并写讲解</td><td class='m'>匹配不需要，讲解联网更好</td><td class='m'>千问润色</td><td><span class='pill new'>新增</span></td></tr><tr><td><b>作品保存与归档</b></td><td>本机保存、回溯来源、云端同步、共享</td><td class='m'>同步需要联网</td><td class='m'>—</td><td><span class='pill ok'>已有，云同步新增</span></td></tr><tr><td><b>课堂大屏展示</b></td><td>全屏、大字、触控，播放到哪个声音就亮起</td><td class='m'>不需要</td><td class='m'>—</td><td><span class='pill new'>新增</span></td></tr></tbody></table></div>
+</section>
+
+<section class="sec" id="fallback">
+  <h2>没网或 AI 出问题时</h2>
+  <div class="grid g3">
+    <article class="card"><span class="k">主线不靠网络</span><p class="small">从听到做出基础作品全在本机完成，不依赖网络，也不依赖 AI。</p></article>
+    <article class="card"><span class="k">背景音乐降级链路</span><p class="small">AI 音乐模型 → 千问写音符 → 本地动态音符 → 只听孩子的声音。界面会写明这次用的是哪一种。</p></article>
+    <article class="card"><span class="k">录音和上传</span><p class="small">录音先存手机，有网自动补传；常用音源可以课前提前下载。</p></article>
+  </div>
+  <div class="note green"><strong>孩子的原声永远是主角</strong><p>原始录音不可覆盖；AI 背景独立分轨、低音量、可随时关闭；关掉 AI，作品依然完整。</p></div>
+</section>
+</main>
+
+</body>
+</html>
