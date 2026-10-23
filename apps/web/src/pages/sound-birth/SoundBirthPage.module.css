@@ -21,7 +21,7 @@
 /* The bird faces the bubble: bubble on its left on desktop (mirrored), on its right on phones (natural). */
 .mascotArt{transform:scaleX(-1);width:64px;height:64px;filter:drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 4px 6px #1f2a222b)}
 .intro h1{margin:0;font-size:30px;line-height:1.25;font-weight:800;letter-spacing:.02em}
-.intro p{margin:5px 0 0;font-size:15px;font-weight:500;color:var(--wk-muted)}
+.introText p{margin:5px 0 0;font-size:15px;font-weight:500;color:var(--wk-muted)}
 
 /* ---------- current-sound bar (采集) ---------- */
 .bar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:12px 20px 12px 16px;margin-bottom:16px}
@@ -247,7 +247,7 @@
 /* ---------- responsive ---------- */
 /* Shorter laptop screens (1366 × 768, 1280 × 720): same layout, tighter rhythm, so nothing needs scrolling. */
 @media(min-width:901px) and (max-height:820px){
- .intro{margin:14px 0 12px}.mascot{width:62px;height:62px}.mascotArt{width:52px;height:52px}.intro h1{font-size:25px}.intro p{font-size:13px;margin-top:2px}
+ .intro{margin:14px 0 12px}.mascot{width:62px;height:62px}.mascotArt{width:52px;height:52px}.intro h1{font-size:25px}.introText p{font-size:13px;margin-top:2px}
  .bar{padding:8px 18px 8px 14px;margin-bottom:12px}.barMarker{--marker-size:48px;width:48px}.barText b{font-size:18px}
  .tile{width:42px;height:42px}.tile svg{width:20px;height:20px}.tileButton{gap:4px;font-size:12px}
  .mascot{width:58px;height:58px}.mascotArt{width:48px;height:48px}.guideBubble{font-size:13px;padding:8px 14px}
@@ -283,7 +283,7 @@
  .guidePanel{flex-direction:row-reverse;justify-content:flex-end}
  .guideBubble{max-width:none;flex:1;font-size:13px}.guideBubble::after{right:auto;left:-5px;box-shadow:-1px 1px 0 var(--wk-line)}
  .mascot{width:60px;height:60px}.mascotArt{width:50px;height:50px;transform:none}
- .intro h1{font-size:22px}.intro p{font-size:13px}
+ .intro h1{font-size:22px}.introText p{font-size:13px}
  .bar{padding:14px;gap:14px;border-radius:22px}
  .barCurrent{flex-basis:100%}
  .barMarker{--marker-size:48px;width:48px}
