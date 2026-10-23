@@ -1,4 +1,4 @@
-import {Dialog} from '../../../shared/ui/Dialog';
+import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
 import {KidIcon} from '../../../shared/ui/KidIcon';
 import {birthCopy} from '../config/copy';
 import type {useSoundBirth} from '../model/useSoundBirth';
@@ -15,7 +15,7 @@ const meta=(item:LibraryItem)=>{
 /** 从声音库挑选: examples plus this device's sources, grouped by 分组 so each one can be traced. */
 export function LibraryDialog({birth}:{birth:Birth}){
  const error=birth.state.notice?.area==='bar'?birth.state.notice.text:'';
- return <Dialog title={copy.title} description={copy.description} className={styles.sheet} onClose={birth.closeDialog}>
+ return <WorkSheet title={copy.title} description={copy.description} onClose={birth.closeDialog}>
   <div className={styles.libraryGroups}>
    {birth.groups.map(group=><section key={group.id} className={styles.libraryGroup} aria-label={group.title}>
     <header><h3>{group.title}</h3><span>{group.note} · {group.items.length}</span></header>
@@ -32,6 +32,6 @@ export function LibraryDialog({birth}:{birth:Birth}){
     </ul>
    </section>)}
   </div>
-  <p className={styles.sheetNote} role="status">{error||copy.scopes}</p>
- </Dialog>;
+  <p className={sheetStyles.note} role="status">{error||copy.scopes}</p>
+ </WorkSheet>;
 }

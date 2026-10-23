@@ -32,8 +32,9 @@ export type SoundBirthAction=
  |{type:'card-photo';url:string|null}
  |{type:'notice';notice:Notice};
 
-export function initialSoundBirth(entry:CreationEntry|null):SoundBirthState{
- return {source:null,name:'',maker:null,cardConfirmed:false,shape:{},cardPhoto:null,dialog:entry==='library'?'library':null,reading:false,notice:null,markerIndex:0};
+/** `markerIndex` is assigned by the work this sound joins (its number in 万物声场), so the marker never changes later. */
+export function initialSoundBirth(entry:CreationEntry|null,markerIndex=0):SoundBirthState{
+ return {source:null,name:'',maker:null,cardConfirmed:false,shape:{},cardPhoto:null,dialog:entry==='library'?'library':null,reading:false,notice:null,markerIndex};
 }
 
 export function soundBirthReducer(state:SoundBirthState,action:SoundBirthAction):SoundBirthState{

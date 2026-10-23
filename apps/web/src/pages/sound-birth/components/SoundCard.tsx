@@ -5,7 +5,7 @@ import {SoundMarker} from '../../../shared/markers/SoundMarker';
 import {KidIcon} from '../../../shared/ui/KidIcon';
 import type {CreationEntry} from '../../../app/navigation';
 import {birthCopy} from '../config/copy';
-import {dimensionCopy} from '../config/dimensions';
+import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
 import {describeShape} from '../model/soundBirthState';
 import type {useSoundBirth} from '../model/useSoundBirth';
 import {Equalizer} from './Equalizer';

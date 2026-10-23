@@ -4,10 +4,6 @@
    small badges, soft tints and outlines. On desktop the workspace stretches to the bottom of the screen, so the page is
    filled without scrolling; phones stack and scroll. Motion is short; reduced motion stops it. */
 .shell{min-height:100vh;min-height:100dvh;background:var(--wk-bg);color:var(--wk-ink)}
-.backdrop{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-/* Same placement as the home scene: fills each rect (object-fit:fill), so edge layers meet the window edges. */
-.backdropLayer{position:absolute}
-.backdropLayer img{object-fit:fill}
 .page{position:relative;z-index:1;display:flex;flex-direction:column;max-width:1320px;min-height:calc(100dvh - 64px);margin:0 auto;padding:0 32px 24px}
 .card,.editor,.bar{border-radius:var(--wk-radius);background:var(--wk-surface);box-shadow:var(--wk-shadow)}
 .intro,.bar,.card,.editor{animation:rise .5s var(--wk-ease) both}
@@ -204,14 +200,7 @@
 .infoSummary[data-tone]{color:var(--wk-alert)}
 
 /* ---------- dialogs (录音 / 声音库 / 纸卡) ---------- */
-dialog.sheet{width:min(600px,calc(100vw - 32px));padding:44px 28px 28px;border:0;border-radius:30px;box-shadow:0 30px 80px #1f2a2429}
-dialog.sheet[open]{animation:sheetIn .34s var(--wk-ease)}
-dialog.sheet::backdrop{background:#1f2a2438;backdrop-filter:blur(3px)}
-dialog.sheet h2{font-weight:800}
-.sheetActions{display:flex;justify-content:center;gap:12px;width:100%;margin-top:22px}
-.sheetActions>*{flex:1;max-width:230px}
-.sheetActions button{white-space:nowrap}
-.sheetNote{min-height:20px;margin:16px 0 0;font-size:13px;font-weight:500;line-height:1.6;color:var(--wk-muted);text-align:center}
+/* Dialog panel, footer row and note line: shared/ui/WorkSheet. */
 .cardLarge{display:block;max-width:100%;max-height:58vh;margin:16px auto 0;border-radius:20px;object-fit:contain}
 .recorder{display:flex;flex-direction:column;align-items:center;margin-top:18px}
 .recTime{display:flex;align-items:center;gap:10px;margin:6px 0 24px;font-size:50px;font-weight:800;font-variant-numeric:tabular-nums}
@@ -244,7 +233,6 @@ dialog.sheet h2{font-weight:800}
 
 /* ---------- motion ---------- */
 @keyframes rise{from{opacity:0;transform:translateY(12px)}}
-@keyframes sheetIn{from{opacity:0;transform:translateY(20px) scale(.97)}}
 @keyframes bubbleIn{from{opacity:0;transform:translateY(6px) scale(.96)}}
 @keyframes pop{0%{transform:scale(.93)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
 @keyframes nudge{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
@@ -328,13 +316,11 @@ dialog.sheet h2{font-weight:800}
  .backButton{display:none}
  .finish{flex:1;min-height:54px;font-size:16px}
  .infoForm{grid-template-columns:1fr 1fr}
- dialog.sheet{padding:44px 18px 22px;border-radius:26px}
  .recTime{font-size:42px}
 }
-@media(max-width:700px){.backdrop{display:none}}
 @media(max-width:360px){.infoForm{grid-template-columns:1fr}.choice{font-size:12px}.tileButton{font-size:11px}.tile{width:44px;height:44px}}
 @media(prefers-reduced-motion:reduce){
- .intro,.bar,.card,.editor,dialog.sheet[open],.bubble,.choice[aria-checked=true],.rowBadge[data-done],.row[data-missing] .rowBadge,
+ .intro,.bar,.card,.editor,.bubble,.choice[aria-checked=true],.rowBadge[data-done],.row[data-missing] .rowBadge,
  .stage[data-sounding] .cardMarker,.stage[data-sounding]::after,.eq i,.recDot,.recButton[data-active]::before,.tileButton[data-emphasis] .tile{animation:none}
  .choice,.primary,.secondary,.finish,.barListen,.tileButton,.tile,.wavePlay,.progressFill,.mascot{transition:none}
  .mascot,.guideBubble{animation:none}

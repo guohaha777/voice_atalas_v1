@@ -1,3 +1,4 @@
+import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
 import type {SoundSourceKind} from '@wanwu-v2/contracts/sound';
 import type {RecorderFailure} from '../../../shared/audio/LocalRecorder';
 import type {CreationEntry} from '../../../app/navigation';
@@ -41,10 +42,9 @@ export const birthCopy={
   sessionOnly:'仅本次打开期间保留',
  },
  // Record dialog
- recordDialog:{title:'录一段声音',description:'最长 30 秒，录好后先听一听再用。',start:'开始录音',stop:'停止',retake:'重录',use:'用这段声音',starting:'正在打开麦克风…'},
+ recordDialog:{title:'录一段声音',description:`最长 ${SOUND_SOURCE_MAX_MS/1000} 秒，录好后先听一听再用。`,start:'开始录音',stop:'停止',retake:'重录',use:'用这段声音',starting:'正在打开麦克风…'},
  // Library dialog
  libraryDialog:{title:'从声音库挑选',description:'先试听，再选用。',pick:'选用',current:'当前',scopes:'班级和公共声音库还未开放。'},
- shelfTitle:'作品书架还在准备中',shelfBody:'做好的作品以后会放在这里。',
  reading:'正在读取声音…',
  defaultRecordingName:'我的录音',
  errors:{
@@ -55,12 +55,13 @@ export const birthCopy={
   failed:'录音没有成功，再试一次吧。',
   'too-short':'录得太短了，再录一次吧。',
  } satisfies Record<RecorderFailure,string>,
- fileTooBig:'文件太大了，请选 15MB 以内的声音。',
+ fileTooBig:'文件太大了，请选 20MB 以内的声音。',
  fileUnreadable:'这个文件读不出声音，换一个试试。',
- tooLong:'这段声音超过 30 秒，请选短一点的。',
+ tooLong:`这段声音超过 ${SOUND_SOURCE_MAX_MS/1000} 秒，请选短一点的。`,
  slowNetwork:'网络有点慢，声音没加载出来，再点一次试试。',
  noAudio:'这个浏览器不能播放试听。',
 } as const;
 
-export const FILE_MAX_BYTES=15*1024*1024;
+/** Room for a 45-second uncompressed WAV (48 kHz, 24-bit stereo ≈ 13 MB). */
+export const FILE_MAX_BYTES=20*1024*1024;
 export const EXAMPLE_TIMEOUT_MS=12_000;

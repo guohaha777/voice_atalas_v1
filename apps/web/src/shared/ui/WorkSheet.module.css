@@ -1,0 +1,13 @@
+/* Work-page dialog sheet (声音诞生 onward): big rounded white panel over a soft blurred backdrop. One look for every
+   work-page dialog; pages add their own content classes, and a wider variant adds only its width. */
+dialog.sheet{width:min(600px,calc(100vw - 32px));padding:44px 28px 28px;border:0;border-radius:30px;box-shadow:0 30px 80px #1f2a2429}
+dialog.sheet[open]{animation:sheetIn .34s var(--wk-ease)}
+dialog.sheet::backdrop{background:#1f2a2438;backdrop-filter:blur(3px)}
+dialog.sheet h2{font-weight:800}
+.actions{display:flex;justify-content:center;gap:12px;width:100%;margin-top:22px}
+.actions>*{flex:1;max-width:230px}
+.actions button{white-space:nowrap}
+.note{min-height:20px;margin:16px 0 0;font-size:13px;font-weight:500;line-height:1.6;color:var(--wk-muted);text-align:center}
+@keyframes sheetIn{from{opacity:0;transform:translateY(20px) scale(.97)}}
+@media(max-width:700px){dialog.sheet{padding:44px 18px 22px;border-radius:26px}}
+@media(prefers-reduced-motion:reduce){dialog.sheet[open]{animation:none}}

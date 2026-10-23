@@ -1,6 +1,7 @@
-// Child-facing wording for the five dimensions. Option order follows SOUND_CHOICES in the contract.
+// Child-facing wording for the five dimensions — the one copy every page uses (声音诞生 editor, 万物声场 excerpt editor,
+// later 万物成曲). Option order follows SOUND_CHOICES in the contract.
 import type {SoundDimension,SoundShape} from '@wanwu-v2/contracts/sound';
-import type {KidIconName} from '../../../shared/ui/KidIcon';
+import type {KidIconName} from '../ui/KidIcon';
 
 type DimensionCopy<K extends SoundDimension>={label:string;icon:KidIconName;options:Record<SoundShape[K],string>};
 

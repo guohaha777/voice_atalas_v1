@@ -63,8 +63,12 @@ export const SOUND_CHOICES:{readonly [K in SoundDimension]:readonly SoundShape[K
 /** Used only to render a preview while a dimension is still unchosen; never stored as the child's choice. */
 export const NEUTRAL_SHAPE:SoundShape={pitch:'mid',duration:'medium',contour:'flat',intensity:'medium',pattern:'once'};
 
-/** How the five choices were entered. Paper-card recognition is not implemented, so a photo is reference only. */
-export type ShapeInput='manual'|'paper-card-reference';
+/**
+ * How the five choices were entered. Paper-card recognition is not implemented, so a photo is reference only.
+ * `example-preset` marks a bundled example unit whose choices were written by the project, not by a child.
+ */
+export type ShapeInput='manual'|'paper-card-reference'|'example-preset';
+export const SHAPE_INPUTS:readonly ShapeInput[]=['manual','paper-card-reference','example-preset'];
 
 /** A finished sound unit ready for the sound world. `sourceId` (identity) and later event IDs stay separate. */
 export type SoundUnitDraft={
@@ -84,7 +88,8 @@ export type SoundUnitDraft={
 export const SOUND_NAME_MAX=12;
 /** Short enough to sit on the marker artwork. */
 export const MAKER_NAME_MAX=6;
-export const SOUND_SOURCE_MAX_MS=30_000;
+/** Longest source a child can record or upload. The whole recording comes in; 万物声场 lets the child pick the part to use. */
+export const SOUND_SOURCE_MAX_MS=45_000;
 
 export function isCompleteShape(shape:Partial<SoundShape>):shape is SoundShape{
  return SOUND_DIMENSIONS.every(dimension=>(SOUND_CHOICES[dimension] as readonly string[]).includes(shape[dimension] as string));
@@ -104,7 +109,7 @@ export function parseSoundUnitDraft(value:unknown):SoundUnitDraft|null{
  if(unit.version!==SOUND_CONTRACT_VERSION)return null;
  for(const key of ['id','sourceId','name','createdAt'])if(typeof unit[key]!=='string'||!unit[key])return null;
  if(!Number.isInteger(unit.markerIndex)||(unit.markerIndex as number)<0)return null;
- if(unit.input!=='manual'&&unit.input!=='paper-card-reference')return null;
+ if(!SHAPE_INPUTS.includes(unit.input as ShapeInput))return null;
  if(!unit.shape||typeof unit.shape!=='object'||!isCompleteShape(unit.shape as Partial<SoundShape>))return null;
  if([...(unit.name as string)].length>SOUND_NAME_MAX)return null;
  if(unit.maker!==null&&(typeof unit.maker!=='string'||!unit.maker||[...unit.maker].length>MAKER_NAME_MAX))return null;

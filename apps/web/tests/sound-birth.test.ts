@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {NEUTRAL_SHAPE,SOUND_CHOICES,SOUND_CONTRACT_VERSION,SOUND_DIMENSIONS,cleanSourceText,normalizeMakerName,isCompleteShape,missingProvenance,normalizeSoundName,parseSoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import type {SoundSource} from '@wanwu-v2/contracts/sound';
 import {describeShape,finishCheck,initialSoundBirth,remainingDimensions,soundBirthReducer,toSoundUnitDraft} from '../src/pages/sound-birth/model/soundBirthState.ts';
-import {SessionSourceArchive} from '../src/pages/sound-birth/services/sourceArchive.ts';
+import {SessionSourceArchive} from '../src/shared/creation/sourceArchive.ts';
 import {libraryGroups} from '../src/pages/sound-birth/services/soundLibrary.ts';
 import {presetHintProvider} from '../src/pages/sound-birth/services/soundHints.ts';
 import {computePeaks,planShape,SHAPING_RULES} from '../src/shared/audio/shapingRules.ts';

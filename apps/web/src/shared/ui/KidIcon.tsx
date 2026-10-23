@@ -3,7 +3,8 @@
 import type {ReactNode} from 'react';
 
 export type KidIconName='mic'|'upload'|'library'|'camera'|'pitch'|'duration'|'contour'|'intensity'|'pattern'
- |'play'|'stop'|'check'|'edit'|'back'|'arrow'|'shelf'|'sounds'|'replay';
+ |'play'|'stop'|'check'|'edit'|'back'|'arrow'|'shelf'|'sounds'|'replay'|'plus'|'trash'
+ |'trim'|'copy';
 
 const tint={fill:'currentColor',fillOpacity:.24} as const;
 const shine={fill:'none',stroke:'#fff',strokeOpacity:.9,strokeWidth:2} as const;
@@ -84,7 +85,22 @@ const shapes:Record<KidIconName,ReactNode>={
  </>,
  sounds:<path d="M6 14v4M11 10v12M16 6v20M21 10v12M26 14v4" fill="none" strokeWidth={2.8}/>,
  replay:<path d="M7.5 12.5A9.5 9.5 0 1 1 7 19.5M7.5 5.5v7h7" fill="none" strokeWidth={2.4}/>,
-};
+ plus:<path d="M16 7v18M7 16h18" fill="none" strokeWidth={2.8}/>,
+ trim:<>
+  <path d="M12.2 19.6 23.6 4.8M19.8 19.6 8.4 4.8" fill="none" strokeWidth={3}/>
+  <circle cx="9" cy="23.4" r="4.6" fill="currentColor" stroke="none"/><circle cx="23" cy="23.4" r="4.6" fill="currentColor" stroke="none"/>
+  <circle cx="9" cy="23.4" r="1.7" fill="#fff" stroke="none"/><circle cx="23" cy="23.4" r="1.7" fill="#fff" stroke="none"/>
+ </>, // Solid tool icons (万物声场): filled shapes with white details — no hollow outlines.
+ trash:<>
+  <rect x="6" y="7.2" width="20" height="3.6" rx="1.8" fill="currentColor" stroke="none"/><path d="M13 7.2V6a1.6 1.6 0 0 1 1.6-1.6h2.8A1.6 1.6 0 0 1 19 6v1.2z" fill="currentColor" stroke="none"/>
+  <path d="M8.4 12.4h15.2l-1.3 13.2a2.6 2.6 0 0 1-2.6 2.4h-7.4a2.6 2.6 0 0 1-2.6-2.4z" fill="currentColor" stroke="none"/>
+  <path d="M13.2 16v7.6M18.8 16v7.6" fill="none" stroke="#fff" strokeWidth={2}/>
+ </>,
+ copy:<>
+  <rect x="5" y="4.5" width="15.5" height="18" rx="4" fill="currentColor" fillOpacity={.42} stroke="none"/>
+  <rect x="11.5" y="9.5" width="15.5" height="18" rx="4" fill="currentColor" stroke="none"/>
+  <path d="M19.25 14.6v7.8M15.35 18.5h7.8" fill="none" stroke="#fff" strokeWidth={2.4}/>
+ </>,};
 
 /** Chunky, friendly icon; colour comes from `currentColor`, the tint is the same colour at low opacity. */
 export function KidIcon({name,className}:{name:KidIconName;className?:string}){

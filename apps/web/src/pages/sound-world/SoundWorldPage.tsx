@@ -1,0 +1,103 @@
+import {useCallback,useEffect,useRef,useState} from 'react';
+import {DEFAULT_ROWS} from '@wanwu-v2/contracts/arrangement';
+import {composeDestination,flowSteps} from '../../app/navigation';
+import {ArtPicture} from '../../shared/media/ArtPicture';
+import {SoundMarker} from '../../shared/markers/SoundMarker';
+import {WorkBackdrop} from '../../shared/scene/WorkBackdrop';
+import {FlowHeader} from '../../shared/ui/FlowHeader';
+import {WorkHeaderActions} from '../../shared/ui/WorkHeaderActions';
+import {KidIcon} from '../../shared/ui/KidIcon';
+import {worldCopy} from './config/copy';
+import {guideLines,worldGuide} from './config/guide';
+import {locateSpot} from './model/fieldGeometry';
+import {unitOf} from './model/soundWorldState';
+import {useFieldDrag} from './model/useFieldDrag';
+import type {DragItem} from './model/useFieldDrag';
+import {useSoundWorld} from './model/useSoundWorld';
+import type {FieldSpot,SoundWorld} from './model/useSoundWorld';
+import type {LibraryScope} from './services/soundWorldRepository';
+import {ClipEditor} from './components/ClipEditor';
+import {MoodPicker} from './components/MoodPicker';
+import {MoreSoundsDialog} from './components/MoreSoundsDialog';
+import {SoundField} from './components/SoundField';
+import {SoundPalette} from './components/SoundPalette';
+import styles from './SoundWorldPage.module.css';
+
+function guideText(world:SoundWorld){
+ const {arrangement,selection,lastAction}=world.state;
+ if(!arrangement)return guideLines.loading;
+ if(world.playing==='all')return guideLines.playing;
+ if(selection?.kind==='unit')return guideLines.unitSelected(unitOf(arrangement,selection.unitId)?.name??'');
+ if(lastAction==='copied')return guideLines.copied;
+ if(lastAction==='span')return guideLines.span(arrangement.spanSeconds);
+ if(lastAction==='placed')return guideLines.placed;
+ if(lastAction==='clipped')return guideLines.clipped;
+ if(selection?.kind==='event')return guideLines.eventSelected;
+ if(lastAction==='removed')return guideLines.removed;
+ if(lastAction==='row-added')return guideLines.rowAdded;
+ if(arrangement.origin==='example')return guideLines.example;
+ if(!arrangement.events.length)return guideLines.empty;
+ return guideLines.idle;
+}
+
+/** 万物声场: pick a sound, tap the field to place it; left → right is order, up → down is height. */
+export function SoundWorldPage({onNavigate}:{onNavigate:(path:string)=>void}){
+ // Hand-off to 万物成曲 goes through the app; until that page is accepted it reports unavailable.
+ const world=useSoundWorld(()=>composeDestination);
+ const area=useRef<HTMLDivElement>(null);
+ const [more,setMore]=useState<LibraryScope|null>(null);
+ /** The occurrence open in 剪一剪, if any. */
+ const [trimming,setTrimming]=useState<string|null>(null);
+ const rows=useRef(DEFAULT_ROWS);rows.current=world.state.arrangement?.rows??DEFAULT_ROWS;
+ const locate=useCallback((x:number,y:number):FieldSpot|null=>{
+  const box=area.current?.getBoundingClientRect();
+  return box?locateSpot(box,rows.current,x,y):null;
+ },[]);
+ const {drag,bind}=useFieldDrag(locate,
+  (item:DragItem,spot)=>item.kind==='unit'?world.placeUnit(item.unitId,spot):world.moveEvent(item.eventId,spot),
+  (item:DragItem)=>item.kind==='unit'?world.selectUnit(item.unitId):world.tapEvent(item.eventId));
+ // Esc lets go of the current selection anywhere on the page (dialogs handle their own Esc).
+ const deselect=useRef(world.deselect);deselect.current=world.deselect;
+ useEffect(()=>{
+  const key=(event:KeyboardEvent)=>{if(event.key==='Escape'&&!document.querySelector('dialog[open]'))deselect.current();};
+  addEventListener('keydown',key);return()=>removeEventListener('keydown',key);
+ },[]);
+ const text=guideText(world);
+ const notice=world.state.notice;
+ const busy=world.preparing==='all',playingAll=world.playing==='all';
+ const dragUnit=drag&&(drag.item.kind==='unit'?unitOf(world.state.arrangement,drag.item.unitId)
+  :unitOf(world.state.arrangement,world.state.arrangement?.events.find(event=>drag.item.kind==='event'&&event.id===drag.item.eventId)?.unitId??''));
+ return <div className={styles.shell} data-dragging={!!drag||undefined}>
+  <WorkBackdrop/>
+  <FlowHeader steps={flowSteps} current="world" onNavigate={onNavigate} aside={<WorkHeaderActions onLibrary={()=>setMore('example')}/>}/>
+  <main className={styles.page}>
+   <header className={styles.intro}>
+    <div className={styles.introText}><h1>{worldCopy.title}</h1><p>{worldCopy.subtitle}</p></div>
+    <aside className={styles.guidePanel} aria-label={worldGuide.label}>
+     <p key={text} className={styles.guideBubble} aria-live="polite">{text}</p>
+     <span key={`frog-${text}`} className={styles.mascot}><ArtPicture variants={worldGuide.variants} className={styles.mascotArt} priority="high"/></span>
+    </aside>
+   </header>
+   <div className={styles.workspace}>
+    <SoundPalette world={world} bind={bind} onMore={setMore}/>
+    <div className={styles.stageColumn}>
+     <SoundField world={world} area={area} locate={locate} drag={drag} bind={bind} onTrim={setTrimming}/>
+     <MoodPicker world={world}/>
+     <p className={styles.notice} role="status" aria-live="polite" data-tone={notice?.tone}>{notice?worldCopy.notices[notice.key]:''}</p>
+     <div className={styles.actions}>
+      <button type="button" className={styles.backButton} onClick={()=>onNavigate('/create')}><KidIcon name="back"/>{worldCopy.back}</button>
+      <button type="button" className={styles.playAll} aria-pressed={playingAll} data-busy={busy||undefined} disabled={!world.state.arrangement} onClick={()=>void world.playAll()}>
+       <span className={styles.playIcon}><KidIcon name={playingAll?'stop':'play'}/></span>{busy?worldCopy.preparing:playingAll?worldCopy.stopAll:worldCopy.playAll}
+      </button>
+      <button type="button" className={styles.finish} aria-disabled={world.state.blocked||undefined} onClick={()=>void world.finish()}>
+       {world.state.blocked?worldCopy.finishUnavailable:worldCopy.finish}<KidIcon name="arrow"/>
+      </button>
+     </div>
+    </div>
+   </div>
+  </main>
+  {drag&&dragUnit&&<span className={styles.dragGhost} style={{left:drag.x,top:drag.y}} aria-hidden="true"><SoundMarker index={dragUnit.markerIndex} className={styles.ghostMarker}/></span>}
+  {more&&<MoreSoundsDialog world={world} initial={more} onClose={()=>setMore(null)} onMakeNew={()=>{setMore(null);onNavigate('/create');}}/>}
+  {trimming&&<ClipEditor world={world} eventId={trimming} onClose={()=>setTrimming(null)}/>}
+ </div>;
+}

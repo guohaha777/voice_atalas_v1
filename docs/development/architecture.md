@@ -13,7 +13,7 @@
 | app | 页面入口、无依赖的 history 路由（`router.ts`）、主流程四步与入口类型（`navigation.ts`）、全局错误反馈 | 新页面验收后在 `navigation.ts` 打开对应入口，并在路由里加一条 |
 | pages/<页面> | 页面布局、页面内组件与流程状态 | 每个页面独立验收，避免在首页追加全流程 |
 | config | 图片、坐标、透明度、动画参数 | 视觉调整不改播放与开场状态逻辑 |
-| shared/ui、media、audio、markers、scene、platform | 基础组件与图标、资源加载、声音录放与塑形、声音标记、首页场景素材清单、设备提示 | 后续页面按需复用；页面之间不互相引用内部实现 |
+| shared/ui、media、audio、markers、scene、creation、platform | 基础组件与图标（含工作页弹窗 `WorkSheet`、顶栏入口 `WorkHeaderActions`、心情脸 `MoodFace`）、资源加载、声音录放 / 塑形 / 排程（工作页统一 `SequencePlayer`）、声音标记、首页场景素材与工作页背景、当前作品 / 本机来源档案 / 示例声音 / 五项文案 / 本地 ID、设备提示 | 后续页面按需复用；页面之间不互相引用内部实现；两页以上用到的东西放这里，只保留一份 |
 | packages/contracts（`@wanwu-v2/contracts`） | 前后端共同的数据契约；已有 `sound-v1` | 以包名引用，新增领域先写类型和校验，再加存储 |
 | 后端（未开发） | 身份、音源与作品、文件存储、AI 网关 | 接在仓库 / 服务端口之后，页面不直接访问云资源 |
 
@@ -29,11 +29,18 @@
 
 ## 声音诞生页
 
-- 路由 `/create`，代码单独分包，弹窗打开时预取。`pages/sound-birth/` 分为 `components/`（声音条、我的声卡、声卡信息、五行选择、录音 / 声音库 / 纸卡对话框）、`model/`（纯 reducer `soundBirthState.ts` + 编排 hook `useSoundBirth.ts`）、`config/`（文案、五项、示例声音、向导动物、提示文案、背景）、`services/`（声音库端口、本机来源档案、向导提示端口）。
-- 数据走 `@wanwu-v2/contracts/sound`：来源与溯源信息、五项、交给声场的 `SoundUnitDraft`。原声只读，塑形在浏览器离线渲染（`shared/audio/`）。
+- 路由 `/create`，代码单独分包，弹窗打开时预取。`pages/sound-birth/` 分为 `components/`（声音条、我的声卡、声卡信息、五行选择、录音 / 声音库 / 纸卡对话框）、`model/`（纯 reducer `soundBirthState.ts` + 编排 hook `useSoundBirth.ts`）、`config/`（文案、示例声音条目、向导动物、提示文案）、`services/`（声音库分组、向导提示端口）。五项文案、本机来源档案、背景层、弹窗面板和顶栏入口都在 shared，与万物声场共用。
+- 数据走 `@wanwu-v2/contracts/sound`：来源与溯源信息、五项、交给声场的 `SoundUnitDraft`。原声只读，塑形在浏览器离线渲染（`shared/audio/`）。本机来源档案和示例声音清单在 `shared/creation/`，与万物声场共用。
 - 向导提示走 `services/soundHints.ts` 的 `SoundHintProvider` 接口，当前是本地预设文案；接模型时实现同一接口即可。
 - 首页场景的素材清单放在 `shared/scene/`（`homeScene.ts` + 生成的 JSON），首页、弹窗和声音诞生页都通过它取同一批已缓存的文件。
 - 图标分两套：首页和弹窗用细线 `shared/ui/Icon.tsx`；工作页用圆润童趣的 `shared/ui/KidIcon.tsx`。工作页配色令牌是 `styles/global.css` 里的 `--wk-*`。
+
+## 万物声场页
+
+- 路由 `/world`，代码单独分包，在声音诞生页时预取。声音诞生“做好了”经 `App` 把 `SoundUnitDraft` + 来源交给 `shared/creation/workSession.ts`（本次打开期间的当前作品），再打开本页；标记编号由作品分配。
+- `pages/sound-world/` 分为 `components/`（左栏声音、声场、浮动工具、心情、找更多声音）、`model/`（纯 reducer `soundWorldState.ts`、几何换算 `fieldGeometry.ts`、拖动 `useFieldDrag.ts`、编排 hook `useSoundWorld.ts`）、`config/`（文案、mock 示例单元与示例摆放、青蛙向导）、`services/`（`SoundWorldRepository` 端口 + mock 实现，文件头列出预留 REST 路径）。
+- 数据走 `@wanwu-v2/contracts/arrangement`：事件只存 0–1 先后位置与行号（行只管错开摆放，不改变声音；默认 3 行可加到 5 行），不存像素；声音身份 `unitId` 与事件身份分开。整段试听用 `shared/audio/SequencePlayer.ts` 在同一音频时钟上排程，游标、高亮读同一时间，万物成曲可复用。
+- 详见 `docs/development/sound-world-acceptance.md`。
 
 ## 产品原则与字段预留方向
 

@@ -1,6 +1,6 @@
 # 声音诞生（合并采集与转译）
 
-更新：2026-10-22。状态：前端已实现，等待用户最终验收。本文件先写**当前状态**，最后附简短的版本记录；以当前状态为准。
+更新：2026-10-23。状态：**已验收**（2026-10-22）。之后只有音源上限改为 45 秒和共用模块整理，画面与操作不变。本文件先写**当前状态**，最后附简短的版本记录；以当前状态为准。
 
 依据：定稿结构 `万物声谱_视觉过程稿/定稿页面参考/2026-10-22-四步流程/02-sound-birth.png`；采集与转译的命名 / 分组溯源参考原 demo（https://naturesoundatlas.netlify.app/ 及源码 `atalas/src/page-shells/CardGalleryPage`，只读参考）；配色依据用户给的春季配色图。
 
@@ -35,8 +35,8 @@
 ## 真实前端状态（不接后端 / AI）
 
 - **示例声音**：首页 5 段已授权声音，按需加载，12 秒超时可重试，带来源许可链接。班级和公共声音库如实写明未开放。
-- **录音**：录音对话框的流程是开始 → 计时（最长 30 秒）→ 停止 → 听一听 → 重录 / 用这段。录音时关闭回声消除和降噪，结束后释放麦克风；权限、非 https、太短等情况都有提示。
-- **上传**：在本机解码，限制 15MB、30 秒，标为“本机文件 · 未上传”。
+- **录音**：录音对话框的流程是开始 → 计时（最长 45 秒）→ 停止 → 听一听 → 重录 / 用这段。录音时关闭回声消除和降噪，结束后释放麦克风；权限、非 https、太短等情况都有提示。
+- **上传**：在本机解码，限制 20MB、45 秒（2026-10-22 起，原为 15MB、30 秒），标为“本机文件 · 未上传”。
 - **纸卡**：照片只留在本机，可放大、重拍、移除。读卡识别未开放，页面如实提示需要对照照片手动选择。
 - **效果试听**：在浏览器里离线渲染，原声只读。规则在 `shared/audio/shapingRules.ts`：高低 ±3 半音，轻响 −10 / −5 / −1 dB，长短、变化、出现方式各有对应规则，总长不超过 10 秒。
 - **向导提示**：`services/soundHints.ts` 的 `SoundHintProvider` 接口。现在用 `config/hintPresets.ts` 的 16 条手写提示（来源标为 `preset`，不是 AI 生成）。接入模型和提示词时实现同一接口，本地文案保留作离线兜底。
@@ -48,13 +48,15 @@
 | `packages/contracts/src/sound.ts`（`@wanwu-v2/contracts/sound`） | `SoundSource` 与 `provenance`、五项 `SoundShape`、`SoundUnitDraft`（含 `maker`）、校验与清理函数 |
 | `pages/sound-birth/model/soundBirthState.ts` | 纯 reducer：来源、名字、做声音的人、声卡确认、五项、对话框、提示；`finishCheck` 规定引导顺序 |
 | `pages/sound-birth/model/useSoundBirth.ts` | 编排加载、渲染、播放、录音、上传、来源编辑、提示请求与清理 |
-| `pages/sound-birth/services/` | `soundLibrary`（声音库分组，纯函数）、`sourceArchive`（本次打开期间的本机档案）、`soundHints`（向导提示端口） |
-| `pages/sound-birth/config/` | 文案、五项、示例声音、向导动物、提示预设、背景层 |
-| `pages/sound-birth/components/` | 声音条、我的声卡、做声音的人、声卡信息、五行选择、波形、音量条、录音 / 声音库 / 纸卡对话框、背景 |
-| `shared/audio/` | 塑形规则、离线渲染、播放器、加载（超时 / 取消）、本机录音 |
+| `pages/sound-birth/services/` | `soundLibrary`（声音库分组，纯函数）、`soundHints`（向导提示端口） |
+| `pages/sound-birth/config/` | 文案、示例声音条目、向导动物、提示预设 |
+| `pages/sound-birth/components/` | 声音条、我的声卡、做声音的人、声卡信息、五行选择、波形、音量条、录音 / 声音库 / 纸卡对话框 |
+| `shared/audio/` | 塑形规则（含 `shapeKey`）、离线渲染、统一播放器 `SequencePlayer`、加载（超时 / 取消）、本机录音 |
+| `shared/creation/` | `sourceArchive`（本次打开期间的本机档案）、`exampleSounds`（示例声音清单与许可）、`dimensionCopy`（五项文案，声场也用这一份）、`ids`、`workSession`（交给声场的当前作品） |
 | `shared/markers/` | 四款中立声音标记，编号或名字叠加 |
 | `shared/scene/` | 首页场景素材清单与访问函数（首页、弹窗、本页共用） |
-| `shared/ui/KidIcon.tsx`、`FlowHeader.tsx` | 童趣图标；四步流程顶栏 |
+| `shared/ui/KidIcon.tsx`、`FlowHeader.tsx`、`WorkHeaderActions.tsx`、`WorkSheet.tsx` | 童趣图标；四步流程顶栏；顶栏“声音库 · 作品书架”；录音 / 声音库 / 纸卡共用的弹窗面板 |
+| `shared/scene/WorkBackdrop.tsx` | 工作页四周的首页灌木背景（12% 不透明，手机不显示） |
 | `styles/global.css` `--wk-*` | 工作页配色：奶油黄、粉、黄、草绿、天蓝；色块上的文字用深色 |
 
 ## 弱网与资源
@@ -88,3 +90,5 @@
 10. 背景加首页四周灌木，按首页方式贴边，不透明度最终 12%。
 
 整理（同日）：删除未用的共享图标、样式和文案；首页素材清单移到 `shared/scene/`；入口类型移到 `app/navigation.ts`；契约改为工作区包引用。
+
+整理（2026-10-23，配合万物声场）：本机档案、示例声音清单、背景层移到 shared；五项文案移到 `shared/creation/dimensionCopy.ts`；播放器改用与声场相同的 `SequencePlayer`（开始前约 40ms 缓冲，听感无差别）；弹窗面板和顶栏入口改用 `WorkSheet` / `WorkHeaderActions`，尺寸与样式取自本页原值；“做好了”进入万物声场，第二个声音起编号由作品分配。

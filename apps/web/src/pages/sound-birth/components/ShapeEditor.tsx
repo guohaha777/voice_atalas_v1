@@ -3,7 +3,7 @@ import {SOUND_CHOICES,SOUND_DIMENSIONS} from '@wanwu-v2/contracts/sound';
 import type {SoundDimension} from '@wanwu-v2/contracts/sound';
 import {KidIcon} from '../../../shared/ui/KidIcon';
 import {birthCopy} from '../config/copy';
-import {dimensionCopy} from '../config/dimensions';
+import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
 import type {useSoundBirth} from '../model/useSoundBirth';
 import {remainingDimensions} from '../model/soundBirthState';
 import {Equalizer} from './Equalizer';

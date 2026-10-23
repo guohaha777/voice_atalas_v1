@@ -2,15 +2,16 @@ import {useCallback,useEffect,useMemo,useReducer,useRef,useState,useSyncExternal
 import {NEUTRAL_SHAPE,SOUND_SOURCE_MAX_MS,cleanSourceText,missingProvenance} from '@wanwu-v2/contracts/sound';
 import type {SoundDimension,SoundShape,SoundSource,SoundSourceKind,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {audioSupported} from '../../../shared/audio/audioContext';
-import {BufferPlayer} from '../../../shared/audio/BufferPlayer';
+import {SequencePlayer} from '../../../shared/audio/SequencePlayer';
 import {LocalRecorder,RecorderError} from '../../../shared/audio/LocalRecorder';
 import {AudioLoadError,decodeAudio,loadAudio} from '../../../shared/audio/loadAudio';
 import {renderShaped} from '../../../shared/audio/renderShaped';
-import {originalGain,planShape} from '../../../shared/audio/shapingRules';
+import {originalGain,planShape,shapeKey} from '../../../shared/audio/shapingRules';
+import {newId} from '../../../shared/creation/ids';
 import type {CreationEntry} from '../../../app/navigation';
 import {EXAMPLE_TIMEOUT_MS,FILE_MAX_BYTES,birthCopy} from '../config/copy';
-import {dimensionCopy} from '../config/dimensions';
-import {sessionArchive} from '../services/sourceArchive';
+import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
+import {sessionArchive} from '../../../shared/creation/sourceArchive';
 import {libraryGroups} from '../services/soundLibrary';
 import {presetHintProvider} from '../services/soundHints';
 import type {SoundHint,SoundHintProvider} from '../services/soundHints';
@@ -25,14 +26,12 @@ export type CompareTarget='original'|'current';
 export type RecordPhase='idle'|'starting'|'recording'|'review';
 export type ProvenanceField='label'|'recordedBy'|'recordedOn'|'place'|'group';
 
-const newId=(prefix:string)=>`${prefix}:${globalThis.crypto?.randomUUID?.()??Date.now().toString(36)+Math.random().toString(36).slice(2)}`;
-const shapeKey=(shape:SoundShape)=>[shape.pitch,shape.duration,shape.contour,shape.intensity,shape.pattern].join('/');
 const baseName=(file:string)=>file.replace(/\.[^.]+$/,'').trim();
 const today=()=>{const now=new Date();return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;};
 const full=(shape:Partial<SoundShape>)=>({...NEUTRAL_SHAPE,...shape});
 
-export function useSoundBirth(entry:CreationEntry|null,onFinish:(draft:SoundUnitDraft)=>FinishResult,hints:SoundHintProvider=presetHintProvider){
- const [state,dispatch]=useReducer(soundBirthReducer,entry,initialSoundBirth);
+export function useSoundBirth(entry:CreationEntry|null,markerIndex:number,onFinish:(draft:SoundUnitDraft,source:SoundSource)=>FinishResult,hints:SoundHintProvider=presetHintProvider){
+ const [state,dispatch]=useReducer(soundBirthReducer,entry,start=>initialSoundBirth(start,markerIndex));
  const local=useSyncExternalStore(sessionArchive.subscribe,sessionArchive.list);
  const [playing,setPlaying]=useState<string|null>(null);
  const [progress,setProgress]=useState(0);
@@ -46,7 +45,7 @@ export function useSoundBirth(entry:CreationEntry|null,onFinish:(draft:SoundUnit
  const [lastChosen,setLastChosen]=useState<SoundDimension|null>(null);
  const [hint,setHint]=useState<(SoundHint&{key:string})|null>(null);
  const hintRequest=useRef<AbortController|null>(null);
- const player=useMemo(()=>new BufferPlayer(setPlaying),[]);
+ const player=useMemo(()=>new SequencePlayer(setPlaying),[]);
  const buffers=useRef(new Map<string,AudioBuffer>());
  const renders=useRef(new Map<string,AudioBuffer>());
  const recorder=useRef<LocalRecorder|null>(null);
@@ -109,7 +108,7 @@ export function useSoundBirth(entry:CreationEntry|null,onFinish:(draft:SoundUnit
  const previewItem=async(item:LibraryItem)=>{
   if(!audioSupported())return notify('bar',birthCopy.noAudio);
   const key=`item:${item.source.id}`;if(playing===key)return player.stop();
-  try{await player.play(key,await itemBuffer(item),originalGain);}catch(reason){reportLoad(reason,'bar');}
+  try{await player.playOne(key,await itemBuffer(item),originalGain);}catch(reason){reportLoad(reason,'bar');}
  };
  const pickItem=async(item:LibraryItem)=>{
   if(!audioSupported())return notify('bar',birthCopy.noAudio);
@@ -151,7 +150,7 @@ export function useSoundBirth(entry:CreationEntry|null,onFinish:(draft:SoundUnit
    setTake({buffer,mimeType:blob.type||'audio/webm'});setRecordPhase('review');
   }catch(reason){setRecordPhase('idle');notify('bar',birthCopy.errors[reason instanceof RecorderError?reason.reason:'failed']);}
  }
- const listenTake=()=>{if(!take)return;if(playing==='take')return player.stop();void player.play('take',take.buffer,originalGain);};
+ const listenTake=()=>{if(!take)return;if(playing==='take')return player.stop();void player.playOne('take',take.buffer,originalGain);};
  const useTake=()=>{if(!take)return;archiveAndUse(describeLocal('local-recording',birthCopy.defaultRecordingName,take.buffer,take.mimeType),take.buffer);setTake(null);setRecordPhase('idle');};
  const closeDialog=()=>{
   recorder.current?.cancel();recorder.current=null;setTake(null);setRecordPhase('idle');
@@ -170,13 +169,13 @@ export function useSoundBirth(entry:CreationEntry|null,onFinish:(draft:SoundUnit
    if(!rendered){rendered=await renderShaped(buffer,planShape(shape,buffer.duration));renders.current.set(cacheKey,rendered);}
    if(token!==renderToken.current)return;
    if(show){setCurrentBuffer(rendered);setShown('current');}
-   await player.play(key,rendered);
+   await player.playOne(key,rendered);
   }catch{if(token===renderToken.current)notify('editor',birthCopy.noAudio);}
  };
  const playCompare=(target:CompareTarget)=>{
   if(playing===target){player.stop();return;}
   if(!sourceBuffer)return;
-  if(target==='original'){renderToken.current++;setShown('original');void player.play('original',sourceBuffer,originalGain);}
+  if(target==='original'){renderToken.current++;setShown('original');void player.playOne('original',sourceBuffer,originalGain);}
   else void playShape(full(state.shape),'current',true);
  };
  /** The waveform's own play button plays whichever version it is showing. */
@@ -210,9 +209,9 @@ export function useSoundBirth(entry:CreationEntry|null,onFinish:(draft:SoundUnit
    case 'missing-provenance':return notify('info',birthCopy.needProvenance,'info');
    case 'ready':{
     if(!state.cardConfirmed)dispatch({type:'card',confirmed:true});
-    const draft=toSoundUnitDraft(state,newId('unit'),new Date());if(!draft)return;
+    const draft=toSoundUnitDraft(state,newId('unit'),new Date());if(!draft||!state.source)return;
     player.stop();
-    if(onFinish(draft).status==='unavailable'){setBlocked(true);notify('editor',birthCopy.worldUnavailable,'info');}
+    if(onFinish(draft,state.source).status==='unavailable'){setBlocked(true);notify('editor',birthCopy.worldUnavailable,'info');}
    }
   }
  };

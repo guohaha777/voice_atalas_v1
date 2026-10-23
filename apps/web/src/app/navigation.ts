@@ -4,7 +4,7 @@
 export const flowSteps=[
  {id:'entry',label:'声音入口',path:'/'},
  {id:'birth',label:'声音诞生',path:'/create'},
- {id:'world',label:'万物声场',path:null},
+ {id:'world',label:'万物声场',path:'/world'},
  {id:'compose',label:'万物成曲',path:null},
 ] as const;
 
@@ -14,8 +14,8 @@ export const creationEntryIds:readonly CreationEntry[]=['card','upload','library
 /** Navigation seam only: the app maps an entry to the sound-birth page state. No upload or API call happens here. */
 export type CreationEntryIntent={entry:CreationEntry};
 export type CreationEntryResult={status:'unavailable'}|{status:'opened'};
-/** Next destination after 声音诞生. Flip to ready when 万物声场 is accepted. */
-export const soundWorldDestination={status:'unavailable'} as const;
+/** Next destination after 万物声场. Flip to ready when 万物成曲 is accepted. */
+export const composeDestination={status:'unavailable'} as const;
 export const destinations={
  create:{label:'开始成曲',page:'选择开始方式',ready:true},
  library:{label:'声音库',page:'声音库',path:'/sounds',ready:false},

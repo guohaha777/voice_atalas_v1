@@ -3,8 +3,11 @@ import {SHAPING_RULES} from './shapingRules';
 
 type OfflineConstructor=typeof OfflineAudioContext;
 
-/** Renders the shaped preview offline into a new buffer. The source buffer is only read, never modified. */
-export async function renderShaped(source:AudioBuffer,plan:ShapingPlan):Promise<AudioBuffer>{
+/**
+ * Renders the shaped preview offline into a new buffer. The source buffer is only read, never modified.
+ * `offsetSeconds` starts every event at that point of the source (an excerpt chosen in 万物声场).
+ */
+export async function renderShaped(source:AudioBuffer,plan:ShapingPlan,offsetSeconds=0):Promise<AudioBuffer>{
  const Offline=window.OfflineAudioContext||(window as unknown as {webkitOfflineAudioContext:OfflineConstructor}).webkitOfflineAudioContext;
  const sampleRate=source.sampleRate,frames=Math.max(1,Math.ceil((plan.totalSeconds+0.02)*sampleRate));
  const ctx=new Offline(source.numberOfChannels,frames,sampleRate);
@@ -31,7 +34,7 @@ export async function renderShaped(source:AudioBuffer,plan:ShapingPlan):Promise<
   envelope.gain.setValueAtTime(1,Math.max(start,end-edge));
   envelope.gain.linearRampToValueAtTime(0,end);
   node.connect(filter).connect(envelope).connect(master);
-  node.start(start);node.stop(end);
+  node.start(start,Math.min(Math.max(0,offsetSeconds),source.duration));node.stop(end);
  }
  return ctx.startRendering();
 }

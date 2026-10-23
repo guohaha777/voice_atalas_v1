@@ -1,7 +1,7 @@
 // Sound library port. Bundled examples plus sources captured on this device in this visit.
 // Personal / class / public libraries need the server and are reported as not yet available.
 import type {SoundSource} from '@wanwu-v2/contracts/sound';
-import type {ArchiveSnapshot} from './sourceArchive';
+import type {ArchiveSnapshot} from '../../../shared/creation/sourceArchive';
 
 export type LibraryItem={source:SoundSource;url:string|null};
 export type LibraryGroup={id:string;title:string;note:string;items:LibraryItem[]};

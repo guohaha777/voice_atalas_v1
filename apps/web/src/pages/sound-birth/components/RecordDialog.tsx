@@ -1,5 +1,5 @@
 import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
-import {Dialog} from '../../../shared/ui/Dialog';
+import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
 import {KidIcon} from '../../../shared/ui/KidIcon';
 import {birthCopy} from '../config/copy';
 import type {useSoundBirth} from '../model/useSoundBirth';
@@ -14,11 +14,11 @@ const seconds=(ms:number)=>`00:${String(Math.floor(ms/1000)).padStart(2,'0')}`;
 export function RecordDialog({birth}:{birth:Birth}){
  const {phase,ms,take,progress}=birth.record;
  const error=birth.state.notice?.area==='bar'&&birth.state.notice.tone==='error'?birth.state.notice.text:'';
- return <Dialog title={copy.title} description={copy.description} className={styles.sheet} onClose={birth.closeDialog}>
+ return <WorkSheet title={copy.title} description={copy.description} onClose={birth.closeDialog}>
   <div className={styles.recorder} data-phase={phase}>
    {phase==='review'&&take?<>
     <Waveform buffer={take} progress={progress} label="刚录的声音" playing={birth.playing==='take'} onPlay={birth.listenTake}/>
-    <div className={styles.sheetActions}>
+    <div className={sheetStyles.actions}>
      <button type="button" className={styles.secondary} onClick={()=>void birth.startRecording()}><KidIcon name="replay"/>{copy.retake}</button>
      <button type="button" className={styles.primary} onClick={birth.useTake}>{copy.use}<KidIcon name="arrow"/></button>
     </div>
@@ -27,8 +27,8 @@ export function RecordDialog({birth}:{birth:Birth}){
     {phase==='recording'
      ?<button type="button" className={styles.recButton} data-active onClick={()=>void birth.stopRecording()}><KidIcon name="stop"/>{copy.stop}</button>
      :<button type="button" className={styles.recButton} disabled={phase==='starting'} onClick={()=>void birth.startRecording()}><KidIcon name="mic"/>{phase==='starting'?copy.starting:copy.start}</button>}
-    {ms===0&&<p className={styles.sheetNote} role="status">{error}</p>}
+    {ms===0&&<p className={sheetStyles.note} role="status">{error}</p>}
    </>}
   </div>
- </Dialog>;
+ </WorkSheet>;
 }
