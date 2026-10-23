@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react';
 import {SoundMarker} from '../../../shared/markers/SoundMarker';
 import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
-import {KidIcon} from '../../../shared/ui/KidIcon';
+import {Glyph} from '../../../shared/ui/PaperIcon';
 import {worldCopy} from '../config/copy';
 import {nextMarkerIndex} from '../model/soundWorldState';
 import type {SoundWorld} from '../model/useSoundWorld';
@@ -35,7 +35,7 @@ export function MoreSoundsDialog({world,initial,onMakeNew,onClose}:{world:SoundW
   </div>
   <div id="scope-panel" role="tabpanel" aria-labelledby={`scope-${scope}`} className={styles.scopePanel}>
    {!result?<p className={styles.scopeNote}>{worldCopy.loading}</p>
-   :result.status==='unavailable'?<p className={styles.scopeClosed}><KidIcon name="library"/>{copy.unavailable[result.reason]}</p>
+   :result.status==='unavailable'?<p className={styles.scopeClosed}><Glyph name="library"/>{copy.unavailable[result.reason]}</p>
    :<>
     <p className={styles.scopeNote}>{scope==='example'?copy.exampleNote:copy.mineNote}</p>
     {result.units.length?<ul className={styles.scopeList}>
@@ -45,14 +45,14 @@ export function MoreSoundsDialog({world,initial,onMakeNew,onClose}:{world:SoundW
        <SoundMarker index={markerOf(unit.id)} className={styles.scopeMarker} label={null}/>
        <span className={styles.scopeName}>{unit.name}</span>
        <button type="button" className={styles.scopeListen} aria-pressed={listening} aria-label={`${listening?worldCopy.stop:worldCopy.listen}「${unit.name}」`}
-        onClick={()=>world.previewUnit(unit)}><KidIcon name={listening?'stop':'play'}/></button>
+        onClick={()=>world.previewUnit(unit)}><Glyph name={listening?'stop':'play'}/></button>
        <button type="button" className={styles.scopeAdd} disabled={added} onClick={()=>world.addUnit(unit)}>
-        {added?<><KidIcon name="check"/>{copy.added}</>:<><KidIcon name="plus"/>{copy.add}</>}
+        {added?<><Glyph name="check"/>{copy.added}</>:<><Glyph name="plus"/>{copy.add}</>}
        </button>
       </li>;
      })}
     </ul>:<p className={styles.scopeClosed}>{copy.mineEmpty}</p>}
-    {scope==='mine'&&<button type="button" className={styles.makeNew} onClick={onMakeNew}><KidIcon name="mic"/>{copy.makeNew}</button>}
+    {scope==='mine'&&<button type="button" className={styles.makeNew} onClick={onMakeNew}><Glyph name="mic"/>{copy.makeNew}</button>}
    </>}
   </div>
   <p className={sheetStyles.note}>{copy.sessionOnly}</p>

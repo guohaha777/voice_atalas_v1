@@ -1,6 +1,6 @@
 import {useId,useMemo} from 'react';
 import {computePeaks} from '../../../shared/audio/shapingRules';
-import {Glyph} from './PaperIcon';
+import {Glyph} from '../../../shared/ui/PaperIcon';
 import styles from '../SoundBirthPage.module.css';
 
 const BINS=64,W=320,MID=32,AMP=26;

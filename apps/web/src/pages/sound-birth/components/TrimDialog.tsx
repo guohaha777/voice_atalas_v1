@@ -7,7 +7,7 @@ import {dragTrimEdge,keyTrim,slideTrim,tapTrim,trimClock,trimSeconds} from '../m
 import type {TrimEdge,TrimRange} from '../model/trimEditing';
 import type {useSoundBirth} from '../model/useSoundBirth';
 import {Equalizer} from './Equalizer';
-import {Glyph} from './PaperIcon';
+import {Glyph} from '../../../shared/ui/PaperIcon';
 import styles from '../SoundBirthPage.module.css';
 
 type Birth=ReturnType<typeof useSoundBirth>;

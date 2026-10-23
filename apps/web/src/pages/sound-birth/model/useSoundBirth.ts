@@ -9,7 +9,6 @@ import {renderShaped} from '../../../shared/audio/renderShaped';
 import {sliceBuffer} from '../../../shared/audio/sliceBuffer';
 import {originalGain,planShape,shapeKey} from '../../../shared/audio/shapingRules';
 import {newId} from '../../../shared/creation/ids';
-import type {CreationEntry} from '../../../app/navigation';
 import {EXAMPLE_TIMEOUT_MS} from '../../../shared/creation/exampleSounds';
 import {FILE_MAX_BYTES,birthCopy} from '../config/copy';
 import {sessionArchive} from '../../../shared/creation/sourceArchive';
@@ -32,8 +31,8 @@ export type ProvenanceField='label'|'recordedBy'|'recordedOn'|'place'|'group';
 const baseName=(file:string)=>file.replace(/\.[^.]+$/,'').trim();
 const today=()=>{const now=new Date();return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;};
 
-export function useSoundBirth(entry:CreationEntry|null,markerIndex:number,onFinish:(draft:SoundUnitDraft,source:SoundSource)=>FinishResult,hints:SoundHintProvider=presetHintProvider){
- const [state,dispatch]=useReducer(soundBirthReducer,entry,start=>initialSoundBirth(start,markerIndex));
+export function useSoundBirth(markerIndex:number,onFinish:(draft:SoundUnitDraft,source:SoundSource)=>FinishResult,hints:SoundHintProvider=presetHintProvider){
+ const [state,dispatch]=useReducer(soundBirthReducer,markerIndex,initialSoundBirth);
  const local=useSyncExternalStore(sessionArchive.subscribe,sessionArchive.list);
  const [playing,setPlaying]=useState<string|null>(null);
  const [progress,setProgress]=useState(0);

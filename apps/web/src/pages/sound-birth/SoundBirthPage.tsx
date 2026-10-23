@@ -3,7 +3,6 @@ import {flowSteps} from '../../app/navigation';
 import {FlowHeader} from '../../shared/ui/FlowHeader';
 import {WorkHeaderActions} from '../../shared/ui/WorkHeaderActions';
 import type {SoundDimension,SoundSource,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
-import type {CreationEntry} from '../../app/navigation';
 import type {FinishResult} from './model/useSoundBirth';
 import {birthCopy} from './config/copy';
 import {remainingDimensions} from './model/soundBirthState';
@@ -18,9 +17,9 @@ import {TrimDialog} from './components/TrimDialog';
 import styles from './SoundBirthPage.module.css';
 
 /** 声音诞生 (采集与转译 merged): bring in a sound with its provenance, set the five choices, compare with the original. */
-export function SoundBirthPage({entry,markerIndex,onNavigate,onFinish}:{entry:CreationEntry|null;markerIndex:number;onNavigate:(path:string)=>void;onFinish:(draft:SoundUnitDraft,source:SoundSource)=>FinishResult}){
+export function SoundBirthPage({markerIndex,onNavigate,onFinish}:{markerIndex:number;onNavigate:(path:string)=>void;onFinish:(draft:SoundUnitDraft,source:SoundSource)=>FinishResult}){
  // Hand-off to 万物声场 goes through the app, which adds the unit to the current work and opens the field.
- const birth=useSoundBirth(entry,markerIndex,onFinish);
+ const birth=useSoundBirth(markerIndex,onFinish);
  // The row being looked at: the character's right hand points at it (or at the panel title when there is none).
  const [active,setActive]=useState<SoundDimension|null>(null);
  const editor=useRef<HTMLElement>(null);
@@ -37,13 +36,13 @@ export function SoundBirthPage({entry,markerIndex,onNavigate,onFinish}:{entry:Cr
   <main className={styles.page}>
    {/* Left: the sound itself — its card, and the sound as a character standing under it. */}
    <div className={styles.left}>
-    <SoundCard birth={birth} entry={entry}/>
+    <SoundCard birth={birth}/>
     <SpiritStage birth={birth} reach={reach}/>
    </div>
    {/* Right: bring a sound in, then make it look like what you heard. */}
    <div className={styles.right}>
     <header className={styles.intro}><h1>{birthCopy.title}</h1><p>{birthCopy.subtitle}</p></header>
-    <CurrentSoundBar birth={birth} entry={entry}/>
+    <CurrentSoundBar birth={birth}/>
     <ShapeEditor ref={editor} birth={birth} onBack={()=>onNavigate('/')} active={active} onActive={setActive}/>
    </div>
   </main>

@@ -7,8 +7,8 @@ import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
 import type {useSoundBirth} from '../model/useSoundBirth';
 import {finishCheck,remainingDimensions} from '../model/soundBirthState';
 import {Equalizer} from './Equalizer';
-import {Glyph,PaperIcon} from './PaperIcon';
-import type {PaperTone} from './PaperIcon';
+import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon';
+import type {PaperTone} from '../../../shared/ui/PaperIcon';
 import {ShapeGlyph} from './ShapeGlyph';
 import styles from '../SoundBirthPage.module.css';
 

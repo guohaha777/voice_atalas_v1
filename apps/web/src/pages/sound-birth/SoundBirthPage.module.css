@@ -136,7 +136,6 @@
 .tileButton:hover{background:var(--wk-green-soft);transform:translateY(-3px)}
 .tileButton:active{transform:translateY(0) scale(.97)}
 .tileButton:disabled{opacity:.5;cursor:progress}
-.tileButton[data-emphasis]{background:var(--wk-green-soft);box-shadow:inset 0 0 0 2px var(--wk-lime);animation:beckon 2s ease-in-out infinite}
 .barNotice{flex-basis:100%;margin:0;padding:9px 16px;border-radius:16px;background:var(--wk-alert-soft);font-size:14px;font-weight:600;color:var(--wk-alert)}
 .barNotice[data-tone=info]{background:var(--wk-green-soft);color:var(--wk-green-text)}
 
@@ -261,7 +260,6 @@ dialog[open].trimSheet{width:min(720px,calc(100vw - 32px))}
 @keyframes eq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
 @keyframes pulse{50%{opacity:.35}}
 @keyframes ring{from{opacity:.9;transform:scale(1)}to{opacity:0;transform:scale(1.1)}}
-@keyframes beckon{0%,100%{box-shadow:inset 0 0 0 2px var(--wk-lime),0 0 0 0 #a5cf3366}50%{box-shadow:inset 0 0 0 2px var(--wk-lime),0 0 0 8px #a5cf3300}}
 @keyframes ready{0%,100%{box-shadow:var(--wk-selected-lift)}50%{box-shadow:var(--wk-selected-lift),0 0 0 6px #c0e64f40}}
 
 /* ---------- responsive ---------- */
@@ -344,6 +342,6 @@ dialog[open].trimSheet{width:min(720px,calc(100vw - 32px))}
 }
 @media(max-width:360px){.infoForm{grid-template-columns:1fr}.choice{font-size:12px}.tileButton{font-size:11px}.tile,.tilePhoto{width:36px;height:36px}.tray{gap:4px;padding:4px}}
 @media(prefers-reduced-motion:reduce){
- .intro,.bar,.card,.editor,.spirit,.bubble,.choice[aria-checked=true],.eq i,.recDot,.recButton[data-active]::before,.tileButton[data-emphasis],.finish[data-ready]{animation:none}
+ .intro,.bar,.card,.editor,.spirit,.bubble,.choice[aria-checked=true],.eq i,.recDot,.recButton[data-active]::before,.finish[data-ready]{animation:none}
  .choice,.primary,.secondary,.finish,.backButton,.barListen,.tileButton,.wavePlay,.row,.row::before,.rowIcon,.rowLabel small,.pips i{transition:none}
 }

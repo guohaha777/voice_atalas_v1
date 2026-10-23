@@ -2,8 +2,8 @@
    A plain grid of this visit's works; each card shows a tiny score drawn from the work's own arrangement. */
 .shell{min-height:100vh;min-height:100dvh;background:var(--wk-bg);color:var(--wk-ink)}
 .page{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:0 32px 32px}
-/* Guide + title: shared/ui/WorkIntro; the snail's green backdrop. */
-.intro{--guide-bg:radial-gradient(120% 120% at 30% 22%,#fff 0%,#f1fbe4 48%,#dcf3c0 100%);--guide-shadow:inset 0 1px 1px #fff,inset 0 -4px 10px #4f8a1a1f,0 8px 18px #b9e08a59;--intro-margin:14px 0 10px}
+/* Guide + title: shared/ui/WorkIntro. */
+.intro{--intro-margin:14px 0 10px}
 .session{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin:0 0 18px;font-size:13px;font-weight:600;color:var(--wk-muted)}
 .session span{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;background:var(--wk-sun-soft);color:var(--wk-sun-deep);font-weight:700}
 .session svg{width:15px;height:15px}

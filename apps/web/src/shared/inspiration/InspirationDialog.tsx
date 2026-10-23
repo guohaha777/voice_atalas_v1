@@ -2,7 +2,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import type {Inspiration} from '@wanwu-v2/contracts/work';
 import {audioSupported} from '../audio/audioContext';
 import {SequencePlayer} from '../audio/SequencePlayer';
-import {KidIcon} from '../ui/KidIcon';
+import {Glyph,PaperIcon} from '../ui/PaperIcon';
 import {WorkSheet,sheetStyles} from '../ui/WorkSheet';
 import type {InspirationEntry} from './catalog';
 import {inspirationCopy as copy} from './copy';
@@ -54,12 +54,12 @@ export function InspirationDialog({value,entries,onChange,onClose}:{value:Inspir
  return <WorkSheet title={copy.title} description={copy.description} onClose={onClose}>
   <div className={styles.tabs} role="tablist">
    {(['examples','upload'] as const).map(id=><button key={id} type="button" role="tab" aria-selected={tab===id} onClick={()=>{listening.stop();setTab(id);}}>
-    <KidIcon name={id==='examples'?'book':'upload'}/>{copy.tabs[id]}
+    <Glyph name={id==='examples'?'book':'upload'}/>{copy.tabs[id]}
    </button>)}
   </div>
   <div className={styles.panel} role="tabpanel">
    {tab==='examples'?<>
-    <p className={styles.note}><KidIcon name="lock"/>{copy.catalogueNote}</p>
+    <p className={styles.note}><Glyph name="lock"/>{copy.catalogueNote}</p>
     <ul className={styles.entries}>
      {entries.map(entry=>{
       const using=value.kind==='textbook'&&value.entryId===entry.id;
@@ -67,7 +67,7 @@ export function InspirationDialog({value,entries,onChange,onClose}:{value:Inspir
       return <li key={entry.id} data-using={using||undefined}>
        {/* Tap the song to hear it (again to stop); 用这个 chooses it. */}
        <button type="button" className={styles.entryPlay} aria-pressed={sounding} aria-label={`${sounding?copy.stopListen:copy.listen}「${entry.title}」`} onClick={()=>void listening.entry(entry)}>
-        <span className={styles.playDot}><KidIcon name={sounding?'stop':'play'}/></span>
+        <span className={styles.playDot}><Glyph name={sounding?'stop':'play'}/></span>
         <span className={styles.entryText}><b>{entry.title}<em>{copy.example}</em></b><small>{entry.feel}</small></span>
        </button>
        <button type="button" className={styles.use} aria-pressed={using} onClick={()=>{onChange({kind:'textbook',entryId:entry.id});onClose();}}>{using?copy.using:copy.use}</button>
@@ -102,16 +102,16 @@ function TeachingMusicPanel({value,onChange,listening}:{value:Inspiration;onChan
   {/* The whole row plays the teaching music (tap again to stop). */}
   {music?<button type="button" className={styles.music} aria-pressed={sounding} data-using={value.kind==='teaching-music'&&value.musicId===music.id||undefined}
    aria-label={`${sounding?copy.stopListen:copy.listen}「${music.name}」`} onClick={()=>listening.music(music)}>
-   <span className={styles.musicIcon}><KidIcon name="note"/></span>
+   <span className={styles.musicIcon}><PaperIcon name="note" tone="lime"/></span>
    <span className={styles.entryText}><b>{music.name}</b><small>{copy.upload.picked(music.durationMs)} · {copy.upload.local}</small></span>
-   <span className={styles.listen} aria-hidden="true"><KidIcon name={sounding?'stop':'play'}/>{sounding?copy.upload.stop:copy.upload.listen}</span>
+   <span className={styles.listen} aria-hidden="true"><Glyph name={sounding?'stop':'play'}/>{sounding?copy.upload.stop:copy.upload.listen}</span>
   </button>:<p className={styles.hint}>{copy.upload.hint}</p>}
-  <button type="button" className={styles.pick} onClick={()=>input.current?.click()}><KidIcon name="upload"/>{music?copy.upload.repick:copy.upload.pick}</button>
+  <button type="button" className={styles.pick} onClick={()=>input.current?.click()}><Glyph name="upload"/>{music?copy.upload.repick:copy.upload.pick}</button>
   {error&&<p className={styles.error} role="alert">{copy.upload.errors[error]}</p>}
   <div className={styles.flow}>
    <b>{copy.upload.flowTitle}</b>
    <ol>{copy.upload.flow.map(step=><li key={step}>{step}</li>)}</ol>
-   <p><KidIcon name="lock"/>{copy.upload.off}</p>
+   <p><Glyph name="lock"/>{copy.upload.off}</p>
   </div>
  </div>;
 }

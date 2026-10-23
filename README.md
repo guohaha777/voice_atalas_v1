@@ -21,7 +21,7 @@ npm run dev
 | --- | --- | --- |
 | `apps/web/src/` | React + TypeScript 前端，页面、组件、交互控制器 | 是，打包后进入 |
 | `apps/web/public/media/home/` | 定稿角色 / 环境 / 开场图与手绘标题，各有移动、桌面、兼容版本 | 是；浏览器按尺寸选一种 |
-| `apps/web/public/media/start/`、`media/shared/markers/` | 入口弹窗插画、四款声音标记的压缩衍生图 | 是 |
+| `apps/web/public/media/shared/markers/`、`media/shared/markers-hero/` | 四款声音标记的压缩衍生图（普通 / 声音诞生角色用大图） | 是 |
 | `apps/web/public/media/sounds/home/` | 5 段按需播放的短声音 | 是；点击后请求 |
 | `apps/web/public/legal/` | 公开的声音来源与许可 | 是 |
 | `assets-source/home/`、`start/`、`shared/` | 首页、入口弹窗、声音标记的透明 PNG 原件 | 否 |
@@ -48,7 +48,6 @@ npm run dev
 
 ## 入口弹窗与声音诞生页
 
-- `pages/start/`：首页“开始成曲”的三入口弹窗，见 [弹窗验收](docs/development/start-acceptance.md)。
 - `pages/sound-birth/`：`/create`，选声音 / 录音 / 上传 / 纸卡参考、声卡信息溯源、五项选择与对比试听、向导小鸟提示，见 [声音诞生验收](docs/development/sound-birth-acceptance.md)。工作页配色在 `styles/global.css` 的 `--wk-*`，图标在 `shared/ui/KidIcon.tsx`。
 
 修改位置：草木透明度和开场参数在 `pages/home/config/scene.ts`，角色动作在 `config/motions.ts`，手机 / 平板定位在 `HomePage.module.css`。图片裁切、输出尺寸和基准坐标改 `docs/assets/build-recipe.json` 后执行 `npm run assets:build`，不要手改 `shared/scene/home-assets.generated.json`。

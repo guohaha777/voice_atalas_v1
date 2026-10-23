@@ -141,8 +141,8 @@ test('the background music is one score; instruments only change who plays it, n
 });
 
 test('routes /compose and /works',()=>{
- assert.deepEqual(parseRoute('/compose',''),{page:'compose'});
- assert.deepEqual(parseRoute('/works/',''),{page:'works'});
+ assert.deepEqual(parseRoute('/compose'),{page:'compose'});
+ assert.deepEqual(parseRoute('/works/'),{page:'works'});
  assert.equal(routeHref({page:'compose'}),'/compose');assert.equal(routeHref({page:'works'}),'/works');
  assert.equal(WORK_CONTRACT_VERSION,'work-v1');
 });

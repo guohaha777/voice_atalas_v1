@@ -1,15 +1,16 @@
 import {useMemo} from 'react';
 import type {CSSProperties} from 'react';
 import {inspirationCopy} from '../../../shared/inspiration/copy';
-import {KidIcon} from '../../../shared/ui/KidIcon';
+import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon';
+import type {PaperIconName,PaperTone} from '../../../shared/ui/PaperIcon';
 import {composeCopy} from '../config/copy';
 import {secondsLabel,spanChoices} from '../model/scoreLayout';
 import type {Compose} from '../model/useCompose';
 import styles from '../ComposePage.module.css';
 
-/** Card icon coloured in one of the spring palette colours (see global --wk-* tokens); no backing shape. */
-const Badge=({icon,tone}:{icon:Parameters<typeof KidIcon>[0]['name'];tone:'sky'|'pink'|'lime'|'yellow'})=>
- <span className={styles.badge} data-tone={tone}><KidIcon name={icon}/></span>;
+/** Card icon: a solid paper cut-out in a palette colour (no backing shape), as on 声音诞生. */
+const Badge=({icon,tone}:{icon:PaperIconName;tone:PaperTone})=>
+ <span className={styles.badge}><PaperIcon name={icon} tone={tone}/></span>;
 
 /** 想听多久？ The same 20 / 30 / 45 s as the field; shows the real length when the last sound runs past it. */
 export function SpanCard({compose}:{compose:Compose}){
@@ -62,13 +63,13 @@ export function BackgroundCard({compose}:{compose:Compose}){
   <p className={styles.cardLead}>{!background.enabled?composeCopy.backgroundOffLead:chosen.size?composeCopy.instrumentsPlaying(compose.chosen.map(item=>item.name).join('、')):composeCopy.instrumentsNone}</p>
   <div className={styles.trackRow} role="group" aria-label={composeCopy.instrumentsLabel}>
    {compose.instruments.map(item=><button key={item.id} type="button" aria-pressed={chosen.has(item.id)} onClick={()=>compose.toggleInstrument(item.id)}>
-    {chosen.has(item.id)&&<KidIcon name="check"/>}{item.name}
+    {chosen.has(item.id)&&<Glyph name="check"/>}{item.name}
    </button>)}
    {/* Instruments planned for later: one quiet chip, not tappable. */}
-   {compose.comingInstruments.length>0&&<span className={styles.coming} title={compose.comingInstruments.join('、')}><KidIcon name="plus"/>{composeCopy.instrumentMore}<small>{composeCopy.instrumentComing}</small></span>}
+   {compose.comingInstruments.length>0&&<span className={styles.coming} title={compose.comingInstruments.join('、')}><Glyph name="plus"/>{composeCopy.instrumentMore}<small>{composeCopy.instrumentComing}</small></span>}
   </div>
   <label className={styles.volume}>
-   <KidIcon name="volume"/>
+   <Glyph name="volume"/>
    <span className={styles.srOnly}>{composeCopy.volumeLabel}</span>
    <input type="range" min={0} max={1} step={.05} value={background.volume} disabled={!background.enabled}
     style={{'--fill':`${background.volume*100}%`} as CSSProperties} onChange={event=>compose.setBackgroundVolume(Number(event.target.value))}/>

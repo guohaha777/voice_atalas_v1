@@ -43,3 +43,5 @@
 ## 2026-10-22 弹窗素材接入
 
 `start/` 下 6 张源图已通过 `docs/assets/start-recipe.json` + `scripts/build-art-assets.mjs` 生成手机 / 桌面 WebP 与 PNG 回退，发布于 `apps/web/public/media/start/`，哈希见 `start-release-manifest.json`。原件未改动。左上枝叶复用首页现有衍生图。声音标记四款尚未接入，留待声音诞生页。
+
+2026-10-23：开始方式弹窗已删除，`public/media/start/`、`start-recipe.json`、`start-release-manifest.json` 一并移除；`assets-source/start/` 原件保留不动。

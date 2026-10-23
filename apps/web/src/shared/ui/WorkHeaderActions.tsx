@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {KidIcon} from './KidIcon';
+import {Glyph} from './PaperIcon';
 import {WorkSheet,sheetStyles} from './WorkSheet';
 
 const copy={library:'声音库',shelf:'作品书架',
@@ -14,8 +14,8 @@ const copy={library:'声音库',shelf:'作品书架',
 export function WorkHeaderActions({onLibrary,onNavigate,current}:{onLibrary?:()=>void;onNavigate:(path:string)=>void;current?:'shelf'}){
  const [library,setLibrary]=useState(false);
  return <>
-  <button type="button" onClick={onLibrary??(()=>setLibrary(true))}><KidIcon name="sounds"/><span>{copy.library}</span></button>
-  <button type="button" aria-current={current==='shelf'?'page':undefined} onClick={()=>onNavigate('/works')}><KidIcon name="shelf"/><span>{copy.shelf}</span></button>
+  <button type="button" onClick={onLibrary??(()=>setLibrary(true))}><Glyph name="sounds"/><span>{copy.library}</span></button>
+  <button type="button" aria-current={current==='shelf'?'page':undefined} onClick={()=>onNavigate('/works')}><Glyph name="shelf"/><span>{copy.shelf}</span></button>
   {library&&<WorkSheet title={copy.libraryTitle} onClose={()=>setLibrary(false)}>
    <p className={sheetStyles.body}>{copy.libraryBody}</p>
    <div className={sheetStyles.actions}>

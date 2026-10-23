@@ -1,21 +1,17 @@
 import {useEffect,useId,useRef} from 'react';
 import type {ReactNode} from 'react';
-import {Icon} from './Icon';
 import styles from './Dialog.module.css';
 
 type DialogProps={
  title:string;
- /** Visual replacement for the title text (e.g. lettering artwork); it must keep the title readable to assistive tech. */
- titleContent?:ReactNode;
  description?:string;
- eyebrow?:string;
  className?:string;
  children:ReactNode;
  onClose:()=>void;
 };
 
 /** Native modal owns focus containment; the caller owns its content and dismissal state. */
-export function Dialog({title,titleContent,description,eyebrow,className='',children,onClose}:DialogProps){
+export function Dialog({title,description,className='',children,onClose}:DialogProps){
  const ref=useRef<HTMLDialogElement>(null);
  const id=useId();
  useEffect(()=>{
@@ -39,10 +35,9 @@ export function Dialog({title,titleContent,description,eyebrow,className='',chil
    const rect=event.currentTarget.getBoundingClientRect();
    if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)onClose();
   }}>
-  <button className={styles.close} type="button" aria-label="关闭弹窗" onClick={onClose}><Icon name="close"/></button>
+  <button className={styles.close} type="button" aria-label="关闭弹窗" onClick={onClose}><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"><path d="m6 6 12 12m0-12L6 18"/></svg></button>
   <header className={styles.header}>
-   {eyebrow&&<p className={styles.eyebrow}>{eyebrow}</p>}
-   <h2 id={`${id}-title`}>{titleContent??title}</h2>
+   <h2 id={`${id}-title`}>{title}</h2>
    {description&&<p id={`${id}-description`} className={styles.description}>{description}</p>}
   </header>
   {children}

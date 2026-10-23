@@ -1,6 +1,6 @@
 import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
 import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
-import {Glyph} from './PaperIcon';
+import {Glyph} from '../../../shared/ui/PaperIcon';
 import {birthCopy} from '../config/copy';
 import type {useSoundBirth} from '../model/useSoundBirth';
 import {Waveform} from './Waveform';

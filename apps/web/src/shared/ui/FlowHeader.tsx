@@ -1,4 +1,5 @@
 import type {ReactNode} from 'react';
+import {Logo} from './Logo';
 import styles from './FlowHeader.module.css';
 
 type Step={id:string;label:string;path:string|null};
@@ -12,7 +13,7 @@ export function FlowHeader({steps,current,onNavigate,aside}:{steps:readonly Step
   event.preventDefault();onNavigate(path);
  };
  return <header className={styles.header}>
-  <a className={styles.brand} href="/" onClick={go('/')}>万物声谱</a>
+  <a className={styles.brand} href="/" onClick={go('/')} aria-label="万物声谱"><Logo/></a>
   <nav aria-label="创作步骤">
    <ol className={styles.steps}>
     {steps.map((step,i)=>{

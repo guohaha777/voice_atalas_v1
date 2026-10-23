@@ -1,5 +1,5 @@
 import {useEffect,useState} from 'react';
-import {KidIcon} from '../../../shared/ui/KidIcon';
+import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon';
 import {composeCopy} from '../config/copy';
 import {discoveryText} from '../config/discoveryCopy';
 import type {Compose} from '../model/useCompose';
@@ -23,7 +23,7 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{compose:Compose;onSav
   <section className={styles.discovery} aria-labelledby="discovery-title">
    <button type="button" className={styles.bulb} aria-expanded={teaching} aria-controls="teach-panel" disabled={!discoveries.length}
     aria-label={teaching?composeCopy.bulbClose:composeCopy.bulbOpen} title={teaching?composeCopy.bulbClose:composeCopy.bulbOpen} onClick={()=>setTeaching(open=>!open)}>
-    <KidIcon name="bulb"/>
+    <PaperIcon name="bulb" tone="yellow"/>
    </button>
    <div>
     <h3 id="discovery-title">{composeCopy.discoveryTitle}<small>{composeCopy.discoveryNote}</small></h3>
@@ -33,20 +33,20 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{compose:Compose;onSav
   </section>
   <div className={styles.footerActions}>
    <button type="button" className={styles.saveButton} data-saved={compose.shelved||undefined} onClick={onSave}>
-    <KidIcon name={compose.shelved?'check':'save'}/>{compose.shelved?composeCopy.saved:composeCopy.save}
+    <Glyph name={compose.shelved?'check':'save'}/>{compose.shelved?composeCopy.saved:composeCopy.save}
    </button>
-   <button type="button" className={styles.backButton} onClick={onBack}><KidIcon name="back"/>{composeCopy.back}</button>
-   <button type="button" className={styles.againButton} onClick={onAgain}><KidIcon name="plus"/>{composeCopy.again}</button>
+   <button type="button" className={styles.backButton} onClick={onBack}><Glyph name="back"/>{composeCopy.back}</button>
+   <button type="button" className={styles.againButton} onClick={onAgain}><Glyph name="plus"/>{composeCopy.again}</button>
    <p className={styles.saveMeta}>
     <button type="button" onClick={onSave}>{composeCopy.saveSettings}<span aria-hidden="true">▾</span></button>
-    <i aria-hidden="true"/><span><KidIcon name="lock"/>{composeCopy.saveVisibility}</span>
+    <i aria-hidden="true"/><span><Glyph name="lock"/>{composeCopy.saveVisibility}</span>
    </p>
   </div>
   {teaching&&discoveries.length>0&&<section id="teach-panel" className={styles.teach} aria-labelledby="teach-title">
    <header>
-    <h3 id="teach-title"><KidIcon name="bulb"/>{composeCopy.teachTitle}</h3>
-    <button type="button" className={styles.teachPlay} onClick={compose.restart}><KidIcon name="play"/>{composeCopy.teachPlay}</button>
-    <button type="button" className={styles.teachClose} aria-label={composeCopy.bulbClose} onClick={()=>setTeaching(false)}><KidIcon name="plus"/></button>
+    <h3 id="teach-title"><PaperIcon name="bulb" tone="yellow"/>{composeCopy.teachTitle}</h3>
+    <button type="button" className={styles.teachPlay} onClick={compose.restart}><Glyph name="play"/>{composeCopy.teachPlay}</button>
+    <button type="button" className={styles.teachClose} aria-label={composeCopy.bulbClose} onClick={()=>setTeaching(false)}><Glyph name="plus"/></button>
    </header>
    <p className={styles.teachLead}>{composeCopy.teachLead}</p>
    <ol>

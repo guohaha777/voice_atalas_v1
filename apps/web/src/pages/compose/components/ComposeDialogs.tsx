@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {VISIBILITIES,WORK_TITLE_MAX} from '@wanwu-v2/contracts/work';
-import {KidIcon} from '../../../shared/ui/KidIcon';
+import {Glyph} from '../../../shared/ui/PaperIcon';
 import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
 import {composeCopy} from '../config/copy';
 import type {Compose} from '../model/useCompose';
@@ -26,19 +26,19 @@ export function SaveDialog({compose,onClose}:{compose:Compose;onClose:()=>void})
      const open=visibility==='private';
      return <label key={visibility} data-off={!open||undefined}>
       <input type="radio" name="visibility" value={visibility} checked={open} disabled={!open} readOnly/>
-      <KidIcon name={open?'check':'lock'}/>
+      <Glyph name={open?'check':'lock'}/>
       <span>{save.visibilities[visibility]}</span>
       {!open&&<small>{save.visibilityOff}</small>}
      </label>;
     })}
    </fieldset>
    <button type="button" className={styles.shareButton} onClick={()=>{void compose.share();setShareNote(true);}}>
-    <KidIcon name="share"/>{save.share}<small>{save.shareOff}</small>
+    <Glyph name="share"/>{save.share}<small>{save.shareOff}</small>
    </button>
    <p className={sheetStyles.note} role="status">{shareNote?composeCopy.notices['share-off']:save.sessionOnly}</p>
    <div className={sheetStyles.actions}>
     <button type="button" className={sheetStyles.secondary} onClick={onClose}>{save.cancel}</button>
-    <button type="submit" className={sheetStyles.primary} disabled={busy||!title.trim()}><KidIcon name="save"/>{compose.state.shelved?save.update:save.submit}</button>
+    <button type="submit" className={sheetStyles.primary} disabled={busy||!title.trim()}><Glyph name="save"/>{compose.state.shelved?save.update:save.submit}</button>
    </div>
   </form>
  </WorkSheet>;
@@ -51,7 +51,7 @@ export function AgainDialog({onSave,onDiscard,onClose}:{onSave:()=>void;onDiscar
  return <WorkSheet title={again.title} description={again.description} onClose={onClose}>
   <div className={sheetStyles.actions}>
    <button type="button" className={sheetStyles.secondary} onClick={onDiscard}>{again.discard}</button>
-   <button type="button" className={sheetStyles.primary} onClick={onSave}><KidIcon name="save"/>{again.saveFirst}</button>
+   <button type="button" className={sheetStyles.primary} onClick={onSave}><Glyph name="save"/>{again.saveFirst}</button>
   </div>
  </WorkSheet>;
 }

@@ -17,13 +17,13 @@ const recording:SoundSource={id:'recording:1',kind:'local-recording',label:'我�
 const ready=(source:SoundSource)=>({type:'source-ready' as const,source});
 const chooseAll=(state:ReturnType<typeof initialSoundBirth>)=>{for(const [dimension,value] of Object.entries(NEUTRAL_SHAPE))state=soundBirthReducer(state,{type:'choose',dimension:dimension as keyof typeof NEUTRAL_SHAPE,value});return state;};
 
-test('only the library entry opens a dialog first; nothing is preselected',()=>{
- assert.equal(initialSoundBirth('library').dialog,'library');
- for(const entry of ['card','upload',null] as const)assert.equal(initialSoundBirth(entry).dialog,null);
- assert.deepEqual(initialSoundBirth(null).shape,{});
+test('the page opens with no dialog and nothing preselected',()=>{
+ assert.equal(initialSoundBirth().dialog,null);
+ assert.deepEqual(initialSoundBirth().shape,{});
+ assert.equal(initialSoundBirth(2).markerIndex,2);
 });
 test('choices are validated and kept when the sound changes; a new sound brings its own name',()=>{
- let state=soundBirthReducer(initialSoundBirth('card'),{type:'choose',dimension:'pitch',value:'high'});
+ let state=soundBirthReducer(initialSoundBirth(),{type:'choose',dimension:'pitch',value:'high'});
  assert.equal(soundBirthReducer(state,{type:'choose',dimension:'pitch',value:'loudest'}),state);
  state=soundBirthReducer(state,ready(example));
  state=soundBirthReducer(state,{type:'rename',name:'  小鸟早上好呀今天天气真好呀啊  '});
@@ -34,16 +34,16 @@ test('choices are validated and kept when the sound changes; a new sound brings 
  assert.equal(normalizeSoundName('   ','鸟鸣'),'鸟鸣');
 });
 test('the marker shows who made the card: suggested from a local recorder, editable, never from an example credit',()=>{
- assert.equal(soundBirthReducer(initialSoundBirth(null),ready(example)).maker,null);
+ assert.equal(soundBirthReducer(initialSoundBirth(),ready(example)).maker,null);
  const local={...recording,provenance:{...recording.provenance,recordedBy:'小林'}};
- let state=soundBirthReducer(initialSoundBirth(null),ready(local));
+ let state=soundBirthReducer(initialSoundBirth(),ready(local));
  assert.equal(state.maker,'小林');
  state=soundBirthReducer(state,{type:'maker',name:' 小 周 '});
  assert.equal(state.maker,'小周');
  assert.equal(soundBirthReducer(state,ready(local)).maker,'小周');
  assert.equal(soundBirthReducer(state,{type:'maker',name:'   '}).maker,null);
  assert.equal(normalizeMakerName('一二三四五六七八'),'一二三四五六');
- assert.equal(soundBirthReducer(initialSoundBirth('library'),ready(example)).dialog,null);
+ assert.equal(soundBirthReducer(initialSoundBirth(),ready(example)).dialog,null);
 });
 test('provenance: examples are traceable already; local sources need name, recorder, date and place',()=>{
  assert.deepEqual(missingProvenance(example),[]);
@@ -57,7 +57,7 @@ test('remaining dimensions follow the row order',()=>{
  assert.deepEqual(remainingDimensions(NEUTRAL_SHAPE),[]);
 });
 test('finish guides in order: sound, then provenance; the five choices are optional',()=>{
- let state=initialSoundBirth(null);
+ let state=initialSoundBirth();
  assert.equal(finishCheck(state).kind,'no-source');
  state=soundBirthReducer(state,ready(recording));
  assert.deepEqual(finishCheck(state),{kind:'missing-provenance',fields:['recordedBy','place']});
@@ -68,7 +68,7 @@ test('finish guides in order: sound, then provenance; the five choices are optio
  assert.deepEqual(toSoundUnitDraft(state,'unit:1',new Date(0))?.shape,{});
 });
 test('tapping a choice again takes it back; only that dimension returns to the original',()=>{
- let state=soundBirthReducer(initialSoundBirth(null),{type:'choose',dimension:'pitch',value:'high'});
+ let state=soundBirthReducer(initialSoundBirth(),{type:'choose',dimension:'pitch',value:'high'});
  state=soundBirthReducer(state,{type:'choose',dimension:'pattern',value:'repeat'});
  state=soundBirthReducer(state,{type:'clear',dimension:'pitch'});
  assert.deepEqual(state.shape,{pattern:'repeat'});
@@ -104,11 +104,11 @@ test('trimming a long upload: starts with the first 45 s, stays inside the file 
  assert.equal(trimClock(12_400),'0:12.4');
 });
 test('a source update for another source is ignored',()=>{
- const state=soundBirthReducer(initialSoundBirth(null),ready(recording));
+ const state=soundBirthReducer(initialSoundBirth(),ready(recording));
  assert.equal(soundBirthReducer(state,{type:'source-update',source:{...example}}),state);
 });
 test('a draft round-trips through the contract parser',()=>{
- const state=chooseAll(soundBirthReducer(initialSoundBirth(null),ready(example)));
+ const state=chooseAll(soundBirthReducer(initialSoundBirth(),ready(example)));
  const draft=toSoundUnitDraft(state,'unit:1',new Date(0));
  assert.ok(draft);
  assert.equal(draft.version,SOUND_CONTRACT_VERSION);
@@ -158,11 +158,11 @@ test('peaks are normalised and robust to empty input',()=>{
  assert.equal(Math.max(...peaks),1);
  assert.deepEqual(computePeaks([new Float32Array(0)],4),[0,0,0,0]);
 });
-test('routes: entries parse, unknown entries are dropped, other paths go home',()=>{
- assert.deepEqual(parseRoute('/create','?from=card'),{page:'sound-birth',from:'card'});
- assert.deepEqual(parseRoute('/create/','?from=evil'),{page:'sound-birth',from:null});
- assert.deepEqual(parseRoute('/whatever',''),{page:'home'});
- assert.equal(routeHref({page:'sound-birth',from:'library'}),'/create?from=library');
+test('routes: /create opens 声音诞生 directly, other paths go home',()=>{
+ assert.deepEqual(parseRoute('/create'),{page:'sound-birth'});
+ assert.deepEqual(parseRoute('/create/'),{page:'sound-birth'});
+ assert.deepEqual(parseRoute('/whatever'),{page:'home'});
+ assert.equal(routeHref({page:'sound-birth'}),'/create');
 });
 test('the card bubble describes chosen options in row order',()=>{
  const labels={pitch:{high:'高高的'},duration:{},contour:{wavy:'有起伏'},intensity:{},pattern:{}};
@@ -170,8 +170,8 @@ test('the card bubble describes chosen options in row order',()=>{
  assert.equal(describeShape({},labels),'');
 });
 test('a local card can only be confirmed once its info is traceable; examples start confirmed',()=>{
- assert.equal(soundBirthReducer(initialSoundBirth(null),ready(example)).cardConfirmed,true);
- let state=soundBirthReducer(initialSoundBirth(null),ready(recording));
+ assert.equal(soundBirthReducer(initialSoundBirth(),ready(example)).cardConfirmed,true);
+ let state=soundBirthReducer(initialSoundBirth(),ready(recording));
  assert.equal(state.cardConfirmed,false);
  assert.equal(soundBirthReducer(state,{type:'card',confirmed:true}),state);
  state=soundBirthReducer(state,{type:'source-update',source:{...recording,provenance:{...recording.provenance,recordedBy:'小林',place:'学校后山'}}});

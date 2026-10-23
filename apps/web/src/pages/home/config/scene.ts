@@ -15,6 +15,9 @@ export const sceneGroups = [
  {id:'pond',rect:[0,476,578,484],members:['env-pond-left','frog','snail']},
  {id:'bank',rect:[1083,615,357,345],members:['env-bank-right','drop']},
 ] as const;
+/** Display size of a character relative to its artwork box, anchored at its feet (bottom centre). The image is unchanged. */
+export const characterScale:Record<string,number> = {drop:2/3};
+
 export const mobilePlacement:Record<string,readonly number[]> = {
  cicada:[265,32,73,89],
  bird:[154,201,196,152], frog:[96,104,232,202],

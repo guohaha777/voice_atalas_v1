@@ -1,8 +1,7 @@
 import {useState} from 'react';
 import {flowSteps} from '../../app/navigation';
-import {WorkBackdrop} from '../../shared/scene/WorkBackdrop';
 import {FlowHeader} from '../../shared/ui/FlowHeader';
-import {KidIcon} from '../../shared/ui/KidIcon';
+import {Glyph} from '../../shared/ui/PaperIcon';
 import {WorkHeaderActions} from '../../shared/ui/WorkHeaderActions';
 import {WorkIntro} from '../../shared/ui/WorkIntro';
 import {composeCopy} from './config/copy';
@@ -48,7 +47,6 @@ export function ComposePage({onNavigate}:{onNavigate:(path:string)=>void}){
   else void startAgain();
  };
  return <div className={styles.shell}>
-  <WorkBackdrop/>
   <FlowHeader steps={flowSteps} current="compose" onNavigate={onNavigate} aside={<WorkHeaderActions onNavigate={onNavigate}/>}/>
   <main className={styles.page}>
    <WorkIntro title={composeCopy.title} subtitle={composeCopy.subtitle} guide={composeGuide} text={text} fit className={styles.intro}/>
@@ -61,7 +59,7 @@ export function ComposePage({onNavigate}:{onNavigate:(path:string)=>void}){
     </div>
    </div>
    <p className={styles.notice} role="status" aria-live="polite" data-tone={savedNote?'info':notice?.tone}>
-    {savedNote?<>{composeCopy.savedNote}<button type="button" onClick={()=>onNavigate('/works')}><KidIcon name="shelf"/>{composeCopy.goShelf}</button></>
+    {savedNote?<>{composeCopy.savedNote}<button type="button" onClick={()=>onNavigate('/works')}><Glyph name="shelf"/>{composeCopy.goShelf}</button></>
      :notice?composeCopy.notices[notice.key]:''}
    </p>
    <FooterBar compose={compose} onSave={requestSave} onBack={()=>onNavigate('/world')} onAgain={again}/>

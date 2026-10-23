@@ -1,5 +1,5 @@
 import type {CSSProperties} from 'react';
-import {KidIcon} from '../../../shared/ui/KidIcon';
+import {Glyph} from '../../../shared/ui/PaperIcon';
 import {composeCopy} from '../config/copy';
 import {clockText} from '../model/scoreLayout';
 import type {Compose} from '../model/useCompose';
@@ -16,10 +16,10 @@ export function Transport({compose}:{compose:Compose}){
  const fill=total?Math.min(1,now/total):0;
  return <div className={styles.transport}>
   <button type="button" className={styles.playButton} aria-pressed={playing} data-busy={preparing||undefined} disabled={!ready} onClick={compose.togglePlay}>
-   <span className={styles.playCircle}><KidIcon name={playing||preparing?'pause':'play'}/></span>
+   <span className={styles.playCircle}><Glyph name={playing||preparing?'pause':'play'}/></span>
    <span>{preparing?composeCopy.preparing:playing?composeCopy.pause:composeCopy.play}</span>
   </button>
-  <button type="button" className={styles.restartButton} disabled={!ready} onClick={compose.restart}><KidIcon name="restart"/><span>{composeCopy.restart}</span></button>
+  <button type="button" className={styles.restartButton} disabled={!ready} onClick={compose.restart}><Glyph name="restart"/><span>{composeCopy.restart}</span></button>
   <div className={styles.progress}>
    <input type="range" min={0} max={total||1} step={.1} value={Math.min(now,total)} disabled={!ready}
     aria-label={composeCopy.progressLabel} aria-valuetext={composeCopy.progressValue(nowText,totalText)} style={{'--fill':`${fill*100}%`} as CSSProperties}

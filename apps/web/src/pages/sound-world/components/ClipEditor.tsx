@@ -1,5 +1,5 @@
 import {WorkSheet} from '../../../shared/ui/WorkSheet';
-import {KidIcon} from '../../../shared/ui/KidIcon';
+import {Glyph} from '../../../shared/ui/PaperIcon';
 import {worldCopy} from '../config/copy';
 import {secondsText} from '../model/clipEditing';
 import {useClipEditor} from '../model/useClipEditor';
@@ -41,15 +41,15 @@ export function ClipEditor({world,eventId,onClose}:{world:SoundWorld;eventId:str
     <p className={styles.clipReadout} aria-live="polite">{copy.picked(secondsText(clip.startMs),secondsText(clip.endMs),secondsText(clip.endMs-clip.startMs))}</p>
     <p className={styles.clipHeard}>{copy.heard(secondsText(editor.heard*1000),copy.pattern(unit.shape.pattern))}</p>
     <div className={styles.clipTools}>
-     <button type="button" aria-pressed={listeningClip} onClick={editor.listenClip}><KidIcon name={listeningClip?'stop':'play'}/>{listeningClip?copy.stop:copy.listenClip}</button>
-     <button type="button" aria-pressed={listeningSource} onClick={editor.listenSource}><KidIcon name={listeningSource?'stop':'play'}/>{listeningSource?copy.stop:copy.listenSource}</button>
-     <button type="button" onClick={editor.useWhole}><KidIcon name="sounds"/>{copy.useWhole}</button>
+     <button type="button" aria-pressed={listeningClip} onClick={editor.listenClip}><Glyph name={listeningClip?'stop':'play'}/>{listeningClip?copy.stop:copy.listenClip}</button>
+     <button type="button" aria-pressed={listeningSource} onClick={editor.listenSource}><Glyph name={listeningSource?'stop':'play'}/>{listeningSource?copy.stop:copy.listenSource}</button>
+     <button type="button" onClick={editor.useWhole}><Glyph name="sounds"/>{copy.useWhole}</button>
     </div>
    </>}
   </div>
   <div className={styles.clipActions}>
    <button type="button" className={styles.clipCancel} onClick={onClose}>{copy.cancel}</button>
-   <button type="button" className={styles.clipApply} disabled={!ready} onClick={editor.apply}><KidIcon name="check"/>{copy.apply}</button>
+   <button type="button" className={styles.clipApply} disabled={!ready} onClick={editor.apply}><Glyph name="check"/>{copy.apply}</button>
   </div>
  </WorkSheet>;
 }

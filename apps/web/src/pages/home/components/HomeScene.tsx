@@ -2,16 +2,19 @@ import {useState} from 'react';
 import type {CSSProperties,RefObject} from 'react';
 import {ResponsivePicture} from '../../../shared/media/ResponsivePicture';
 import type {SceneLayer} from '../../../shared/media/types';
-import {sceneLayers,homeAssets,foliageOpacity,sceneGroups,mobilePlacement} from '../config/scene';
+import {sceneLayers,homeAssets,foliageOpacity,sceneGroups,mobilePlacement,characterScale} from '../config/scene';
 import styles from '../HomePage.module.css';
 type Props={sceneRef:RefObject<HTMLDivElement|null>;waiting:boolean;active:{id:string|null;phase:string};onInteract:(asset:SceneLayer,el:HTMLElement)=>void};
 function Layer({asset,active,onInteract,group}:{asset:SceneLayer;active:Props['active'];onInteract:Props['onInteract'];group:readonly [number,number,number,number]}){
  const [failed,setFailed]=useState(false);
  const [gx,gy]=group;
  const [worldX,worldY,w,h]=asset.rect;
- const x=worldX-gx,y=worldY-gy;
- const [mx,my,mw,mh]=mobilePlacement[asset.id]||[x,y,w,h];
- const style={'--x':x,'--y':y,'--w':w,'--h':h,'--mx':mx,'--my':my,'--mw':mw,'--mh':mh,'--z':asset.z,'--origin':asset.origin||'center',opacity:foliageOpacity[asset.id]} as CSSProperties;
+ const s=characterScale[asset.id]??1;
+ // Shrink around the feet so a smaller character still stands on the same spot.
+ const fit=([px,py,pw,ph]:readonly number[])=>[px!+pw!*(1-s)/2,py!+ph!*(1-s),pw!*s,ph!*s];
+ const [x,y,dw,dh]=fit([worldX-gx,worldY-gy,w,h]);
+ const [mx,my,mw,mh]=fit(mobilePlacement[asset.id]||[worldX-gx,worldY-gy,w,h]);
+ const style={'--x':x,'--y':y,'--w':dw,'--h':dh,'--mx':mx,'--my':my,'--mw':mw,'--mh':mh,'--z':asset.z,'--origin':asset.origin||'center',opacity:foliageOpacity[asset.id]} as CSSProperties;
  const className=[styles.asset,styles[asset.kind],failed?styles.failed:'',active.id===asset.id?styles['is-'+active.phase]:''].filter(Boolean).join(' ');
  const picture=<ResponsivePicture asset={asset} onFailure={()=>setFailed(true)}/>;
  if(asset.kind==='character')return <button type="button" className={className} style={style} data-id={asset.id} data-label={asset.label}

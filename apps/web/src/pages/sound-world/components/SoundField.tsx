@@ -3,7 +3,7 @@ import type {CSSProperties,MouseEvent,PointerEvent,RefObject} from 'react';
 import {MAX_ROWS,SPAN_CHOICES,eventsInOrder} from '@wanwu-v2/contracts/arrangement';
 import {SoundMarker} from '../../../shared/markers/SoundMarker';
 import {markerFor,markerNumber} from '../../../shared/markers/markers';
-import {KidIcon} from '../../../shared/ui/KidIcon';
+import {Glyph} from '../../../shared/ui/PaperIcon';
 import {worldCopy} from '../config/copy';
 import {secondsText} from '../model/clipEditing';
 import {FIELD_INSET,spotPosition,timePosition} from '../model/fieldGeometry';
@@ -55,7 +55,7 @@ export function SoundField({world,area,locate,drag,bind,onTrim}:Props){
   <div className={styles.fieldHead}>
    <p className={styles.fieldHint}>{worldCopy.fieldHint}</p>
    {arrangement.origin==='example'&&<div className={styles.exampleBadge}>
-    <span><KidIcon name="sounds"/>{worldCopy.exampleBadge}</span>
+    <span><Glyph name="sounds"/>{worldCopy.exampleBadge}</span>
     <button type="button" onClick={world.clearEvents}>{worldCopy.clearExample}</button>
    </div>}
    <div className={styles.span} role="radiogroup" aria-label={worldCopy.spanLabel}>
@@ -64,19 +64,19 @@ export function SoundField({world,area,locate,drag,bind,onTrim}:Props){
    </div>
    <div className={styles.rowTools}>
     {canRemoveRow(arrangement)&&<button type="button" className={styles.rowTool} onClick={world.removeRow}>{worldCopy.removeRow}</button>}
-    <button type="button" className={styles.rowTool} data-primary onClick={world.addRow} disabled={rows>=MAX_ROWS}><KidIcon name="plus"/>{worldCopy.addRow}</button>
+    <button type="button" className={styles.rowTool} data-primary onClick={world.addRow} disabled={rows>=MAX_ROWS}><Glyph name="plus"/>{worldCopy.addRow}</button>
    </div>
   </div>
   <div className={styles.fieldGrid} style={{'--rows':rows} as CSSProperties}>
    <div className={styles.rowButtons}>
     {rowIndexes.map(row=><button key={row} type="button" className={styles.rowButton} aria-label={rowLabel(row)} onClick={()=>world.tapRow(row)}>
-     {selectedUnit?<KidIcon name="plus"/>:<span aria-hidden="true">{row+1}</span>}
+     {selectedUnit?<Glyph name="plus"/>:<span aria-hidden="true">{row+1}</span>}
     </button>)}
    </div>
    <div ref={area} className={styles.lanes} onClick={tap} onPointerMove={track} onPointerLeave={()=>setHover(null)}>
     {rowIndexes.map(row=><div key={row} className={styles.lane} aria-hidden="true"/>)}
     {!arrangement.events.length&&<p className={styles.emptyHint}>{worldCopy.emptyField}</p>}
-    {target&&<span className={styles.dropTarget} style={spotPosition(target,rows)} aria-hidden="true"><KidIcon name="plus"/></span>}
+    {target&&<span className={styles.dropTarget} style={spotPosition(target,rows)} aria-hidden="true"><Glyph name="plus"/></span>}
     {/* Length tails sit under the markers: a bar as long as the sound is heard, on the same seconds scale as the ruler. */}
     {arrangement.events.map(event=>{
      const unit=unitOf(arrangement,event.unitId);if(!unit)return null;
@@ -110,7 +110,7 @@ export function SoundField({world,area,locate,drag,bind,onTrim}:Props){
          else if(key.key==='Escape')world.deselect();
          else if(key.key.startsWith('Arrow')&&world.keyMove(event.id,key.key))key.preventDefault();
         }}>
-        <SoundMarker index={unit.markerIndex} className={styles.placedMarker}/>
+        <SoundMarker index={unit.markerIndex} className={styles.placedMarker} face={world.sounding.has(event.id)?'happy':'calm'}/>
         <span className={styles.placedName}>{markerNumber(unit.markerIndex)} · {unit.name}{short&&<small>{worldCopy.seconds(secondsText(seconds*1000))}</small>}</span>
        </button>
       </li>;

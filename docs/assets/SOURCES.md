@@ -43,4 +43,4 @@ v1 的整句标题原件和旧生成记录保存在项目外 `万物声谱_视�
 
 ## 2026-10-22 开始方式弹窗 · 网页衍生图
 
-上述弹窗 6 张透明 PNG 仅做透明边界裁紧、等比缩小与 WebP / 调色板 PNG 压缩，未重绘。配方 `start-recipe.json`，公开文件哈希 `start-release-manifest.json`。
+上述弹窗 6 张透明 PNG 仅做透明边界裁紧、等比缩小与 WebP / 调色板 PNG 压缩，未重绘。2026-10-23 开始方式弹窗删除：网页衍生图（`public/media/start/`）、配方与发布清单已移除；6 张原件仍留在 `assets-source/start/` 备查。

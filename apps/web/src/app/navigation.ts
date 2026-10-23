@@ -8,14 +8,8 @@ export const flowSteps=[
  {id:'compose',label:'万物成曲',path:'/compose'},
 ] as const;
 
-/** The three ways in from the start dialog; each opens 声音诞生 in the matching state. */
-export type CreationEntry='card'|'upload'|'library';
-export const creationEntryIds:readonly CreationEntry[]=['card','upload','library'];
-/** Navigation seam only: the app maps an entry to the sound-birth page state. No upload or API call happens here. */
-export type CreationEntryIntent={entry:CreationEntry};
-export type CreationEntryResult={status:'unavailable'}|{status:'opened'};
 export const destinations={
- create:{label:'开始成曲',page:'选择开始方式',ready:true},
+ create:{label:'开始成曲',page:'声音诞生',path:'/create',ready:true},
  library:{label:'声音库',page:'声音库',path:'/sounds',ready:false},
  shelf:{label:'作品书架',page:'作品书架',path:'/works',ready:true},
  login:{label:'老师 / 贡献者登录',page:'登录',path:'/sign-in',ready:false},

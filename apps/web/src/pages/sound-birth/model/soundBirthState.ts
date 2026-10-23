@@ -1,6 +1,5 @@
 import {SOUND_CHOICES,SOUND_CONTRACT_VERSION,SOUND_DIMENSIONS,missingProvenance,normalizeMakerName,normalizeSoundName} from '@wanwu-v2/contracts/sound';
 import type {ChosenShape,SoundDimension,SoundShape,SoundSource,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
-import type {CreationEntry} from '../../../app/navigation';
 
 /** `trim`: an upload longer than the source limit, waiting for the child to pick the part to keep. */
 export type CaptureDialog='record'|'library'|'trim'|null;
@@ -37,8 +36,8 @@ export type SoundBirthAction=
  |{type:'notice';notice:Notice};
 
 /** `markerIndex` is assigned by the work this sound joins (its number in 万物声场), so the marker never changes later. */
-export function initialSoundBirth(entry:CreationEntry|null,markerIndex=0):SoundBirthState{
- return {source:null,name:'',maker:null,cardConfirmed:false,shape:{},cardPhoto:null,dialog:entry==='library'?'library':null,reading:false,notice:null,markerIndex};
+export function initialSoundBirth(markerIndex=0):SoundBirthState{
+ return {source:null,name:'',maker:null,cardConfirmed:false,shape:{},cardPhoto:null,dialog:null,reading:false,notice:null,markerIndex};
 }
 
 export function soundBirthReducer(state:SoundBirthState,action:SoundBirthAction):SoundBirthState{

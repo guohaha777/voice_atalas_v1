@@ -4,11 +4,10 @@ import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
 import {flowSteps} from '../../app/navigation';
 import {InspirationDialog} from '../../shared/inspiration/InspirationDialog';
 import {SoundMarker} from '../../shared/markers/SoundMarker';
-import {WorkBackdrop} from '../../shared/scene/WorkBackdrop';
 import {FlowHeader} from '../../shared/ui/FlowHeader';
 import {WorkHeaderActions} from '../../shared/ui/WorkHeaderActions';
 import {WorkIntro} from '../../shared/ui/WorkIntro';
-import {KidIcon} from '../../shared/ui/KidIcon';
+import {Glyph} from '../../shared/ui/PaperIcon';
 import {worldCopy} from './config/copy';
 import {guideLines,worldGuide} from './config/guide';
 import {locateSpot} from './model/fieldGeometry';
@@ -71,7 +70,6 @@ export function SoundWorldPage({onNavigate,onFinish}:{onNavigate:(path:string)=>
  const dragUnit=drag&&(drag.item.kind==='unit'?unitOf(world.state.arrangement,drag.item.unitId)
   :unitOf(world.state.arrangement,world.state.arrangement?.events.find(event=>drag.item.kind==='event'&&event.id===drag.item.eventId)?.unitId??''));
  return <div className={styles.shell} data-dragging={!!drag||undefined}>
-  <WorkBackdrop/>
   <FlowHeader steps={flowSteps} current="world" onNavigate={onNavigate} aside={<WorkHeaderActions onNavigate={onNavigate} onLibrary={()=>setMore('example')}/>}/>
   <main className={styles.page}>
    <WorkIntro title={worldCopy.title} subtitle={worldCopy.subtitle} guide={worldGuide} text={text} fit/>
@@ -82,18 +80,18 @@ export function SoundWorldPage({onNavigate,onFinish}:{onNavigate:(path:string)=>
      <MoodPicker world={world}/>
      <p className={styles.notice} role="status" aria-live="polite" data-tone={notice?.tone}>{notice?worldCopy.notices[notice.key]:''}</p>
      <div className={styles.actions}>
-      <button type="button" className={styles.backButton} onClick={()=>onNavigate('/create')}><KidIcon name="back"/>{worldCopy.back}</button>
+      <button type="button" className={styles.backButton} onClick={()=>onNavigate('/create')}><Glyph name="back"/>{worldCopy.back}</button>
       <button type="button" className={styles.playAll} aria-pressed={playingAll} data-busy={busy||undefined} disabled={!world.state.arrangement} onClick={()=>void world.playAll()}>
-       <span className={styles.playIcon}><KidIcon name={playingAll?'stop':'play'}/></span>{busy?worldCopy.preparing:playingAll?worldCopy.stopAll:worldCopy.playAll}
+       <span className={styles.playIcon}><Glyph name={playingAll?'stop':'play'}/></span>{busy?worldCopy.preparing:playingAll?worldCopy.stopAll:worldCopy.playAll}
       </button>
       <button type="button" className={styles.finish} aria-disabled={world.state.blocked||undefined} onClick={()=>void world.finish()}>
-       {world.state.blocked?worldCopy.finishUnavailable:worldCopy.finish}<KidIcon name="arrow"/>
+       {world.state.blocked?worldCopy.finishUnavailable:worldCopy.finish}<Glyph name="arrow"/>
       </button>
      </div>
     </div>
    </div>
   </main>
-  {drag&&dragUnit&&<span className={styles.dragGhost} style={{left:drag.x,top:drag.y}} aria-hidden="true"><SoundMarker index={dragUnit.markerIndex} className={styles.ghostMarker}/></span>}
+  {drag&&dragUnit&&<span className={styles.dragGhost} style={{left:drag.x,top:drag.y}} aria-hidden="true"><SoundMarker index={dragUnit.markerIndex} className={styles.ghostMarker} face="happy"/></span>}
   {more&&<MoreSoundsDialog world={world} initial={more} onClose={()=>setMore(null)} onMakeNew={()=>{setMore(null);onNavigate('/create');}}/>}
   {trimming&&<ClipEditor world={world} eventId={trimming} onClose={()=>setTrimming(null)}/>}
   {inspiring&&<InspirationDialog value={world.inspiration} entries={world.inspirationEntries} onChange={world.setInspiration} onClose={()=>setInspiring(false)}/>}

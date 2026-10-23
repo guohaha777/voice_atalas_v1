@@ -1,11 +1,10 @@
 import {useState} from 'react';
 import {SOUND_NAME_MAX} from '@wanwu-v2/contracts/sound';
 import type {SoundSource} from '@wanwu-v2/contracts/sound';
-import type {CreationEntry} from '../../../app/navigation';
 import {birthCopy} from '../config/copy';
 import type {useSoundBirth} from '../model/useSoundBirth';
 import {Equalizer} from './Equalizer';
-import {Glyph} from './PaperIcon';
+import {Glyph} from '../../../shared/ui/PaperIcon';
 import {Waveform} from './Waveform';
 import styles from '../SoundBirthPage.module.css';
 
@@ -17,7 +16,7 @@ const day=(iso:string|null)=>iso?`${Number(iso.slice(5,7))}月${Number(iso.slice
  * (the original stays behind as a dotted line once there is a shaped version) and the two compare buttons.
  * A confirmed local sound can go back to editing its info; examples are already documented.
  */
-export function SoundCard({birth,entry}:{birth:Birth;entry:CreationEntry|null}){
+export function SoundCard({birth}:{birth:Birth}){
  const {state}=birth,source=state.source;
  const big=!source||state.cardConfirmed;
  return <section className={styles.card} data-empty={!source||undefined} aria-labelledby="my-card-title">
@@ -37,7 +36,7 @@ export function SoundCard({birth,entry}:{birth:Birth;entry:CreationEntry|null}){
    {big&&<p className={styles.cardFoot}>{birthCopy.keepOriginal}</p>}
   </>:<>
    <p className={styles.name} data-empty>{state.reading?birthCopy.reading:birthCopy.noSound}</p>
-   <p className={styles.cardEmpty}>{birthCopy.emptyCard[entry??'direct']}</p>
+   <p className={styles.cardEmpty}>{birthCopy.emptyCard}</p>
   </>}
  </section>;
 }

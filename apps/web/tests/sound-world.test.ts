@@ -195,8 +195,8 @@ test('work session: 声音诞生 hand-off numbers sounds and replaces an untouch
 });
 
 test('route /world opens 万物声场',()=>{
- assert.deepEqual(parseRoute('/world',''),{page:'sound-world'});
- assert.deepEqual(parseRoute('/world/',''),{page:'sound-world'});
+ assert.deepEqual(parseRoute('/world'),{page:'sound-world'});
+ assert.deepEqual(parseRoute('/world/'),{page:'sound-world'});
  assert.equal(routeHref({page:'sound-world'}),'/world');
 });
 

@@ -1,5 +1,5 @@
 import type {PlacedEvent} from '@wanwu-v2/contracts/arrangement';
-import {KidIcon} from '../../../shared/ui/KidIcon';
+import {Glyph} from '../../../shared/ui/PaperIcon';
 import {worldCopy} from '../config/copy';
 import {spotPosition} from '../model/fieldGeometry';
 import type {SoundWorld} from '../model/useSoundWorld';
@@ -12,8 +12,8 @@ import styles from '../SoundWorldPage.module.css';
 export function EventToolbar({world,event,rows,onTrim}:{world:SoundWorld;event:PlacedEvent;rows:number;onTrim:()=>void}){
  const side=event.row===rows-1?'above':'below',edge=event.at<.18?'start':event.at>.82?'end':'center';
  return <div className={styles.toolbar} data-toolbar data-side={side} data-edge={edge} style={spotPosition(event,rows)} role="toolbar" aria-label={worldCopy.toolbar.label}>
-  <button type="button" onClick={onTrim}><KidIcon name="trim"/>{worldCopy.toolbar.trim}</button>
-  <button type="button" onClick={()=>world.copy(event.id)}><KidIcon name="copy"/>{worldCopy.toolbar.copy}</button>
-  <button type="button" data-tone="remove" onClick={()=>world.remove(event.id)}><KidIcon name="trash"/>{worldCopy.toolbar.remove}</button>
+  <button type="button" onClick={onTrim}><Glyph name="trim"/>{worldCopy.toolbar.trim}</button>
+  <button type="button" onClick={()=>world.copy(event.id)}><Glyph name="copy"/>{worldCopy.toolbar.copy}</button>
+  <button type="button" data-tone="remove" onClick={()=>world.remove(event.id)}><Glyph name="trash"/>{worldCopy.toolbar.remove}</button>
  </div>;
 }

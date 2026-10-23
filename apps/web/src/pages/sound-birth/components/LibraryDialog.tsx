@@ -1,5 +1,5 @@
 import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
-import {Glyph} from './PaperIcon';
+import {Glyph} from '../../../shared/ui/PaperIcon';
 import {birthCopy} from '../config/copy';
 import type {useSoundBirth} from '../model/useSoundBirth';
 import type {LibraryItem} from '../services/soundLibrary';
