@@ -1,11 +1,13 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {DEFAULT_ROWS} from '@wanwu-v2/contracts/arrangement';
-import {composeDestination,flowSteps} from '../../app/navigation';
-import {ArtPicture} from '../../shared/media/ArtPicture';
+import type {Arrangement} from '@wanwu-v2/contracts/arrangement';
+import {flowSteps} from '../../app/navigation';
+import {InspirationDialog} from '../../shared/inspiration/InspirationDialog';
 import {SoundMarker} from '../../shared/markers/SoundMarker';
 import {WorkBackdrop} from '../../shared/scene/WorkBackdrop';
 import {FlowHeader} from '../../shared/ui/FlowHeader';
 import {WorkHeaderActions} from '../../shared/ui/WorkHeaderActions';
+import {WorkIntro} from '../../shared/ui/WorkIntro';
 import {KidIcon} from '../../shared/ui/KidIcon';
 import {worldCopy} from './config/copy';
 import {guideLines,worldGuide} from './config/guide';
@@ -14,7 +16,7 @@ import {unitOf} from './model/soundWorldState';
 import {useFieldDrag} from './model/useFieldDrag';
 import type {DragItem} from './model/useFieldDrag';
 import {useSoundWorld} from './model/useSoundWorld';
-import type {FieldSpot,SoundWorld} from './model/useSoundWorld';
+import type {FieldSpot,FinishResult,SoundWorld} from './model/useSoundWorld';
 import type {LibraryScope} from './services/soundWorldRepository';
 import {ClipEditor} from './components/ClipEditor';
 import {MoodPicker} from './components/MoodPicker';
@@ -41,13 +43,14 @@ function guideText(world:SoundWorld){
 }
 
 /** 万物声场: pick a sound, tap the field to place it; left → right is order, up → down is height. */
-export function SoundWorldPage({onNavigate}:{onNavigate:(path:string)=>void}){
- // Hand-off to 万物成曲 goes through the app; until that page is accepted it reports unavailable.
- const world=useSoundWorld(()=>composeDestination);
+export function SoundWorldPage({onNavigate,onFinish}:{onNavigate:(path:string)=>void;onFinish:(arrangement:Arrangement)=>FinishResult}){
+ // Hand-off to 万物成曲 goes through the app (the arrangement is already in the current work).
+ const world=useSoundWorld(onFinish);
  const area=useRef<HTMLDivElement>(null);
  const [more,setMore]=useState<LibraryScope|null>(null);
  /** The occurrence open in 剪一剪, if any. */
  const [trimming,setTrimming]=useState<string|null>(null);
+ const [inspiring,setInspiring]=useState(false);
  const rows=useRef(DEFAULT_ROWS);rows.current=world.state.arrangement?.rows??DEFAULT_ROWS;
  const locate=useCallback((x:number,y:number):FieldSpot|null=>{
   const box=area.current?.getBoundingClientRect();
@@ -69,17 +72,11 @@ export function SoundWorldPage({onNavigate}:{onNavigate:(path:string)=>void}){
   :unitOf(world.state.arrangement,world.state.arrangement?.events.find(event=>drag.item.kind==='event'&&event.id===drag.item.eventId)?.unitId??''));
  return <div className={styles.shell} data-dragging={!!drag||undefined}>
   <WorkBackdrop/>
-  <FlowHeader steps={flowSteps} current="world" onNavigate={onNavigate} aside={<WorkHeaderActions onLibrary={()=>setMore('example')}/>}/>
+  <FlowHeader steps={flowSteps} current="world" onNavigate={onNavigate} aside={<WorkHeaderActions onNavigate={onNavigate} onLibrary={()=>setMore('example')}/>}/>
   <main className={styles.page}>
-   <header className={styles.intro}>
-    <div className={styles.introText}><h1>{worldCopy.title}</h1><p>{worldCopy.subtitle}</p></div>
-    <aside className={styles.guidePanel} aria-label={worldGuide.label}>
-     <p key={text} className={styles.guideBubble} aria-live="polite">{text}</p>
-     <span key={`frog-${text}`} className={styles.mascot}><ArtPicture variants={worldGuide.variants} className={styles.mascotArt} priority="high"/></span>
-    </aside>
-   </header>
+   <WorkIntro title={worldCopy.title} subtitle={worldCopy.subtitle} guide={worldGuide} text={text} fit/>
    <div className={styles.workspace}>
-    <SoundPalette world={world} bind={bind} onMore={setMore}/>
+    <SoundPalette world={world} bind={bind} onMore={setMore} onInspiration={()=>setInspiring(true)}/>
     <div className={styles.stageColumn}>
      <SoundField world={world} area={area} locate={locate} drag={drag} bind={bind} onTrim={setTrimming}/>
      <MoodPicker world={world}/>
@@ -99,5 +96,6 @@ export function SoundWorldPage({onNavigate}:{onNavigate:(path:string)=>void}){
   {drag&&dragUnit&&<span className={styles.dragGhost} style={{left:drag.x,top:drag.y}} aria-hidden="true"><SoundMarker index={dragUnit.markerIndex} className={styles.ghostMarker}/></span>}
   {more&&<MoreSoundsDialog world={world} initial={more} onClose={()=>setMore(null)} onMakeNew={()=>{setMore(null);onNavigate('/create');}}/>}
   {trimming&&<ClipEditor world={world} eventId={trimming} onClose={()=>setTrimming(null)}/>}
+  {inspiring&&<InspirationDialog value={world.inspiration} entries={world.inspirationEntries} onChange={world.setInspiration} onClose={()=>setInspiring(false)}/>}
  </div>;
 }

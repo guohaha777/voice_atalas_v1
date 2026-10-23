@@ -1,5 +1,6 @@
 import {SoundMarker} from '../../../shared/markers/SoundMarker';
 import {markerNumber} from '../../../shared/markers/markers';
+import {inspirationCopy} from '../../../shared/inspiration/copy';
 import {KidIcon} from '../../../shared/ui/KidIcon';
 import {worldCopy} from '../config/copy';
 import {placedCount} from '../model/soundWorldState';
@@ -10,7 +11,7 @@ import {libraryScopes} from '../services/soundWorldRepository';
 import styles from '../SoundWorldPage.module.css';
 
 /** 选一个声音: the work's sounds as cards. Tap a card to pick it (or drag it into the field); 试听 is a separate button. */
-export function SoundPalette({world,bind,onMore}:{world:SoundWorld;bind:ReturnType<typeof useFieldDrag>['bind'];onMore:(scope:LibraryScope)=>void}){
+export function SoundPalette({world,bind,onMore,onInspiration}:{world:SoundWorld;bind:ReturnType<typeof useFieldDrag>['bind'];onMore:(scope:LibraryScope)=>void;onInspiration:()=>void}){
  const {arrangement,selection}=world.state;
  return <section className={styles.palette} aria-labelledby="palette-title">
   <h2 id="palette-title">{worldCopy.paletteTitle}</h2>
@@ -34,6 +35,11 @@ export function SoundPalette({world,bind,onMore}:{world:SoundWorld;bind:ReturnTy
    })}
   </ul>
   <div className={styles.paletteFoot}>
+   {/* 课本灵感 before arranging: listen to the textbook rhythm (or the teacher's music) first, then place the sounds. */}
+   <button type="button" className={styles.inspiration} data-on={world.inspiration.kind!=='none'||undefined} onClick={onInspiration}>
+    <span className={styles.inspirationBadge}><KidIcon name="book"/></span>
+    <span className={styles.inspirationText}><b>{worldCopy.inspiration}</b><small>{inspirationCopy.summary(world.inspiration,world.inspirationEntries)}</small></span>
+   </button>
    <button type="button" className={styles.more} onClick={()=>onMore('example')}><KidIcon name="plus"/>{worldCopy.more}</button>
    <p className={styles.scopes}>
     {libraryScopes.map(scope=><button key={scope} type="button" onClick={()=>onMore(scope)}>{worldCopy.moreDialog.scopes[scope]}</button>)}

@@ -15,4 +15,8 @@
  --wk-ease:cubic-bezier(.2,.8,.2,1);
  --wk-green-fill:linear-gradient(180deg,#e2f79a 0%,var(--wk-lime) 58%,#b3dc3c 100%);
  --wk-green-lift:inset 0 1px 0 #ffffffb3,inset 0 -2px 4px #7fa61a26,0 10px 22px #a5cf3359;
+ /* Selected options: a solid, raised lime piece (top light, bottom shade, soft drop) — never a coloured frame with a
+    pale fill. Text and icons on it use --wk-on-fill. */
+ --wk-selected-fill:linear-gradient(180deg,#e6f9a2 0%,var(--wk-lime) 55%,#b0d93a 100%);
+ --wk-selected-lift:inset 0 2px 0 #ffffffcc,inset 0 -3px 0 #8fb82c73,0 6px 14px #a5cf3366;
 }

@@ -4,7 +4,7 @@ import type {ReactNode} from 'react';
 
 export type KidIconName='mic'|'upload'|'library'|'camera'|'pitch'|'duration'|'contour'|'intensity'|'pattern'
  |'play'|'stop'|'check'|'edit'|'back'|'arrow'|'shelf'|'sounds'|'replay'|'plus'|'trash'
- |'trim'|'copy';
+ |'trim'|'copy'|'pause'|'restart'|'clock'|'book'|'note'|'volume'|'bulb'|'save'|'lock'|'star'|'share';
 
 const tint={fill:'currentColor',fillOpacity:.24} as const;
 const shine={fill:'none',stroke:'#fff',strokeOpacity:.9,strokeWidth:2} as const;
@@ -100,7 +100,58 @@ const shapes:Record<KidIconName,ReactNode>={
   <rect x="5" y="4.5" width="15.5" height="18" rx="4" fill="currentColor" fillOpacity={.42} stroke="none"/>
   <rect x="11.5" y="9.5" width="15.5" height="18" rx="4" fill="currentColor" stroke="none"/>
   <path d="M19.25 14.6v7.8M15.35 18.5h7.8" fill="none" stroke="#fff" strokeWidth={2.4}/>
- </>,};
+ </>,
+ pause:<><rect x="8.5" y="7" width="5.6" height="18" rx="2.6" fill="currentColor" stroke="none"/><rect x="17.9" y="7" width="5.6" height="18" rx="2.6" fill="currentColor" stroke="none"/></>,
+ // Solid icons for 万物成曲 and 作品书架: filled shapes with white details, never a hollow outline.
+ restart:<>
+  <circle cx="16" cy="16" r="12.5" fill="currentColor" stroke="none"/>
+  <path d="M10.6 17.4a5.6 5.6 0 1 0 1.9-5.3" fill="none" stroke="#fff" strokeWidth={2.4}/>
+  <path d="M10.2 8.6v4.6h4.6" fill="none" stroke="#fff" strokeWidth={2.4}/>
+ </>,
+ clock:<>
+  <circle cx="16" cy="16.5" r="12" fill="currentColor" stroke="none"/>
+  <path d="M16 10v6.8l4.2 2.6" fill="none" stroke="#fff" strokeWidth={2.6}/>
+  <path d="M9.6 7.2 6.8 4.6M22.4 7.2l2.8-2.6" fill="none" strokeWidth={2.6}/>
+ </>,
+ book:<>
+  <path d="M3.5 8.2c4-1.9 8.2-1.6 12.5 1v18c-4.3-2.6-8.5-2.9-12.5-1z" fill="currentColor" stroke="none"/>
+  <path d="M28.5 8.2c-4-1.9-8.2-1.6-12.5 1v18c4.3-2.6 8.5-2.9 12.5-1z" fill="currentColor" fillOpacity={.62} stroke="none"/>
+  <path d="M7 13.2c1.9-.5 3.8-.4 5.6.4M7 17.6c1.9-.5 3.8-.4 5.6.4" fill="none" stroke="#fff" strokeWidth={1.8}/>
+ </>,
+ note:<>
+  <path d="M12.2 7.4 26 4.2v15.6" fill="none" strokeWidth={3.2}/><path d="M12.2 7.4v15.4" fill="none" strokeWidth={3.2}/>
+  <ellipse cx="8.6" cy="23.4" rx="4.8" ry="3.9" fill="currentColor" stroke="none"/><ellipse cx="22.4" cy="20.4" rx="4.8" ry="3.9" fill="currentColor" stroke="none"/>
+  <circle cx="7" cy="22.2" r="1.2" fill="#fff" stroke="none"/>
+ </>,
+ volume:<>
+  <path d="M5 12.4h4.4l6.8-5.6v18.4l-6.8-5.6H5a1.6 1.6 0 0 1-1.6-1.6v-4a1.6 1.6 0 0 1 1.6-1.6z" fill="currentColor" stroke="none"/>
+  <path d="M20.6 12c1.9 2.2 1.9 5.8 0 8M24.6 8.4c3.9 4.4 3.9 10.8 0 15.2" fill="none" strokeWidth={2.6}/>
+ </>,
+ bulb:<>
+  <path d="M16 3.6a9.4 9.4 0 0 0-5.4 17.1c.8.6 1.2 1.4 1.2 2.3v.6h8.4V23c0-.9.4-1.7 1.2-2.3A9.4 9.4 0 0 0 16 3.6z" fill="currentColor" stroke="none"/>
+  <rect x="11.8" y="25.2" width="8.4" height="3.6" rx="1.8" fill="currentColor" fillOpacity={.62} stroke="none"/>
+  <path d="M12.4 10.6a4.6 4.6 0 0 1 3.4-2.4" fill="none" stroke="#fff" strokeWidth={2}/>
+ </>,
+ save:<>
+  <path d="M5 8a3 3 0 0 1 3-3h13.4l5.6 5.6V24a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z" fill="currentColor" stroke="none"/>
+  <rect x="9.6" y="5" width="10" height="7" rx="1.4" fill="#fff" fillOpacity={.85} stroke="none"/>
+  <rect x="9.6" y="17.4" width="12.8" height="9.6" rx="1.6" fill="#fff" stroke="none"/>
+  <path d="M12.6 21h6.8M12.6 24h4.4" fill="none" stroke="currentColor" strokeWidth={1.6}/>
+ </>,
+ lock:<>
+  <path d="M10.6 14.6v-3.4a5.4 5.4 0 0 1 10.8 0v3.4" fill="none" strokeWidth={3}/>
+  <rect x="6.6" y="13.6" width="18.8" height="14" rx="4" fill="currentColor" stroke="none"/>
+  <circle cx="16" cy="19.6" r="2" fill="#fff" stroke="none"/><path d="M16 21v2.8" fill="none" stroke="#fff" strokeWidth={2}/>
+ </>,
+ star:<>
+  <path d="M16 3.8l3.6 7.5 8.2 1.1-6 5.7 1.5 8.1L16 22.3l-7.3 3.9 1.5-8.1-6-5.7 8.2-1.1z" fill="currentColor" stroke="none" strokeLinejoin="round"/>
+  <path d="M12.4 13.6l1.4-2.6" fill="none" stroke="#fff" strokeWidth={1.8}/>
+ </>,
+ share:<>
+  <path d="M10.4 15 21 9.2M10.4 17.4 21 23.2" fill="none" strokeWidth={2.6}/>
+  <circle cx="8.6" cy="16.2" r="4.6" fill="currentColor" stroke="none"/><circle cx="23.4" cy="8" r="4.6" fill="currentColor" stroke="none"/><circle cx="23.4" cy="24.4" r="4.6" fill="currentColor" stroke="none"/>
+ </>,
+};
 
 /** Chunky, friendly icon; colour comes from `currentColor`, the tint is the same colour at low opacity. */
 export function KidIcon({name,className}:{name:KidIconName;className?:string}){

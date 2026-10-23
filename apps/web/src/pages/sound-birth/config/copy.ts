@@ -64,4 +64,3 @@ export const birthCopy={
 
 /** Room for a 45-second uncompressed WAV (48 kHz, 24-bit stereo ≈ 13 MB). */
 export const FILE_MAX_BYTES=20*1024*1024;
-export const EXAMPLE_TIMEOUT_MS=12_000;

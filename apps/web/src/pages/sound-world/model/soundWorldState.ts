@@ -2,11 +2,14 @@
 // Positions are business coordinates (0–1 along time + a layout row); the layout turns them into pixels.
 // Only left → right changes what is heard. The page may move a sound to another row to keep it readable, but it never
 // moves a sound in time — when the child picks a moment, that moment stays.
-import {ARRANGEMENT_MAX_EVENTS,ARRANGEMENT_MAX_UNITS,DEFAULT_ROWS,MAX_ROWS,MIN_CLIP_MS,SPAN_CHOICES,eventsInOrder,isValidMood} from '@wanwu-v2/contracts/arrangement';
+import {ARRANGEMENT_MAX_EVENTS,ARRANGEMENT_MAX_UNITS,DEFAULT_ROWS,MAX_ROWS,MIN_CLIP_MS,SPAN_CHOICES,isValidMood} from '@wanwu-v2/contracts/arrangement';
 import type {Arrangement,MoodChoice,PlacedEvent,SourceClip,SpanSeconds} from '@wanwu-v2/contracts/arrangement';
 import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
-import type {SoundShape,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
-import {planClip} from '../../../shared/audio/shapingRules.ts';
+import type {SoundUnitDraft} from '@wanwu-v2/contracts/sound';
+import {MARKER_HALF,coverageEnd,freeRow,rowIsFree,unitOf,withSpan} from '../../../shared/creation/arrangementTiming.ts';
+// Timing and row tidying live in shared/creation (万物成曲 reads the same); re-exported for this page's modules.
+export {MARKER_HALF,clipSeconds,freeRow,heardSeconds,planPlayback,resettleRows,rowIsFree,unitOf} from '../../../shared/creation/arrangementTiming.ts';
+export type {PlannedEvent} from '../../../shared/creation/arrangementTiming.ts';
 
 export type Selection={kind:'unit';unitId:string}|{kind:'event';eventId:string}|null;
 export type NoticeKey='pick-first'|'mood-model-off'|'events-full'|'units-full'|'rows-full'|'row-crowded'|'need-event'|'compose-unavailable'|'load-failed'|'no-audio'|'missing-audio';
@@ -42,8 +45,6 @@ export type SoundWorldAction=
  |{type:'blocked'}
  |{type:'notice';notice:WorldNotice};
 
-/** Room a marker takes on either side of its start, in field units (keeps markers and names apart). */
-export const MARKER_HALF=.05;
 /** 复制 puts the copy right after the original ends, with this small breath. */
 export const COPY_GAP=.01;
 
@@ -67,39 +68,11 @@ export function fitClip(clip:SourceClip,sourceMs:number|null):SourceClip{
  const startMs=Math.min(Math.max(0,Math.round(clip.startMs)),endMs-MIN_CLIP_MS);
  return {startMs,endMs};
 }
-export const clipSeconds=(clip:SourceClip)=>(clip.endMs-clip.startMs)/1000;
-/** How long this occurrence is heard: the excerpt with the card's 出现方式 and 高低 applied. */
-export function heardSeconds(unit:Pick<SoundUnitDraft,'shape'>,event:Pick<PlacedEvent,'clip'>){
- return planClip(unit.shape,clipSeconds(event.clip)).totalSeconds;
-}
 
 // ----- rows: the only thing the page may change for the child -----
-/** The stretch of field an occurrence covers: its marker plus its length tail. */
-function span(arrangement:Arrangement,event:PlacedEvent):[number,number]{
- const unit=unitOf(arrangement,event.unitId);
- const length=unit?heardSeconds(unit,event)/arrangement.spanSeconds:0;
- return [event.at-MARKER_HALF,event.at+Math.max(MARKER_HALF,length)];
-}
-export function rowIsFree(arrangement:Arrangement,candidate:PlacedEvent,row:number){
- const [from,to]=span(arrangement,{...candidate,row});
- return arrangement.events.every(event=>{
-  if(event.id===candidate.id||event.row!==row)return true;
-  const [a,b]=span(arrangement,event);
-  return to<=a+1e-9||from>=b-1e-9;
- });
-}
-/** The wanted row if it is free, else the nearest free row; null when every row is taken at that time. */
-export function freeRow(arrangement:Arrangement,candidate:PlacedEvent,wanted:number){
- for(let distance=0;distance<arrangement.rows;distance++){
-  for(const row of distance?[wanted+distance,wanted-distance]:[wanted]){
-   if(row>=0&&row<arrangement.rows&&rowIsFree(arrangement,candidate,row))return row;
-  }
- }
- return null;
-}
 /** Where a sound goes when placed from a row button: right after the last sound in that row. */
 export function rowEndSpot(arrangement:Arrangement,row:number){
- const ends=arrangement.events.filter(event=>event.row===row).map(event=>span(arrangement,event)[1]);
+ const ends=arrangement.events.filter(event=>event.row===row).map(event=>coverageEnd(arrangement,event));
  return ends.length?clampAt(Math.max(...ends)+MARKER_HALF):0;
 }
 /** Settle an occurrence: same time always; a free row if there is one, else stay and say it is crowded. */
@@ -109,22 +82,7 @@ function settle(arrangement:Arrangement,event:PlacedEvent,exact=false):{event:Pl
  return row===null?{event,crowded:true}:{event:{...event,row},crowded:false};
 }
 const crowdedNotice=(crowded:boolean):WorldNotice=>crowded?{tone:'info',key:'row-crowded'}:null;
-/**
- * After the field length changes every tail changes size: tidy rows again in listening order (rows only; every sound
- * keeps its place in time). A sound keeps its row when that row is free, otherwise takes the nearest free one.
- */
-export function resettleRows(arrangement:Arrangement):Arrangement{
- let placed:Arrangement={...arrangement,events:[]};
- for(const event of eventsInOrder(arrangement.events)){
-  const row=freeRow(placed,event,event.row)??event.row;
-  placed={...placed,events:[...placed.events,{...event,row}]};
- }
- const rows=new Map(placed.events.map(event=>[event.id,event.row]));
- return {...arrangement,events:arrangement.events.map(event=>({...event,row:rows.get(event.id)??event.row}))};
-}
-
 export function placedCount(arrangement:Arrangement|null,unitId:string){return arrangement?.events.filter(event=>event.unitId===unitId).length??0;}
-export function unitOf(arrangement:Arrangement|null,unitId:string){return arrangement?.units.find(unit=>unit.id===unitId)??null;}
 export function eventOf(arrangement:Arrangement|null,eventId:string){return arrangement?.events.find(event=>event.id===eventId)??null;}
 export function nextMarkerIndex(arrangement:Arrangement){
  const used=new Set(arrangement.units.map(unit=>unit.markerIndex));
@@ -176,7 +134,7 @@ export function soundWorldReducer(state:SoundWorldState,action:SoundWorldAction)
    if(work.events.length>=ARRANGEMENT_MAX_EVENTS)return {...state,notice:{tone:'error',key:'events-full'}};
    // Same sound identity (unitId) and excerpt, new event identity; it follows the original in the same row,
    // just far enough that the two markers and the original's tail stay apart.
-   const after=clampAt(span(work,source)[1]+MARKER_HALF+COPY_GAP);
+   const after=clampAt(coverageEnd(work,source)+MARKER_HALF+COPY_GAP);
    const {event,crowded}=settle(work,{...source,id:action.newId,at:after});
    return edit(state,{...work,events:[...work.events,event]},action.now,
     {selection:{kind:'event',eventId:event.id},lastAction:'copied',notice:crowdedNotice(crowded)});
@@ -220,20 +178,10 @@ export function soundWorldReducer(state:SoundWorldState,action:SoundWorldAction)
    return edit(state,{...work,mood:action.mood},action.now);
   case 'span':
    if(!SPAN_CHOICES.includes(action.spanSeconds)||action.spanSeconds===work.spanSeconds)return state;
-   return edit(state,resettleRows({...work,spanSeconds:action.spanSeconds}),action.now,{lastAction:'span'});
+   return edit(state,withSpan(work,action.spanSeconds),action.now,{lastAction:'span'});
   case 'blocked':return {...state,blocked:true,notice:{tone:'info',key:'compose-unavailable'}};
   case 'notice':return {...state,notice:action.notice};
  }
-}
-
-/** One scheduled occurrence for playback: when it starts, which excerpt, and the sound card's own shape. */
-export type PlannedEvent={eventId:string;unitId:string;sourceId:string;startSeconds:number;clip:SourceClip;shape:SoundShape};
-/** Playback order and timing derived from the arrangement only — the same data 万物成曲 will read. */
-export function planPlayback(arrangement:Arrangement):PlannedEvent[]{
- return eventsInOrder(arrangement.events).flatMap(event=>{
-  const unit=unitOf(arrangement,event.unitId);
-  return unit?[{eventId:event.id,unitId:unit.id,sourceId:unit.sourceId,startSeconds:event.at*arrangement.spanSeconds,clip:event.clip,shape:unit.shape}]:[];
- });
 }
 
 /** Keyboard nudges for a selected occurrence: ←→ change order, ↑↓ change row (layout only). */

@@ -1,6 +1,6 @@
 # 万物声谱 · 工程前端开发交接 2
 
-更新：2026-10-23。正式工程：`/Users/hahaking/Projects/voice_atalas/wanwu-shengpu-v2`。
+更新：2026-10-23（万物成曲、作品书架）。正式工程：`/Users/hahaking/Projects/voice_atalas/wanwu-shengpu-v2`。
 
 **本文件用于新对话开始前端实现。先读根目录 `AGENTS.md`，再读本文件并打开定稿图。** 用户当前指令优先；本文件中最新设计覆盖 `HANDOFF.md`、`docs/development/pages.md` 以及旧需求中的历史页面拆分。旧交接仍可用于查询首页修订，不再按旧五步界面开发。
 
@@ -12,10 +12,12 @@
 | 首页入口弹窗 | 2026-10-22 已按原 A 版实现（插画、角落装饰、手绘标题、压缩衍生图与预取），等待用户验收；见 `docs/development/start-acceptance.md` |
 | 声音诞生 | **已验收**（2026-10-22，`/create`，选声音 / 录音 / 上传 / 纸卡参考 / 五项 / 对比试听）；之后音源上限改为 45 秒、共用部分移到 shared；见 `docs/development/sound-birth-acceptance.md` |
 | 万物声场 | 前端已实现，**等待验收**（2026-10-23，`/world`）：点选放置 / 拖动、点声音即播放、剪一剪（节选原声，默认整段）、复制、移除；上下行只为错开（默认 3 行可加到 5 行），页面只换行不改时间；时长尾条 + 秒刻度，声场 20 / 30 / 45 秒可切；7 种心情 + 先不选 + 自己写（需连接模型，现提示未开放）；示例 mock + 本次打开期间的作品，仓库与心情理解端口预留。详见 `docs/development/sound-world-acceptance.md` |
-| 万物成曲 | 已确认静态设计方向，**尚未实现前端页面** |
+| 万物声场（续） | 已推送 `66369de`；之后“摆好了”改为进入万物成曲，时间 / 示例 / 音源缓存移到 shared（行为不变） |
+| 万物成曲 | 前端已实现，**等待验收**（2026-10-23，`/compose`）：图形曲谱从 `arrangement-v1` 派生（行只错开，不标高中低）；播放 / 暂停 / 从头听 / 可拖进度条，竖线、进度条、高亮同一时间；20 / 30 / 45 秒即声场 `spanSeconds`，超长不截断并如实显示实际长度；背景音乐总是存在（代码生成），乐器只决定由谁演奏（不选 = 原始背景），开关静音；课本灵感（示例节奏可试听、教学音乐本机选择，上传 / 分析 / 生成待后端）在声场就能选；“这首音乐有什么特征”面板；帮我找找与分享未开放；保存进本次打开期间的作品书架。见 `docs/development/compose-acceptance.md` |
+| 作品书架 | 前端已实现，**等待验收**（`/works`）：只列本次打开期间放进书架的作品，刷新就没了；打开回到万物成曲。见 `docs/development/works-acceptance.md` |
 | 后续图像 | 已准备 10 张透明源 PNG + 1 张图集母版；尚未接入网页、未生成网页压缩版本 |
 | 后端、账号、数据库、文件存储、AI | 未在新工程实现；当前只做前端并预留接入边界 |
-| Git / 线上 | 本机有较多未提交修改；不是干净基线。当前 HEAD 为 `10a12db`，本轮设计、标题修订、弹窗与新素材尚未推送 |
+| Git / 线上 | HEAD 为 `66369de`（万物声场已推送）。万物成曲、作品书架及相关 shared 整理（2026-10-23）**未提交、未推送**，等用户确认 |
 
 用户已要求结构化、模块化开发，逐页确认。**确认视觉方向不等于四页已实现，也不是本轮提交、推送或部署授权。** 不重建项目，不覆盖已有未提交工作，不自动生成整条业务系统。
 
@@ -127,16 +129,18 @@ React 19 + TypeScript 6 + Vite 8；具体版本以 `package-lock.json` 为准，
 | `apps/web/src/app/App.tsx`、`navigation.ts`、`router.ts` | 首页、弹窗、声音诞生、万物声场的组合；入口类型和主流程在 `navigation.ts`；`/create?from=card|upload|library` 打开声音诞生，`/world` 打开万物声场；声音诞生“做好了”由 App 交给当前作品再跳转 |
 | `apps/web/src/pages/sound-birth/` | 声音诞生页（components / model / config / services），详见 `docs/development/sound-birth-acceptance.md` |
 | `apps/web/src/pages/sound-world/` | 万物声场页（components / model / config / services），详见 `docs/development/sound-world-acceptance.md` |
-| `apps/web/src/shared/creation/` | 跨页的创作数据：`workSession`（本次打开期间的当前作品）、`sourceArchive`（本机录音档案）、`exampleSounds`（示例声音清单）、`dimensionCopy`（五项文案，唯一一份）、`ids`（本地 ID） |
+| `apps/web/src/pages/compose/`、`pages/works/` | 万物成曲、作品书架（components / model / config / services），详见 `docs/development/compose-acceptance.md`、`works-acceptance.md` |
+| `apps/web/src/shared/creation/` | 跨页的创作数据：`workSession`（当前作品）、`workShelf`（作品书架）、`arrangementTiming`（时间与行）、`workSounds`（声音加载与塑形缓存）、`exampleWork` / `exampleSounds`（示例作品、示例声音与加载超时）、`sourceArchive`（本机录音档案）、`dimensionCopy` / `moodCopy`（五项与心情文案，唯一一份）、`ids`（本地 ID）；均为本次打开期间的内存数据 |
+| `apps/web/src/shared/inspiration/` | 课本灵感：示例节奏目录端口、试听合成、教学音乐本机选择与后端流程、`InspirationDialog`；万物声场和万物成曲共用 |
 | `apps/web/src/shared/scene/` | 首页场景素材清单（生成文件）与访问函数，供多页复用 |
 | `apps/web/src/pages/start/` | 已有 `StartDialog`、`components/EntryOption`、`config/entries`、`model/useCreationEntry`；在此迭代 A 版弹窗，避免再建重复入口 |
 | `apps/web/src/shared/ui/Dialog.tsx` | 原生 modal、焦点约束、Esc / 背景关闭、滚动锁和焦点恢复；`NoticeDialog` 复用它 |
-| `apps/web/src/shared/ui/WorkSheet.tsx`、`WorkHeaderActions.tsx`、`FlowHeader.tsx`、`MoodFace.tsx` | 工作页共用：统一弹窗面板（含底部按钮行、说明行样式）、顶栏“声音库 · 作品书架”、四步顶栏、实心心情脸 |
+| `apps/web/src/shared/ui/WorkSheet.tsx`、`WorkHeaderActions.tsx`、`FlowHeader.tsx`、`WorkIntro.tsx`、`MoodFace.tsx` | 工作页共用：统一弹窗面板（含主次按钮、正文、说明行样式）、顶栏“声音库 · 作品书架”、四步顶栏、标题行 + 向导（声场 / 成曲 / 书架；声音诞生保留自己的）、实心心情脸 |
 | `apps/web/src/pages/home/` | 已实现首页；保持 components / model / config 分离 |
 | `apps/web/src/shared/audio/` | `SingleSoundPlayer`（首页，流式音频元素）；`SequencePlayer`（工作页统一播放器：单个试听与整段排程共用一个音频时钟）；`shapingRules`（五项塑形 / 片段规则、`shapeKey`）、`renderShaped`、`loadAudio`、`LocalRecorder` |
 | `apps/web/src/shared/media/` | 响应式图片、解码、PNG 回退与取消，可复用 |
 | `apps/web/src/shared/ui/Icon.tsx`、`KidIcon.tsx` | 首页 / 弹窗用细线图标；工作页用童趣图标（声场新增的剪一剪 / 复制 / 移除为实心；作品要求不用“线框中间透明”的图标，声音诞生的旧图标待统一） |
-| `packages/contracts/` | 工作区包 `@wanwu-v2/contracts`；`sound-v1`（来源溯源、五项、声音单元草稿，音源最长 45 秒）、`arrangement-v1`（声场摆放：行、声场长度、片段、心情） |
+| `packages/contracts/` | 工作区包 `@wanwu-v2/contracts`；`sound-v1`（来源溯源、五项、声音单元草稿，音源最长 45 秒）、`arrangement-v1`（声场摆放：行、声场长度、片段、心情）、`work-v1`（成曲设置、书架作品、可见范围） |
 | `scripts/build-assets.mjs`、`build-title-assets.mjs`、`build-art-assets.mjs` | 首页、标题、弹窗插画与声音标记的构建；`npm run assets:build` 全部重建 |
 
 页面只组合界面；状态和交互放 model，参数 / 资源 / 文案放 config，可复用能力放 shared。开始承载音源 / 声卡 / 编排领域数据时，先定义可验证契约，再做本地状态和未来服务适配器；UI 不直接调用数据库、存储或模型。

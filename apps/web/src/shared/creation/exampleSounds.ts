@@ -5,6 +5,8 @@ import {homeSound} from '../scene/homeScene';
 import type {SoundId} from '../media/types';
 
 export const EXAMPLE_PROVENANCE_URL='/legal/sound-sources.html';
+/** How long to wait for an example clip to load before saying the network is slow. */
+export const EXAMPLE_TIMEOUT_MS=12_000;
 export const exampleSounds=[
  {id:'bird',label:'鸟鸣',by:'旧版项目授权录音'},
  {id:'frog',label:'蛙鸣',by:'MichaeltheFox8621'},

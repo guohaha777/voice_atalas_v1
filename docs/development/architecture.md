@@ -13,8 +13,8 @@
 | app | 页面入口、无依赖的 history 路由（`router.ts`）、主流程四步与入口类型（`navigation.ts`）、全局错误反馈 | 新页面验收后在 `navigation.ts` 打开对应入口，并在路由里加一条 |
 | pages/<页面> | 页面布局、页面内组件与流程状态 | 每个页面独立验收，避免在首页追加全流程 |
 | config | 图片、坐标、透明度、动画参数 | 视觉调整不改播放与开场状态逻辑 |
-| shared/ui、media、audio、markers、scene、creation、platform | 基础组件与图标（含工作页弹窗 `WorkSheet`、顶栏入口 `WorkHeaderActions`、心情脸 `MoodFace`）、资源加载、声音录放 / 塑形 / 排程（工作页统一 `SequencePlayer`）、声音标记、首页场景素材与工作页背景、当前作品 / 本机来源档案 / 示例声音 / 五项文案 / 本地 ID、设备提示 | 后续页面按需复用；页面之间不互相引用内部实现；两页以上用到的东西放这里，只保留一份 |
-| packages/contracts（`@wanwu-v2/contracts`） | 前后端共同的数据契约；已有 `sound-v1` | 以包名引用，新增领域先写类型和校验，再加存储 |
+| shared/ui、media、audio、markers、scene、creation、inspiration、platform | 基础组件与图标（含工作页弹窗 `WorkSheet`、顶栏入口 `WorkHeaderActions`、工作页标题行 + 向导 `WorkIntro`、心情脸 `MoodFace`）、资源加载、声音录放 / 塑形 / 排程（工作页统一 `SequencePlayer`）、声音标记、首页场景素材与工作页背景、当前作品 / 书架 / 本机来源档案 / 示例声音与示例作品 / 时间与行 / 五项与心情文案 / 本地 ID、课本灵感、设备提示 | 后续页面按需复用；页面之间不互相引用内部实现；两页以上用到的东西放这里，只保留一份 |
+| packages/contracts（`@wanwu-v2/contracts`） | 前后端共同的数据契约；已有 `sound-v1`、`arrangement-v1`、`work-v1` | 以包名引用，新增领域先写类型和校验，再加存储 |
 | 后端（未开发） | 身份、音源与作品、文件存储、AI 网关 | 接在仓库 / 服务端口之后，页面不直接访问云资源 |
 
 没有为了预留而实现假的服务器、数据库、账号或空 API。当前首页只使用本站静态资源，不收集个人信息，不向模型发送内容。
@@ -41,6 +41,20 @@
 - `pages/sound-world/` 分为 `components/`（左栏声音、声场、浮动工具、心情、找更多声音）、`model/`（纯 reducer `soundWorldState.ts`、几何换算 `fieldGeometry.ts`、拖动 `useFieldDrag.ts`、编排 hook `useSoundWorld.ts`）、`config/`（文案、mock 示例单元与示例摆放、青蛙向导）、`services/`（`SoundWorldRepository` 端口 + mock 实现，文件头列出预留 REST 路径）。
 - 数据走 `@wanwu-v2/contracts/arrangement`：事件只存 0–1 先后位置与行号（行只管错开摆放，不改变声音；默认 3 行可加到 5 行），不存像素；声音身份 `unitId` 与事件身份分开。整段试听用 `shared/audio/SequencePlayer.ts` 在同一音频时钟上排程，游标、高亮读同一时间，万物成曲可复用。
 - 详见 `docs/development/sound-world-acceptance.md`。
+
+## 万物成曲页与作品书架
+
+- 路由 `/compose`（在声场时预取）和 `/works`（在成曲时预取），各自分包。`pages/compose/` 分为 `components/`（曲谱卡、播放条、右栏三卡、底栏与特征面板、弹窗）、`model/`（纯 reducer `composeState.ts`、曲谱派生 `scoreLayout.ts`、音乐特征 `discoveries.ts`、背景曲与演奏 `backgroundSynth.ts`、编排 hook `useCompose.ts`）、`config/`（文案、特征讲解文案、松鼠向导、示例乐器与心情节奏）、`services/`（`ComposeRepository`、`BackgroundLibrary` 两个端口 + mock，文件头列出预留 REST 路径）。`pages/works/` 同样分层，端口 `ShelfRepository`。
+- 课本灵感是共用模块 `shared/inspiration/`（示例节奏目录端口 `InspirationCatalog`、试听合成、教学音乐本机选择与后端流程说明、`InspirationDialog`），万物声场摆放前就能选，万物成曲沿用同一个选择。
+- 曲谱只从 `arrangement-v1` 派生，不存储。声场与成曲共用 `shared/creation/arrangementTiming.ts`（开始秒、听到的长度、整首长度、行整理、切换长度）、`exampleWork.ts`（示例单元与示例摆放）、`workSounds.ts`（音源加载与塑形缓存）。
+- 播放只有一个时间：`shared/audio/SequencePlayer` 支持从任意秒开始、整首长度和分层音量；竖线、进度条、时钟、高亮都读它。背景是独立的 `background` 层。
+- 背景音乐本身总是存在（今天代码生成，以后后台生成），乐器只决定由谁演奏，不选 = 原始背景；只有开关让背景静音。
+- 作品契约 `@wanwu-v2/contracts/work`（`work-v1`）。当前作品设置存在 `workSession`，书架是 `shared/creation/workShelf.ts`（本次打开期间，内存）。详见 `compose-acceptance.md`、`works-acceptance.md`。
+
+## 合并与不合并（2026-10-23 结构整理）
+
+- 合并：万物声场、万物成曲、作品书架的标题行 + 向导（`shared/ui/WorkIntro`，各页颜色和尺寸用 CSS 变量传入）；心情文案与“取预设心情”（`shared/creation/moodCopy`）；示例声音加载超时（`shared/creation/exampleSounds` 的 `EXAMPLE_TIMEOUT_MS`）。整理前后 24 组页面 × 尺寸测量完全一致。
+- 不合并：声音诞生（已验收）的标题行——尺寸、断点、动画不同，且矮屏下会把向导气泡一起隐藏，强行合并会改画面；各页的时间格式小函数（含义不同）、按钮与入场动画样式（只是相似）。
 
 ## 产品原则与字段预留方向
 

@@ -6,5 +6,5 @@ import styles from './WorkSheet.module.css';
 export function WorkSheet({title,description,className='',onClose,children}:{title:string;description?:string;className?:string;onClose:()=>void;children:ReactNode}){
  return <Dialog title={title} description={description} className={`${styles.sheet} ${className}`} onClose={onClose}>{children}</Dialog>;
 }
-/** Footer row of equal buttons and the small centred note line used inside work sheets. */
-export const sheetStyles={actions:styles.actions,note:styles.note};
+/** Footer row of equal buttons, its two button looks, body text and the small centred note line used inside work sheets. */
+export const sheetStyles={actions:styles.actions,note:styles.note,body:styles.body,primary:styles.primary,secondary:styles.secondary};

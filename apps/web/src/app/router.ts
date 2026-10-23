@@ -3,11 +3,13 @@ import {useCallback,useEffect,useState} from 'react';
 import {creationEntryIds} from './navigation.ts';
 import type {CreationEntry} from './navigation';
 
-export type Route={page:'home'}|{page:'sound-birth';from:CreationEntry|null}|{page:'sound-world'};
+export type Route={page:'home'}|{page:'sound-birth';from:CreationEntry|null}|{page:'sound-world'}|{page:'compose'}|{page:'works'};
 
 export function parseRoute(pathname:string,search:string):Route{
  const path=pathname.replace(/\/+$/,'');
  if(path==='/world')return {page:'sound-world'};
+ if(path==='/compose')return {page:'compose'};
+ if(path==='/works')return {page:'works'};
  if(path==='/create'){
   const from=new URLSearchParams(search).get('from');
   return {page:'sound-birth',from:creationEntryIds.includes(from as CreationEntry)?from as CreationEntry:null};
@@ -16,6 +18,8 @@ export function parseRoute(pathname:string,search:string):Route{
 }
 export function routeHref(route:Route){
  if(route.page==='sound-world')return '/world';
+ if(route.page==='compose')return '/compose';
+ if(route.page==='works')return '/works';
  return route.page==='home'?'/':`/create${route.from?`?from=${route.from}`:''}`;
 }
 

@@ -24,7 +24,7 @@ export function SoundBirthPage({entry,markerIndex,onNavigate,onFinish}:{entry:Cr
  const guideText=birth.hint?.text??(birth.state.source?guideLines.idle:guideLines.noSound);
  return <div className={styles.shell}>
   <WorkBackdrop/>
-  <FlowHeader steps={flowSteps} current="birth" onNavigate={onNavigate} aside={<WorkHeaderActions onLibrary={()=>birth.dispatch({type:'dialog',dialog:'library'})}/>}/>
+  <FlowHeader steps={flowSteps} current="birth" onNavigate={onNavigate} aside={<WorkHeaderActions onNavigate={onNavigate} onLibrary={()=>birth.dispatch({type:'dialog',dialog:'library'})}/>}/>
   <main className={styles.page}>
    <header className={styles.intro}>
     <div className={styles.introText}><h1>{birthCopy.title}</h1><p>{birthCopy.subtitle}</p></div>

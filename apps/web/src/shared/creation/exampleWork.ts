@@ -1,11 +1,11 @@
-// Mock data for 万物声场: example sound units built on the licensed home clips, and one example arrangement.
-// The five choices here are project presets (input 'example-preset'), not a child's choices; the page labels them 示例.
-// Real class / public units come from the server later through services/soundWorldRepository.ts.
+// Mock data for 万物声场 and 万物成曲: example sound units built on the licensed home clips, and one example arrangement.
+// The five choices here are project presets (input 'example-preset'), not a child's choices; the pages label them 示例.
+// Real class / public units come from the server later through the pages' repository ports.
 import {ARRANGEMENT_CONTRACT_VERSION,DEFAULT_ROWS,DEFAULT_SPAN_SECONDS} from '@wanwu-v2/contracts/arrangement';
 import type {Arrangement,SourceClip} from '@wanwu-v2/contracts/arrangement';
 import {SOUND_CONTRACT_VERSION} from '@wanwu-v2/contracts/sound';
 import type {SoundShape,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
-import type {SoundId} from '../../../shared/media/types';
+import type {SoundId} from '../media/types';
 
 const PRESET_DATE='2026-10-22T00:00:00.000Z';
 const presets:readonly {sound:SoundId;name:string;shape:SoundShape}[]=[

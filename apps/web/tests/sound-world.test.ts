@@ -9,7 +9,7 @@ import type {SoundWorldState} from '../src/pages/sound-world/model/soundWorldSta
 import {dragEdge,dragWindow,keyEdge,tapAt} from '../src/pages/sound-world/model/clipEditing.ts';
 import {FIELD_INSET,locateSpot,spotPosition} from '../src/pages/sound-world/model/fieldGeometry.ts';
 import {cleanMoodText,offlineMoodInterpreter,parseInterpretation} from '../src/pages/sound-world/services/moodInterpreter.ts';
-import {exampleArrangement,exampleUnit} from '../src/pages/sound-world/config/examples.ts';
+import {exampleArrangement,exampleUnit} from '../src/shared/creation/exampleWork.ts';
 import {planClip,planShape} from '../src/shared/audio/shapingRules.ts';
 import {WorkSession} from '../src/shared/creation/workSession.ts';
 import {parseRoute,routeHref} from '../src/app/router.ts';

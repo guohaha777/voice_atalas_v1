@@ -1,20 +1,20 @@
 import {useCallback,useEffect,useMemo,useReducer,useRef,useState} from 'react';
 import type {Arrangement,MoodChoice,MoodId,SourceClip,SpanSeconds} from '@wanwu-v2/contracts/arrangement';
+import type {Inspiration} from '@wanwu-v2/contracts/work';
+import {mockInspirationCatalog} from '../../../shared/inspiration/catalog';
+import type {InspirationCatalog,InspirationEntry} from '../../../shared/inspiration/catalog';
 import type {SoundShape,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {audioSupported} from '../../../shared/audio/audioContext';
-import {AudioLoadError,loadAudio} from '../../../shared/audio/loadAudio';
-import {renderShaped} from '../../../shared/audio/renderShaped';
 import {SequencePlayer} from '../../../shared/audio/SequencePlayer';
-import {originalGain,planClip,planShape,shapeKey} from '../../../shared/audio/shapingRules';
-import {exampleSourceUrl} from '../../../shared/creation/exampleSounds';
+import {originalGain} from '../../../shared/audio/shapingRules';
+import {EXAMPLE_TIMEOUT_MS} from '../../../shared/creation/exampleSounds';
 import {newId} from '../../../shared/creation/ids';
-import {sessionArchive} from '../../../shared/creation/sourceArchive';
-import {EXAMPLE_TIMEOUT_MS} from '../config/copy';
+import {WorkSoundBank,soundFailure} from '../../../shared/creation/workSounds';
 import {mockSoundWorldRepository} from '../services/soundWorldRepository';
 import type {LibraryScope,SoundWorldRepository} from '../services/soundWorldRepository';
 import {cleanMoodText,offlineMoodInterpreter,parseInterpretation} from '../services/moodInterpreter';
 import type {MoodInterpreter} from '../services/moodInterpreter';
-import {clipSeconds,defaultClip,eventOf,initialSoundWorld,nudge,planPlayback,rowEndSpot,soundWorldReducer,unitOf} from './soundWorldState';
+import {defaultClip,eventOf,initialSoundWorld,nudge,planPlayback,rowEndSpot,soundWorldReducer,unitOf} from './soundWorldState';
 import type {NoticeKey} from './soundWorldState';
 
 export type FinishResult={status:'unavailable'}|{status:'opened'};
@@ -24,9 +24,7 @@ export type FieldSpot={at:number;row:number};
 /** Several sounds at once: keep the sum under full scale. */
 const MIX_GAIN=.8;
 
-class MissingAudioError extends Error{}
-
-export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,repository:SoundWorldRepository=mockSoundWorldRepository,moods:MoodInterpreter=offlineMoodInterpreter){
+export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,repository:SoundWorldRepository=mockSoundWorldRepository,moods:MoodInterpreter=offlineMoodInterpreter,inspirations:InspirationCatalog=mockInspirationCatalog){
  const [state,dispatch]=useReducer(soundWorldReducer,initialSoundWorld);
  const [playing,setPlaying]=useState<string|null>(null);
  const [preparing,setPreparing]=useState<string|null>(null);
@@ -34,10 +32,11 @@ export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,r
  /** Real length of each source once its audio is decoded (ms), for default excerpts and the excerpt editor. */
  const [durations,setDurations]=useState<Record<string,number>>({});
  const player=useMemo(()=>new SequencePlayer(setPlaying),[]);
- const buffers=useRef(new Map<string,AudioBuffer>());
- const pending=useRef(new Map<string,Promise<AudioBuffer>>());
- const renders=useRef(new Map<string,AudioBuffer>());
- const loads=useRef(new Set<AbortController>());
+ // Real lengths feed default excerpts, the excerpt editor and excerpts that reach past the recording.
+ const bank=useMemo(()=>new WorkSoundBank(EXAMPLE_TIMEOUT_MS,(sourceId,durationMs)=>{
+  setDurations(current=>current[sourceId]===durationMs?current:{...current,[sourceId]:durationMs});
+  dispatch({type:'source-length',sourceId,durationMs});
+ }),[]);
  const token=useRef(0);
  /** When each event sounds during 听听这段声音, from the rendered buffers' real lengths. */
  const timeline=useRef<{eventId:string;start:number;end:number}[]>([]);
@@ -48,8 +47,13 @@ export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,r
  useEffect(()=>{
   let live=true;
   void repository.load().then(arrangement=>{if(live)dispatch({type:'loaded',arrangement});});
+  void Promise.all([repository.loadInspiration(),inspirations.list()]).then(([current,list])=>{if(live){setInspirationState(current);setEntries(list.entries);}});
   return()=>{live=false;};
- },[repository]);
+ },[repository,inspirations]);
+ // 课本灵感 can be chosen here, before arranging; it is kept with the work for 万物成曲 and never moves a sound.
+ const [inspiration,setInspirationState]=useState<Inspiration>({kind:'none'});
+ const [entries,setEntries]=useState<readonly InspirationEntry[]>([]);
+ const setInspiration=(next:Inspiration)=>{setInspirationState(next);void repository.saveInspiration(next);};
 
  // The child's arrangement is kept through the repository on every change; an untouched example is not stored.
  useEffect(()=>{
@@ -68,53 +72,21 @@ export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,r
  useEffect(()=>{
   const hidden=()=>{if(document.visibilityState==='hidden'){token.current++;player.stop();}};
   document.addEventListener('visibilitychange',hidden);
-  const active=loads.current;
-  return()=>{document.removeEventListener('visibilitychange',hidden);token.current++;player.stop();for(const controller of active)controller.abort();};
- },[player]);
+  return()=>{document.removeEventListener('visibilitychange',hidden);token.current++;player.stop();bank.abort();};
+ },[player,bank]);
 
- // ----- audio: original buffers by source, shaped renders by source + shape (+ excerpt) -----
- const learnLength=(sourceId:string,buffer:AudioBuffer)=>{
-  const durationMs=Math.round(buffer.duration*1000);
-  setDurations(current=>current[sourceId]===durationMs?current:{...current,[sourceId]:durationMs});
-  dispatch({type:'source-length',sourceId,durationMs});
- };
- const sourceBuffer=(sourceId:string):Promise<AudioBuffer>=>{
-  const known=buffers.current.get(sourceId);if(known)return Promise.resolve(known);
-  const local=sessionArchive.buffer(sourceId);
-  if(local){buffers.current.set(sourceId,local);learnLength(sourceId,local);return Promise.resolve(local);}
-  const inFlight=pending.current.get(sourceId);if(inFlight)return inFlight;
-  const url=exampleSourceUrl(sourceId);
-  if(!url)return Promise.reject(new MissingAudioError());
-  const controller=new AbortController();loads.current.add(controller);
-  const request=loadAudio(url,{signal:controller.signal,timeoutMs:EXAMPLE_TIMEOUT_MS})
-   .then(buffer=>{buffers.current.set(sourceId,buffer);learnLength(sourceId,buffer);return buffer;})
-   .finally(()=>{loads.current.delete(controller);pending.current.delete(sourceId);});
-  pending.current.set(sourceId,request);
-  return request;
- };
+ // ----- audio: originals and shaped renders come from the shared work sound bank -----
  // Know every sound's real length early (examples are ~20 KB), so excerpts and tails are right from the start.
  const sourceIds=state.arrangement?.units.map(unit=>unit.sourceId).join('|')??'';
  useEffect(()=>{
-  for(const sourceId of sourceIds.split('|'))if(sourceId)void sourceBuffer(sourceId).catch(()=>{});
+  for(const sourceId of sourceIds.split('|'))if(sourceId)void bank.source(sourceId).catch(()=>{});
  // Only when the set of sources changes.
- },[sourceIds]);
+ },[sourceIds,bank]);
 
- const rendered=async(key:string,sourceId:string,make:(buffer:AudioBuffer)=>Promise<AudioBuffer>)=>{
-  const cached=renders.current.get(key);if(cached)return cached;
-  const result=await make(await sourceBuffer(sourceId));
-  renders.current.set(key,result);return result;
- };
- /** The sound card as made in 声音诞生 (palette and library previews). */
- const cardSound=(sourceId:string,shape:SoundShape)=>rendered(`card|${sourceId}|${shapeKey(shape)}`,sourceId,
-  buffer=>renderShaped(buffer,planShape(shape,buffer.duration)));
- /** One occurrence in the field: the chosen excerpt with the card's other choices. */
- const clipSound=(sourceId:string,shape:SoundShape,clip:SourceClip)=>rendered(`clip|${sourceId}|${shapeKey(shape)}|${clip.startMs}-${clip.endMs}`,sourceId,
-  buffer=>renderShaped(buffer,planClip(shape,clipSeconds(clip)),clip.startMs/1000));
+ const cardSound=(sourceId:string,shape:SoundShape)=>bank.card(sourceId,shape);
+ const clipSound=(sourceId:string,shape:SoundShape,clip:SourceClip)=>bank.clip(sourceId,shape,clip);
 
- const report=(reason:unknown)=>{
-  if(reason instanceof AudioLoadError&&reason.reason==='aborted')return;
-  notify(reason instanceof MissingAudioError?'missing-audio':reason instanceof AudioLoadError?'load-failed':'no-audio');
- };
+ const report=(reason:unknown)=>{const failure=soundFailure(reason);if(failure)notify(failure);};
  /** Prepare then play one buffer; rapid taps only play the latest request; tapping what plays stops it. */
  const playOne=async(key:string,make:()=>Promise<AudioBuffer>,{toggle=true,gain=1}:{toggle?:boolean;gain?:number}={})=>{
   if(!audioSupported())return notify('no-audio');
@@ -138,7 +110,7 @@ export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,r
   const work=latest.current.arrangement,event=eventOf(work,eventId),unit=event&&unitOf(work,event.unitId);
   if(unit)void playOne(`clip:${eventId}`,()=>clipSound(unit.sourceId,unit.shape,clip));
  };
- const previewSource=(sourceId:string)=>void playOne(`source:${sourceId}`,()=>sourceBuffer(sourceId),{gain:originalGain});
+ const previewSource=(sourceId:string)=>void playOne(`source:${sourceId}`,()=>bank.source(sourceId),{gain:originalGain});
  const stopSound=()=>{token.current++;player.stop();setPreparing(null);};
 
  const playAll=async()=>{
@@ -258,12 +230,13 @@ export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,r
   addRow:()=>dispatch({type:'add-row',now:new Date()}),
   removeRow:()=>dispatch({type:'remove-row',now:new Date()}),
   previewUnit,previewEvent,previewClip,previewSource,stopSound,playAll,finish,
-  loadSource:(sourceId:string)=>sourceBuffer(sourceId),
+  loadSource:(sourceId:string)=>bank.source(sourceId),
   setMood,customMood,interpreting,moodModelAvailable:moods.available,
   pickMood:(id:MoodId|null)=>setMood(id?{kind:'preset',id}:null),
   addUnit:(unit:SoundUnitDraft)=>{stopAll();dispatch({type:'add-unit',unit,now:new Date()});},
   clearEvents:()=>{stopAll();dispatch({type:'clear-events',now:new Date()});},
   scope:(scope:LibraryScope)=>repository.scope(scope),
+  inspiration,inspirationEntries:entries,setInspiration,
  };
 }
 export type SoundWorld=ReturnType<typeof useSoundWorld>;

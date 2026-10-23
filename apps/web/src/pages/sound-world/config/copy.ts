@@ -1,4 +1,4 @@
-import type {MoodId,SpanSeconds} from '@wanwu-v2/contracts/arrangement';
+import type {SpanSeconds} from '@wanwu-v2/contracts/arrangement';
 import type {PatternChoice} from '@wanwu-v2/contracts/sound';
 import {SHAPING_RULES} from '../../../shared/audio/shapingRules';
 import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
@@ -11,6 +11,7 @@ export const worldCopy={
  // Palette
  paletteTitle:'选一个声音',listen:'试听',stop:'停',example:'示例',placedTimes:(count:number)=>`放了 ${count} 次`,
  more:'找更多声音',
+ inspiration:'课本灵感',
  // Field
  fieldLabel:'声场',rowName:(row:number)=>`第 ${row} 行`,
  fieldHint:'左边先响，右边后响 · 上下只是错开摆',
@@ -28,7 +29,6 @@ export const worldCopy={
  toolbar:{label:'这个声音',trim:'剪一剪',copy:'复制',remove:'移除'},
  // Mood
  moodTitle:'这首曲子的心情',
- moods:{happy:'开心',calm:'平静',lively:'活泼',sad:'悲伤',angry:'生气',scared:'害怕',curious:'好奇'} satisfies Record<MoodId,string>,
  moodUnset:'先不选',moodCustom:'自己写',moodCustomOff:'未开放',
  customMood:{title:'这首曲子是什么心情？',description:'用自己的话写一写，最多 12 个字。',placeholder:'例如：像下雨天一样',
   submit:'就是它',cancel:'不写了',working:'小青蛙在想…',failed:'没能读懂，换个说法试试，或者从上面选一个。'},
@@ -76,4 +76,3 @@ export const worldCopy={
  } satisfies Record<NoticeKey,string>,
 } as const;
 
-export const EXAMPLE_TIMEOUT_MS=12_000;

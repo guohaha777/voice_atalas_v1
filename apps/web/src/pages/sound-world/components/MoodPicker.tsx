@@ -3,6 +3,7 @@ import {MOOD_TEXT_MAX,MOODS} from '@wanwu-v2/contracts/arrangement';
 import type {MoodId} from '@wanwu-v2/contracts/arrangement';
 import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
 import {MoodFace} from '../../../shared/ui/MoodFace';
+import {moodLabels} from '../../../shared/creation/moodCopy';
 import {worldCopy} from '../config/copy';
 import type {SoundWorld} from '../model/useSoundWorld';
 import styles from '../SoundWorldPage.module.css';
@@ -23,7 +24,7 @@ export function MoodPicker({world}:{world:SoundWorld}){
  return <div className={styles.mood} role="radiogroup" aria-labelledby="mood-title">
   <span id="mood-title" className={styles.moodTitle}>{worldCopy.moodTitle}</span>
   <div className={styles.moodOptions}>
-   {MOODS.map(id=>option(id,presetChecked(id),id,worldCopy.moods[id],()=>world.pickMood(id)))}
+   {MOODS.map(id=>option(id,presetChecked(id),id,moodLabels[id],()=>world.pickMood(id)))}
    {option('unset',presetChecked(null),'unset',worldCopy.moodUnset,()=>world.pickMood(null))}
    {option('custom',!!custom,'custom',custom?custom.text:worldCopy.moodCustom,
     ()=>{if(world.moodModelAvailable)setWriting(true);else void world.customMood('');},

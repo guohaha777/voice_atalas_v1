@@ -1,0 +1,43 @@
+/* 课本灵感 dialog (万物声场 and 万物成曲): two tabs, example rhythms and teaching music picked on this device. */
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:18px;padding:4px;border-radius:999px;background:var(--wk-soft)}
+.tabs button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border:0;border-radius:999px;background:none;color:var(--wk-muted);font-size:15px;font-weight:700;transition:background .16s,color .16s}
+.tabs svg{width:18px;height:18px}
+.tabs button[aria-selected=true]{background:#fff;color:var(--wk-ink);box-shadow:0 4px 12px #26301a14}
+.panel{min-height:250px;margin-top:12px}
+.note{display:flex;align-items:center;justify-content:center;gap:6px;margin:4px 0 0;font-size:13px;font-weight:600;color:var(--wk-muted)}
+.note svg,.flow p svg{width:15px;height:15px;flex-shrink:0}
+.entries{display:flex;flex-direction:column;gap:4px;margin:10px 0 0;padding:6px;list-style:none;border-radius:22px;background:var(--wk-soft)}
+.entries li,.music{display:flex;align-items:center;gap:12px;min-height:64px;padding:0 10px 0 8px;border-radius:16px;background:#fff}
+/* The song itself is the play button: a round play / stop and the title; it glows yellow while sounding. */
+.entryPlay{flex:1;min-width:0;display:flex;align-items:center;gap:10px;min-height:56px;padding:4px 8px 4px 4px;border:0;border-radius:14px;background:none;color:inherit;text-align:left}
+.entryPlay:hover{background:#f6f8ef99}
+.playDot{display:grid;place-items:center;flex-shrink:0;width:40px;height:40px;border-radius:50%;background:var(--wk-green-fill);color:var(--wk-on-fill);box-shadow:var(--wk-green-lift)}
+.playDot svg{width:16px;height:16px}
+.entryPlay[aria-pressed=true] .playDot{background:var(--wk-sun);box-shadow:0 0 0 4px #ffe57666}
+.music{width:100%;border:0;color:inherit;text-align:left}
+.music[aria-pressed=true]{box-shadow:inset 0 0 0 3px var(--wk-sun)}
+.entries li[data-using],.music[data-using]{background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift)}
+.entries li[data-using] .entryText small,.entries li[data-using] .entryText em,.music[data-using] .entryText small{color:#3f4f16}
+.entries li[data-using] .entryText em{background:#ffffffa6}
+.entryText{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.entryText b{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.entryText em{padding:0 7px;border-radius:8px;background:var(--wk-soft);font-size:11px;font-style:normal;font-weight:700;color:var(--wk-muted)}
+.entryText small{font-size:13px;font-weight:600;color:var(--wk-muted)}
+.use{flex-shrink:0;min-width:84px;min-height:44px;padding:0 14px;border:0;border-radius:999px;background:var(--wk-green);color:var(--wk-on-fill);font-size:14px;font-weight:800}
+.use[aria-pressed=true]{background:#ffffffb3;color:var(--wk-on-fill);box-shadow:none}
+.upload{display:flex;flex-direction:column;gap:10px}
+.music{padding-left:10px;background:var(--wk-soft)}
+.musicIcon{display:inline-flex;flex-shrink:0;color:var(--wk-lime)}
+.musicIcon svg{width:34px;height:34px;filter:drop-shadow(0 1px 0 #26301a2e)}
+.listen{display:inline-flex;pointer-events:none;align-items:center;gap:6px;flex-shrink:0;min-height:44px;padding:0 14px;border:0;border-radius:999px;background:var(--wk-green-soft);color:var(--wk-green-text);font-size:14px;font-weight:700}
+.listen svg{width:14px;height:14px}
+.listen[aria-pressed=true]{background:var(--wk-sun);color:var(--wk-on-fill)}
+.hint{margin:0;padding:18px 16px;border-radius:18px;background:var(--wk-soft);font-size:14px;font-weight:600;line-height:1.7;color:#56615a;text-align:center}
+.pick{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;border:0;border-radius:999px;background:#fff;color:var(--wk-ink);font-size:15px;font-weight:800;box-shadow:inset 0 0 0 2px var(--wk-line-strong)}
+.pick svg{width:20px;height:20px}
+.pick:hover{box-shadow:inset 0 0 0 2px var(--wk-green)}
+.error{margin:0;padding:8px 14px;border-radius:12px;background:var(--wk-alert-soft);font-size:13px;font-weight:600;color:var(--wk-alert)}
+.flow{padding:12px 16px;border-radius:18px;background:var(--wk-cream);font-size:13px;line-height:1.7;color:#4f584a}
+.flow b{font-weight:800}
+.flow ol{margin:4px 0 6px;padding-left:20px}
+.flow p{display:flex;align-items:center;gap:6px;margin:0;font-weight:700;color:var(--wk-sun-deep)}
