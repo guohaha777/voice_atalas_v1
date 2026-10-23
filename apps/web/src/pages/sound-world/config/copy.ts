@@ -58,7 +58,7 @@ export const worldCopy={
   listenClip:'听这一段',listenSource:'听整段原声',useWhole:'整段都用',stop:'停',
   cancel:'不改了',apply:'用这一段',
   /** 出现方式 wording from the shared five-dimension copy; repeats also say how many times. */
-  pattern:(pattern:PatternChoice)=>pattern==='repeat'?`${dimensionCopy.pattern.options.repeat} ${SHAPING_RULES.pattern.repeatCount} 次`:dimensionCopy.pattern.options[pattern],
+  pattern:(pattern:PatternChoice|undefined)=>!pattern?'按原声出现一次':pattern==='repeat'?`${dimensionCopy.pattern.options.repeat} ${SHAPING_RULES.pattern.repeatCount} 次`:dimensionCopy.pattern.options[pattern],
  },
 
  notices:{

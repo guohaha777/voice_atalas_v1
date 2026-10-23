@@ -1,46 +1,54 @@
+import {useCallback,useEffect,useRef,useState} from 'react';
 import {flowSteps} from '../../app/navigation';
 import {FlowHeader} from '../../shared/ui/FlowHeader';
 import {WorkHeaderActions} from '../../shared/ui/WorkHeaderActions';
-import type {SoundSource,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
+import type {SoundDimension,SoundSource,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import type {CreationEntry} from '../../app/navigation';
 import type {FinishResult} from './model/useSoundBirth';
-import {ArtPicture} from '../../shared/media/ArtPicture';
-import {WorkBackdrop} from '../../shared/scene/WorkBackdrop';
 import {birthCopy} from './config/copy';
-import {unitGuide} from './config/guide';
-import {guideLines} from './config/hintPresets';
+import {remainingDimensions} from './model/soundBirthState';
 import {useSoundBirth} from './model/useSoundBirth';
 import {CurrentSoundBar} from './components/CurrentSoundBar';
 import {LibraryDialog} from './components/LibraryDialog';
 import {RecordDialog} from './components/RecordDialog';
 import {ShapeEditor} from './components/ShapeEditor';
 import {SoundCard} from './components/SoundCard';
+import {SpiritStage} from './components/SpiritStage';
+import {TrimDialog} from './components/TrimDialog';
 import styles from './SoundBirthPage.module.css';
 
 /** 声音诞生 (采集与转译 merged): bring in a sound with its provenance, set the five choices, compare with the original. */
 export function SoundBirthPage({entry,markerIndex,onNavigate,onFinish}:{entry:CreationEntry|null;markerIndex:number;onNavigate:(path:string)=>void;onFinish:(draft:SoundUnitDraft,source:SoundSource)=>FinishResult}){
  // Hand-off to 万物声场 goes through the app, which adds the unit to the current work and opens the field.
  const birth=useSoundBirth(entry,markerIndex,onFinish);
- const guideText=birth.hint?.text??(birth.state.source?guideLines.idle:guideLines.noSound);
+ // The row being looked at: the character's right hand points at it (or at the panel title when there is none).
+ const [active,setActive]=useState<SoundDimension|null>(null);
+ const editor=useRef<HTMLElement>(null);
+ const sourceId=birth.state.source?.id;
+ useEffect(()=>{setActive(sourceId?remainingDimensions(birth.state.shape)[0]??null:null);
+ // A new sound starts at its first unchosen row.
+ },[sourceId]);
+ const reach=useCallback(()=>{
+  const root=editor.current;if(!root)return null;
+  return (active&&root.querySelector(`[data-dimension="${active}"] [data-reach]`))||root.querySelector('[data-reach="title"]');
+ },[active]);
  return <div className={styles.shell}>
-  <WorkBackdrop/>
   <FlowHeader steps={flowSteps} current="birth" onNavigate={onNavigate} aside={<WorkHeaderActions onNavigate={onNavigate} onLibrary={()=>birth.dispatch({type:'dialog',dialog:'library'})}/>}/>
   <main className={styles.page}>
-   <header className={styles.intro}>
-    <div className={styles.introText}><h1>{birthCopy.title}</h1><p>{birthCopy.subtitle}</p></div>
-    {/* The unit's guide: after each choice it offers a sound association (preset text today, model later). */}
-    <aside className={styles.guidePanel} aria-label={unitGuide.label}>
-     <p key={guideText} className={styles.guideBubble} aria-live="polite">{guideText}</p>
-     <span key={`bird-${guideText}`} className={styles.mascot}><ArtPicture variants={unitGuide.variants} className={styles.mascotArt} priority="high"/></span>
-    </aside>
-   </header>
-   <CurrentSoundBar birth={birth} entry={entry}/>
-   <div className={styles.workspace}>
+   {/* Left: the sound itself — its card, and the sound as a character standing under it. */}
+   <div className={styles.left}>
     <SoundCard birth={birth} entry={entry}/>
-    <ShapeEditor birth={birth} onBack={()=>onNavigate('/')}/>
+    <SpiritStage birth={birth} reach={reach}/>
+   </div>
+   {/* Right: bring a sound in, then make it look like what you heard. */}
+   <div className={styles.right}>
+    <header className={styles.intro}><h1>{birthCopy.title}</h1><p>{birthCopy.subtitle}</p></header>
+    <CurrentSoundBar birth={birth} entry={entry}/>
+    <ShapeEditor ref={editor} birth={birth} onBack={()=>onNavigate('/')} active={active} onActive={setActive}/>
    </div>
   </main>
   {birth.state.dialog==='record'&&<RecordDialog birth={birth}/>}
   {birth.state.dialog==='library'&&<LibraryDialog birth={birth}/>}
+  {birth.state.dialog==='trim'&&<TrimDialog birth={birth}/>}
  </div>;
 }

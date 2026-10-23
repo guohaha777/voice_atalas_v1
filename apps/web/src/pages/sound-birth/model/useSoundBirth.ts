@@ -1,17 +1,17 @@
 import {useCallback,useEffect,useMemo,useReducer,useRef,useState,useSyncExternalStore} from 'react';
-import {NEUTRAL_SHAPE,SOUND_SOURCE_MAX_MS,cleanSourceText,missingProvenance} from '@wanwu-v2/contracts/sound';
-import type {SoundDimension,SoundShape,SoundSource,SoundSourceKind,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
+import {SOUND_SOURCE_MAX_MS,cleanSourceText,missingProvenance} from '@wanwu-v2/contracts/sound';
+import type {ChosenShape,SoundDimension,SoundSource,SoundSourceKind,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {audioSupported} from '../../../shared/audio/audioContext';
 import {SequencePlayer} from '../../../shared/audio/SequencePlayer';
 import {LocalRecorder,RecorderError} from '../../../shared/audio/LocalRecorder';
 import {AudioLoadError,decodeAudio,loadAudio} from '../../../shared/audio/loadAudio';
 import {renderShaped} from '../../../shared/audio/renderShaped';
+import {sliceBuffer} from '../../../shared/audio/sliceBuffer';
 import {originalGain,planShape,shapeKey} from '../../../shared/audio/shapingRules';
 import {newId} from '../../../shared/creation/ids';
 import type {CreationEntry} from '../../../app/navigation';
 import {EXAMPLE_TIMEOUT_MS} from '../../../shared/creation/exampleSounds';
 import {FILE_MAX_BYTES,birthCopy} from '../config/copy';
-import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
 import {sessionArchive} from '../../../shared/creation/sourceArchive';
 import {libraryGroups} from '../services/soundLibrary';
 import {presetHintProvider} from '../services/soundHints';
@@ -20,6 +20,8 @@ import {exampleItems} from '../config/examples';
 import type {LibraryItem} from '../services/soundLibrary';
 import {finishCheck,initialSoundBirth,soundBirthReducer,toSoundUnitDraft} from './soundBirthState';
 import type {Notice} from './soundBirthState';
+import {TRIM_FILE_MAX_MS,initialTrim} from './trimEditing';
+import type {TrimRange} from './trimEditing';
 
 export type FinishResult={status:'unavailable'}|{status:'opened'};
 /** Which compare target the waveform shows; also the play keys for original / current. */
@@ -29,7 +31,6 @@ export type ProvenanceField='label'|'recordedBy'|'recordedOn'|'place'|'group';
 
 const baseName=(file:string)=>file.replace(/\.[^.]+$/,'').trim();
 const today=()=>{const now=new Date();return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;};
-const full=(shape:Partial<SoundShape>)=>({...NEUTRAL_SHAPE,...shape});
 
 export function useSoundBirth(entry:CreationEntry|null,markerIndex:number,onFinish:(draft:SoundUnitDraft,source:SoundSource)=>FinishResult,hints:SoundHintProvider=presetHintProvider){
  const [state,dispatch]=useReducer(soundBirthReducer,entry,start=>initialSoundBirth(start,markerIndex));
@@ -43,6 +44,8 @@ export function useSoundBirth(entry:CreationEntry|null,markerIndex:number,onFini
  const [recordMs,setRecordMs]=useState(0);
  const [take,setTake]=useState<{buffer:AudioBuffer;mimeType:string}|null>(null);
  const [blocked,setBlocked]=useState(false);
+ /** A too-long upload being trimmed: the decoded file (only read), its name and the part to keep. */
+ const [trim,setTrim]=useState<{buffer:AudioBuffer;label:string;mimeType:string;range:TrimRange}|null>(null);
  const [lastChosen,setLastChosen]=useState<SoundDimension|null>(null);
  const [hint,setHint]=useState<(SoundHint&{key:string})|null>(null);
  const hintRequest=useRef<AbortController|null>(null);
@@ -126,8 +129,14 @@ export function useSoundBirth(entry:CreationEntry|null,markerIndex:number,onFini
   dispatch({type:'reading',reading:true});
   try{
    const buffer=await decodeAudio(await file.arrayBuffer());
-   if(buffer.duration*1000>SOUND_SOURCE_MAX_MS+500){dispatch({type:'reading',reading:false});return notify('bar',birthCopy.tooLong);}
-   archiveAndUse(describeLocal('local-file',cleanSourceText(baseName(file.name))??birthCopy.defaultRecordingName,buffer,file.type||'audio/*'),buffer);
+   const label=cleanSourceText(baseName(file.name))??birthCopy.defaultRecordingName,mimeType=file.type||'audio/*';
+   if(buffer.duration*1000>TRIM_FILE_MAX_MS){dispatch({type:'reading',reading:false});return notify('bar',birthCopy.tooLong);}
+   // Longer than a source may be: the child picks the part to keep (the file on the device is untouched).
+   if(buffer.duration*1000>SOUND_SOURCE_MAX_MS+500){
+    player.stop();setTrim({buffer,label,mimeType,range:initialTrim(Math.round(buffer.duration*1000))});
+    dispatch({type:'reading',reading:false});dispatch({type:'notice',notice:null});dispatch({type:'dialog',dialog:'trim'});return;
+   }
+   archiveAndUse(describeLocal('local-file',label,buffer,mimeType),buffer);
   }catch{dispatch({type:'reading',reading:false});notify('bar',birthCopy.fileUnreadable);}
  };
 
@@ -153,15 +162,26 @@ export function useSoundBirth(entry:CreationEntry|null,markerIndex:number,onFini
  }
  const listenTake=()=>{if(!take)return;if(playing==='take')return player.stop();void player.playOne('take',take.buffer,originalGain);};
  const useTake=()=>{if(!take)return;archiveAndUse(describeLocal('local-recording',birthCopy.defaultRecordingName,take.buffer,take.mimeType),take.buffer);setTake(null);setRecordPhase('idle');};
+ // ----- trimming a too-long upload -----
+ const setTrimRange=(range:TrimRange)=>{if(playing==='trim')player.stop();setTrim(current=>current&&{...current,range});};
+ const listenTrim=()=>{
+  if(!trim)return;if(playing==='trim')return player.stop();
+  void player.playOne('trim',sliceBuffer(trim.buffer,trim.range.startMs,trim.range.endMs),originalGain);
+ };
+ const useTrim=()=>{
+  if(!trim)return;
+  const part=sliceBuffer(trim.buffer,trim.range.startMs,trim.range.endMs);
+  archiveAndUse(describeLocal('local-file',trim.label,part,trim.mimeType),part);setTrim(null);
+ };
  const closeDialog=()=>{
-  recorder.current?.cancel();recorder.current=null;setTake(null);setRecordPhase('idle');
-  if(playing==='take'||playing?.startsWith('item:'))player.stop();
+  recorder.current?.cancel();recorder.current=null;setTake(null);setRecordPhase('idle');setTrim(null);
+  if(playing==='take'||playing==='trim'||playing?.startsWith('item:'))player.stop();
   loads.current?.abort();dispatch({type:'dialog',dialog:null});
  };
 
  // ----- shaped preview -----
  /** Render (cached) and play. Rapid taps only play the most recent request. */
- const playShape=async(shape:SoundShape,key:string,show:boolean)=>{
+ const playShape=async(shape:ChosenShape,key:string,show:boolean)=>{
   const source=latest.current.source,buffer=source&&bufferOf(source.id);
   if(!source||!buffer)return;
   const token=++renderToken.current,cacheKey=`${source.id}|${shapeKey(shape)}`;
@@ -177,7 +197,7 @@ export function useSoundBirth(entry:CreationEntry|null,markerIndex:number,onFini
   if(playing===target){player.stop();return;}
   if(!sourceBuffer)return;
   if(target==='original'){renderToken.current++;setShown('original');void player.playOne('original',sourceBuffer,originalGain);}
-  else void playShape(full(state.shape),'current',true);
+  else void playShape(state.shape,'current',true);
  };
  /** The waveform's own play button plays whichever version it is showing. */
  const playShown=()=>playCompare(shown==='current'&&currentBuffer?'current':'original');
@@ -188,7 +208,15 @@ export function useSoundBirth(entry:CreationEntry|null,markerIndex:number,onFini
   void hints.hint({dimension,value,shape:{...latest.current.shape,[dimension]:value},sourceLabel:latest.current.source?.label??null},controller.signal)
    .then(result=>{if(result&&!controller.signal.aborted)setHint({...result,key:`${dimension}:${value}`});}).catch(()=>{});
   if(!latest.current.source)return notify('editor',birthCopy.noSoundYet,'info');
-  void playShape(full({...latest.current.shape,[dimension]:value}),'current',true);
+  void playShape({...latest.current.shape,[dimension]:value},'current',true);
+ };
+ /** Take a choice back: that dimension returns to the original, and the result plays so the change can be heard. */
+ const clear=(dimension:SoundDimension)=>{
+  dispatch({type:'clear',dimension});setBlocked(false);setLastChosen(dimension);
+  hintRequest.current?.abort();setHint(null);
+  if(!latest.current.source)return;
+  const shape={...latest.current.shape};delete shape[dimension];
+  void playShape(shape,'current',true);
  };
  const updateSource=(field:ProvenanceField,value:string)=>{
   const source=latest.current.source;if(!source||source.kind==='example')return;
@@ -206,7 +234,6 @@ export function useSoundBirth(entry:CreationEntry|null,markerIndex:number,onFini
   const check=finishCheck(state);
   switch(check.kind){
    case 'no-source':return notify('bar',birthCopy.needSound,'info');
-   case 'missing-shape':return notify('editor',birthCopy.needShape(check.dimensions.map(dimension=>dimensionCopy[dimension].label).join('、')),'info');
    case 'missing-provenance':return notify('info',birthCopy.needProvenance,'info');
    case 'ready':{
     if(!state.cardConfirmed)dispatch({type:'card',confirmed:true});
@@ -221,11 +248,12 @@ export function useSoundBirth(entry:CreationEntry|null,markerIndex:number,onFini
  const showingCurrent=!!currentBuffer&&displayBuffer===currentBuffer;
  return {
   state,dispatch,playing,loadingId,blocked,lastChosen,hint,local,groups:useMemo(()=>libraryGroups(exampleItems,local),[local]),
-  wave:{buffer:displayBuffer,target:showingCurrent?'current' as const:'original' as const,progress:playing===(showingCurrent?'current':'original')?progress:0},
+  wave:{buffer:displayBuffer,original:sourceBuffer??null,target:showingCurrent?'current' as const:'original' as const,progress:playing===(showingCurrent?'current':'original')?progress:0},
   record:{phase:recordPhase,ms:recordMs,take:take?.buffer??null,progress:playing==='take'?progress:0},
+  trim:trim&&{buffer:trim.buffer,label:trim.label,range:trim.range,playing:playing==='trim',progress:playing==='trim'?progress:0},setTrimRange,listenTrim,useTrim,
   suggestions:{recordedBy:sessionArchive.recent('recordedBy'),place:sessionArchive.recent('place'),group:sessionArchive.recent('group')},
   previewItem,pickItem,chooseFile,openRecord,startRecording,stopRecording,listenTake,useTake,closeDialog,
-  playCompare,playShown,choose,updateSource,setCardPhoto,finish,
+  playCompare,playShown,choose,clear,updateSource,setCardPhoto,finish,
   confirmCard:()=>{
    if(latest.current.source&&missingProvenance(latest.current.source).length){notify('info',birthCopy.needProvenance,'info');return;}
    dispatch({type:'card',confirmed:true});

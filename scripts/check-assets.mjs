@@ -7,7 +7,7 @@ const publicRoot=path.join(root,'apps/web/public');
 const entries=JSON.parse(await fs.readFile(path.join(root,'docs/assets/release-manifest.json'),'utf8'));
 const titleEntries=JSON.parse(await fs.readFile(path.join(root,'docs/assets/title-release-manifest.json'),'utf8'));
 // Artwork built by scripts/build-art-assets.mjs; each recipe names its runtime manifest and release list.
-const artRecipes=await Promise.all(['docs/assets/start-recipe.json','docs/assets/marker-recipe.json'].map(async file=>JSON.parse(await fs.readFile(path.join(root,file),'utf8'))));
+const artRecipes=await Promise.all(['docs/assets/start-recipe.json','docs/assets/marker-recipe.json','docs/assets/marker-hero-recipe.json'].map(async file=>JSON.parse(await fs.readFile(path.join(root,file),'utf8'))));
 const artReleases=await Promise.all(artRecipes.map(async recipe=>JSON.parse(await fs.readFile(path.join(root,recipe.output.release),'utf8'))));
 entries.push(...titleEntries,...artReleases.flat());
 for(const tier of ['mobile','desktop','fallback'])if(titleEntries.filter(item=>item.tier===tier||item.tier==='vector').reduce((sum,item)=>sum+item.bytes,0)>120*1024)throw new Error('Title + doodles exceed combined budget: '+tier);

@@ -1,5 +1,5 @@
 import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
-import {KidIcon} from '../../../shared/ui/KidIcon';
+import {Glyph} from './PaperIcon';
 import {birthCopy} from '../config/copy';
 import type {useSoundBirth} from '../model/useSoundBirth';
 import type {LibraryItem} from '../services/soundLibrary';
@@ -24,7 +24,7 @@ export function LibraryDialog({birth}:{birth:Birth}){
       const id=item.source.id,listening=birth.playing===`item:${id}`,loading=birth.loadingId===id,current=birth.state.source?.id===id;
       return <li key={id} data-current={current||undefined}>
        <button type="button" className={styles.listen} aria-label={`${listening?'停止':'试听'}${item.source.label}`} aria-pressed={listening} onClick={()=>void birth.previewItem(item)}>
-        <KidIcon name={listening?'stop':'play'}/></button>
+        <Glyph name={listening?'stop':'play'}/></button>
        <span className={styles.itemText}><strong>{item.source.label}</strong><small>{loading?birthCopy.reading:meta(item)}</small></span>
        <button type="button" className={styles.pick} disabled={loading||current} onClick={()=>void birth.pickItem(item)}>{current?copy.current:copy.pick}</button>
       </li>;

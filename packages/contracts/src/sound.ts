@@ -60,7 +60,12 @@ export const SOUND_CHOICES:{readonly [K in SoundDimension]:readonly SoundShape[K
  intensity:['soft','medium','loud'],
  pattern:['once','repeat','bursts','fade-in'],
 };
-/** Used only to render a preview while a dimension is still unchosen; never stored as the child's choice. */
+/**
+ * What the child actually chose. Every dimension is optional: an unchosen one keeps the original sound for that aspect
+ * (original pitch, length, gain and a single play), so a child may go on with the plain recording.
+ */
+export type ChosenShape=Partial<SoundShape>;
+/** Middle value of every dimension (tests and fixtures). Never stored in place of an unchosen dimension. */
 export const NEUTRAL_SHAPE:SoundShape={pitch:'mid',duration:'medium',contour:'flat',intensity:'medium',pattern:'once'};
 
 /**
@@ -80,7 +85,8 @@ export type SoundUnitDraft={
  maker:string|null;
  /** Position in this creation; drives the neutral marker artwork and the visible number. */
  markerIndex:number;
- shape:SoundShape;
+ /** Only the dimensions the child chose; missing ones keep the original (see ChosenShape). */
+ shape:ChosenShape;
  input:ShapeInput;
  createdAt:string;
 };
@@ -90,6 +96,13 @@ export const SOUND_NAME_MAX=12;
 export const MAKER_NAME_MAX=6;
 /** Longest source a child can record or upload. The whole recording comes in; 万物声场 lets the child pick the part to use. */
 export const SOUND_SOURCE_MAX_MS=45_000;
+
+/** Only known dimensions, each with a valid value; any subset (including none) is allowed. */
+export function isChosenShape(shape:unknown):shape is ChosenShape{
+ if(!shape||typeof shape!=='object'||Array.isArray(shape))return false;
+ return Object.entries(shape).every(([dimension,value])=>(SOUND_DIMENSIONS as readonly string[]).includes(dimension)
+  &&(SOUND_CHOICES[dimension as SoundDimension] as readonly string[]).includes(value as string));
+}
 
 export function isCompleteShape(shape:Partial<SoundShape>):shape is SoundShape{
  return SOUND_DIMENSIONS.every(dimension=>(SOUND_CHOICES[dimension] as readonly string[]).includes(shape[dimension] as string));
@@ -110,7 +123,7 @@ export function parseSoundUnitDraft(value:unknown):SoundUnitDraft|null{
  for(const key of ['id','sourceId','name','createdAt'])if(typeof unit[key]!=='string'||!unit[key])return null;
  if(!Number.isInteger(unit.markerIndex)||(unit.markerIndex as number)<0)return null;
  if(!SHAPE_INPUTS.includes(unit.input as ShapeInput))return null;
- if(!unit.shape||typeof unit.shape!=='object'||!isCompleteShape(unit.shape as Partial<SoundShape>))return null;
+ if(!isChosenShape(unit.shape))return null;
  if([...(unit.name as string)].length>SOUND_NAME_MAX)return null;
  if(unit.maker!==null&&(typeof unit.maker!=='string'||!unit.maker||[...unit.maker].length>MAKER_NAME_MAX))return null;
  return unit as SoundUnitDraft;

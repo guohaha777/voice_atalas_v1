@@ -2,7 +2,7 @@
 // recordings from the archive, or the bundled example clips) and shaped renders cached per source + shape (+ excerpt).
 // Originals are only read; every render is a new buffer.
 import type {SourceClip} from '@wanwu-v2/contracts/arrangement';
-import type {SoundShape} from '@wanwu-v2/contracts/sound';
+import type {ChosenShape} from '@wanwu-v2/contracts/sound';
 import {AudioLoadError,loadAudio} from '../audio/loadAudio';
 import {renderShaped} from '../audio/renderShaped';
 import {planClip,planShape,shapeKey} from '../audio/shapingRules';
@@ -42,11 +42,11 @@ export class WorkSoundBank{
   return request;
  }
  /** The sound card as made in 声音诞生 (palette and library previews). */
- card(sourceId:string,shape:SoundShape){
+ card(sourceId:string,shape:ChosenShape){
   return this.rendered(`card|${sourceId}|${shapeKey(shape)}`,sourceId,buffer=>renderShaped(buffer,planShape(shape,buffer.duration)));
  }
  /** One occurrence in the field / score: the chosen excerpt with the card's other choices. */
- clip(sourceId:string,shape:SoundShape,clip:SourceClip){
+ clip(sourceId:string,shape:ChosenShape,clip:SourceClip){
   return this.rendered(`clip|${sourceId}|${shapeKey(shape)}|${clip.startMs}-${clip.endMs}`,sourceId,
    buffer=>renderShaped(buffer,planClip(shape,clipSeconds(clip)),clip.startMs/1000));
  }

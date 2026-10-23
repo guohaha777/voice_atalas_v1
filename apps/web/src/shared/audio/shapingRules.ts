@@ -1,6 +1,6 @@
 // Rules that turn the five choices into a local preview. Tune numbers here; pages and the renderer stay unchanged.
 // Transposition is deliberately conservative so a real recording still sounds like itself.
-import type {SoundShape} from '@wanwu-v2/contracts/sound';
+import type {ChosenShape,SoundShape} from '@wanwu-v2/contracts/sound';
 
 export const SHAPING_RULES={
  version:'shaping-v1',
@@ -33,15 +33,21 @@ export type ShapingPlan={
 };
 
 const dbToGain=(db:number)=>10**(db/20);
-/** Stable cache key for a set of five choices (renders are cached per source + shape). */
-export const shapeKey=(shape:SoundShape)=>[shape.pitch,shape.duration,shape.contour,shape.intensity,shape.pattern].join('/');
+/** Stable cache key for the chosen dimensions ('-' = unchosen, i.e. original); renders are cached per source + shape. */
+export const shapeKey=(shape:ChosenShape)=>[shape.pitch,shape.duration,shape.contour,shape.intensity,shape.pattern].map(value=>value??'-').join('/');
 export const originalGain=dbToGain(SHAPING_RULES.originalGainDb);
+/** Transposition for 高低; an unchosen pitch keeps the original. */
+export const semitonesOf=(shape:ChosenShape)=>shape.pitch?SHAPING_RULES.pitchSemitones[shape.pitch]:0;
 
-/** Pure: how long, how often and how loud the shaped preview plays for a source of `sourceSeconds`. */
-export function planShape(shape:SoundShape,sourceSeconds:number):ShapingPlan{
- const rules=SHAPING_RULES,semitones=rules.pitchSemitones[shape.pitch],rate=2**(semitones/12);
+/**
+ * Pure: how long, how often and how loud the shaped preview plays for a source of `sourceSeconds`.
+ * Unchosen dimensions keep the original: own pitch, own length (up to the preview limit), original gain, one play.
+ */
+export function planShape(shape:ChosenShape,sourceSeconds:number):ShapingPlan{
+ const rules=SHAPING_RULES,semitones=semitonesOf(shape),rate=2**(semitones/12);
  const natural=Math.max(0.05,sourceSeconds/rate);
- const unit=shape.duration==='short'?Math.min(rules.duration.shortSeconds,natural)
+ const unit=!shape.duration?Math.min(natural,rules.maxTotalSeconds)
+  :shape.duration==='short'?Math.min(rules.duration.shortSeconds,natural)
   :shape.duration==='medium'?Math.min(natural,rules.duration.mediumMaxSeconds)
   :Math.min(rules.duration.longMaxSeconds,Math.max(rules.duration.longMinSeconds,natural*rules.duration.longFactor));
  const events=patternEvents(shape.pattern,unit,Math.min(unit,rules.pattern.repeatMaxSeconds),rules.maxTotalSeconds);
@@ -53,13 +59,13 @@ export function planShape(shape:SoundShape,sourceSeconds:number):ShapingPlan{
  * preview); 高低、变化、轻响 apply as usual, and 出现方式 repeats the whole excerpt (bursts stay short hits).
  * Never loops: the excerpt is played as it is, so what the child picked is exactly what is heard.
  */
-export function planClip(shape:SoundShape,clipSeconds:number):ShapingPlan{
- const semitones=SHAPING_RULES.pitchSemitones[shape.pitch],rate=2**(semitones/12);
+export function planClip(shape:ChosenShape,clipSeconds:number):ShapingPlan{
+ const semitones=semitonesOf(shape),rate=2**(semitones/12);
  const unit=Math.max(0.05,clipSeconds/rate);
  return finishPlan(shape,rate,semitones,patternEvents(shape.pattern,unit,unit,SHAPING_RULES.clipMaxTotalSeconds),false);
 }
 
-function patternEvents(pattern:SoundShape['pattern'],unit:number,repeatLength:number,maxTotal:number){
+function patternEvents(pattern:SoundShape['pattern']|undefined,unit:number,repeatLength:number,maxTotal:number){
  const p=SHAPING_RULES.pattern;let events:ShapeEvent[];
  switch(pattern){
   case 'repeat':events=Array.from({length:p.repeatCount},(_,i)=>({at:i*(repeatLength+p.repeatGapSeconds),length:repeatLength}));break;
@@ -71,9 +77,9 @@ function patternEvents(pattern:SoundShape['pattern'],unit:number,repeatLength:nu
  }
  return events.filter(event=>event.at<maxTotal).map(event=>({at:event.at,length:Math.min(event.length,maxTotal-event.at)}));
 }
-function finishPlan(shape:SoundShape,rate:number,semitones:number,events:ShapeEvent[],loop:boolean):ShapingPlan{
- const last=events[events.length-1]!,contour=SHAPING_RULES.contour[shape.contour];
- return {rate,semitones,gain:dbToGain(SHAPING_RULES.gainDb[shape.intensity]),bendCents:contour.bendCents,filter:contour.filter,
+function finishPlan(shape:ChosenShape,rate:number,semitones:number,events:ShapeEvent[],loop:boolean):ShapingPlan{
+ const last=events[events.length-1]!,contour=SHAPING_RULES.contour[shape.contour??'flat'];
+ return {rate,semitones,gain:shape.intensity?dbToGain(SHAPING_RULES.gainDb[shape.intensity]):originalGain,bendCents:contour.bendCents,filter:contour.filter,
   loop,fadeIn:shape.pattern==='fade-in',events,totalSeconds:last.at+last.length};
 }
 

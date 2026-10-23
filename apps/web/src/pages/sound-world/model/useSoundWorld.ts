@@ -3,7 +3,7 @@ import type {Arrangement,MoodChoice,MoodId,SourceClip,SpanSeconds} from '@wanwu-
 import type {Inspiration} from '@wanwu-v2/contracts/work';
 import {mockInspirationCatalog} from '../../../shared/inspiration/catalog';
 import type {InspirationCatalog,InspirationEntry} from '../../../shared/inspiration/catalog';
-import type {SoundShape,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
+import type {ChosenShape,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {audioSupported} from '../../../shared/audio/audioContext';
 import {SequencePlayer} from '../../../shared/audio/SequencePlayer';
 import {originalGain} from '../../../shared/audio/shapingRules';
@@ -83,8 +83,8 @@ export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,r
  // Only when the set of sources changes.
  },[sourceIds,bank]);
 
- const cardSound=(sourceId:string,shape:SoundShape)=>bank.card(sourceId,shape);
- const clipSound=(sourceId:string,shape:SoundShape,clip:SourceClip)=>bank.clip(sourceId,shape,clip);
+ const cardSound=(sourceId:string,shape:ChosenShape)=>bank.card(sourceId,shape);
+ const clipSound=(sourceId:string,shape:ChosenShape,clip:SourceClip)=>bank.clip(sourceId,shape,clip);
 
  const report=(reason:unknown)=>{const failure=soundFailure(reason);if(failure)notify(failure);};
  /** Prepare then play one buffer; rapid taps only play the latest request; tapping what plays stops it. */

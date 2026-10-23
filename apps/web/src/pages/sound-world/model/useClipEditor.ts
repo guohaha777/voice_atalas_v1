@@ -1,7 +1,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {KeyboardEvent,PointerEvent} from 'react';
 import type {SourceClip} from '@wanwu-v2/contracts/arrangement';
-import {computePeaks,SHAPING_RULES} from '../../../shared/audio/shapingRules';
+import {computePeaks,semitonesOf} from '../../../shared/audio/shapingRules';
 import {dragEdge,dragWindow,keyEdge,tapAt} from './clipEditing';
 import type {ClipEdge} from './clipEditing';
 import {eventOf,heardSeconds,unitOf} from './soundWorldState';
@@ -55,11 +55,11 @@ export function useClipEditor(world:SoundWorld,eventId:string,onDone:()=>void){
  };
  const end=()=>{drag.current=null;};
 
- const rate=unit?2**(SHAPING_RULES.pitchSemitones[unit.shape.pitch]/12):1;
+ const rate=unit?2**(semitonesOf(unit.shape)/12):1;
  // Playhead over the waveform: the whole recording, or the draft part when it plays once straight through.
  let playheadMs:number|null=null;
  if(unit&&world.playing===`source:${unit.sourceId}`)playheadMs=world.elapsed*1000;
- else if(clip&&unit&&world.playing===`clip:${eventId}`&&(unit.shape.pattern==='once'||unit.shape.pattern==='fade-in'))
+ else if(clip&&unit&&world.playing===`clip:${eventId}`&&(!unit.shape.pattern||unit.shape.pattern==='once'||unit.shape.pattern==='fade-in'))
   playheadMs=Math.min(clip.endMs,clip.startMs+world.elapsed*1000*rate);
 
  return {

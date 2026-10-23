@@ -1,6 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import {SOURCE_TEXT_MAX,missingProvenance} from '@wanwu-v2/contracts/sound';
-import {KidIcon} from '../../../shared/ui/KidIcon';
+import {Glyph} from './PaperIcon';
 import {birthCopy} from '../config/copy';
 import type {ProvenanceField,useSoundBirth} from '../model/useSoundBirth';
 import styles from '../SoundBirthPage.module.css';
@@ -39,7 +39,7 @@ export function SoundInfo({birth}:{birth:Birth}){
     <p className={styles.infoSummary} data-tone={infoNotice?.tone}>
      {infoNotice?.text??(missing.length?copy.privacy:copy.archived([source.provenance.group,source.provenance.recordedBy,source.provenance.place].filter(Boolean).join(' · ')))}
     </p>
-    <button type="button" className={styles.confirm} data-ready={!missing.length||undefined} onClick={birth.confirmCard}><KidIcon name="check"/>{birthCopy.confirmCard}</button>
+    <button type="button" className={styles.confirm} data-ready={!missing.length||undefined} onClick={birth.confirmCard}><Glyph name="check"/>{birthCopy.confirmCard}</button>
    </div>
   </div>}
  </div>;

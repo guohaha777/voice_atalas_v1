@@ -25,7 +25,7 @@
 | 弹窗三入口插画 | `start/illustrations/start-card.png`、`start-upload.png`、`start-library.png` | 作为三个独立场景组；不包含按钮、单选框或入口文字 |
 | 弹窗角落装饰 | `start/environment/corner-pond-left.png`、`corner-fern-right.png` | 左上复用现有 `home/environment/env-upper-left.png`；外层场景继续复用首页 |
 | 弹窗手绘标题 | `start/title/start-heading.png` | 真实可访问标题仍用文本；品牌、副文案、选项、按钮不截图 |
-| 声音诞生 / 万物声场 / 万物成曲的身份标记 | `shared/sound-markers/marker-*.png` 四款 | 编号、名称和播放状态用实际数据叠加 |
+| 声音诞生 / 万物声场 / 万物成曲的身份标记 | `shared/sound-markers/marker-*.png` 四款 | 编号、名称和播放状态用实际数据叠加；声音诞生的标记角色另用大尺寸衍生（`docs/assets/marker-hero-recipe.json`，原件不变，眼睛和手臂由代码绘制） |
 | 声场高度区、轮廓、时间方向、选中态 | 不从页面抠成固定背景 | 后续 SVG / CSS，适配画幅与动态位置 |
 | 图形曲谱、时长尾条、游标、播放进度条 | 不制作整张位图曲谱 | 后续 SVG / DOM / CSS，根据作品与播放状态绘制 |
 | 录音、上传、试听、重播、删除、书本、相机、五项符号 | 不从截图抠小图标 | 后续扩展已有细线 SVG 图标，保留文字标签 |

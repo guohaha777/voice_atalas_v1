@@ -11,7 +11,7 @@
     "typecheck": "npm run typecheck --workspace=@wanwu-v2/web",
     "test": "node --experimental-strip-types --test apps/web/tests/*.test.ts",
     "check:assets": "node scripts/check-assets.mjs",
-    "assets:build": "node scripts/build-assets.mjs && node scripts/build-title-assets.mjs && node scripts/build-art-assets.mjs docs/assets/start-recipe.json docs/assets/marker-recipe.json",
+    "assets:build": "node scripts/build-assets.mjs && node scripts/build-title-assets.mjs && node scripts/build-art-assets.mjs docs/assets/start-recipe.json docs/assets/marker-recipe.json docs/assets/marker-hero-recipe.json",
     "build": "npm run typecheck && npm run check:assets && npm run build --workspace=@wanwu-v2/web",
     "preview": "npm run preview --workspace=@wanwu-v2/web"
   },

@@ -1,5 +1,5 @@
 import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
-import type {SoundSourceKind} from '@wanwu-v2/contracts/sound';
+import type {SoundDimension,SoundSourceKind} from '@wanwu-v2/contracts/sound';
 import type {RecorderFailure} from '../../../shared/audio/LocalRecorder';
 import type {CreationEntry} from '../../../app/navigation';
 
@@ -14,16 +14,19 @@ export const birthCopy={
  confirmCard:'确认声卡信息',editCard:'修改信息',credit:(by:string)=>`提供：${by}`,license:'来源与许可',
  maker:'做声音的人',makerHint:'写名字',makerEdit:'编辑做声音的人',
  shapeTitle:'声音的样子',
+ // One question per row, shown on the row being looked at.
+ rowHints:{pitch:'声音是站得高，还是站得低？',duration:'声音能响多久？',contour:'声音是怎么走的？',intensity:'声音是轻轻的，还是大大的？',pattern:'声音是怎么出现的？'} satisfies Record<SoundDimension,string>,
  progress:(done:number,total:number)=>`已选 ${done} / ${total}`,
- bubble:{empty:'先给我一个声音吧！',fresh:(name:string)=>`我是「${name}」，给我变个样子吧～`,shaped:(desc:string)=>`我现在${desc}`,sounding:'听，我在唱歌～'},rename:'改名字',original:'听原声',current:'听现在的',stopPlaying:'停',
+ bubble:{empty:'先给我一个声音吧！',fresh:(name:string)=>`我是「${name}」，给我变个样子吧～`,shaped:(desc:string)=>`我现在${desc}`,sounding:'听，我在唱歌～',hello:'你好呀！'},
+ greet:'声音标记，点一点和它打招呼',rename:'改名字',original:'听原声',current:'听现在的',stopPlaying:'停',
  keepOriginal:'原声保留，随时可以比较。',
  emptyCard:{card:'先拍下纸卡，再录音或从声音库挑选它对应的声音。',upload:'先录一段声音，或上传录好的声音。',library:'从声音库里挑一个声音。',direct:'先在上方录音、上传，或从声音库挑选。'} satisfies Record<CreationEntry|'direct',string>,
  sourceLabel:{example:'示例声音','local-recording':'本机录音 · 未上传','local-file':'本机文件 · 未上传'} satisfies Record<SoundSourceKind,string>,
  // Editor
- optionHint:'选一项，就能听听它的变化。',
+ tapToClear:'再点一下取消',
+ optionHint:'选一项听听变化，再点一下就取消；不选的保持原声。',
  backEntry:'返回入口',finish:'做好了，去万物声场',finishUnavailable:'暂未开放',
  needSound:'先在上方选一个声音。',
- needShape:(labels:string)=>`还有 ${labels} 没有选。`,
  needProvenance:'补齐下面的声音信息，这个声音才能溯源。',
  worldUnavailable:'万物声场还在准备中，暂未开放。你的声音、选择和来源信息都还在这里。',
  noSoundYet:'选好声音后，就能听到每一项的变化。',
@@ -57,7 +60,10 @@ export const birthCopy={
  } satisfies Record<RecorderFailure,string>,
  fileTooBig:'文件太大了，请选 20MB 以内的声音。',
  fileUnreadable:'这个文件读不出声音，换一个试试。',
- tooLong:`这段声音超过 ${SOUND_SOURCE_MAX_MS/1000} 秒，请选短一点的。`,
+ tooLong:'这个文件超过 10 分钟，太长了，请先剪短一些再上传。',
+ trimDialog:{title:'这段声音有点长',description:`一个声音最多用 ${SOUND_SOURCE_MAX_MS/1000} 秒。拖动绿框选出想要的一段，也可以点波形跳过去。`,
+  start:'开始位置',end:'结束位置',picked:(from:string,to:string,length:string)=>`用 ${from} 到 ${to}，共 ${length} 秒`,
+  listen:'试听这段',stop:'停',use:'用这段声音',cancel:'不用了'},
  slowNetwork:'网络有点慢，声音没加载出来，再点一次试试。',
  noAudio:'这个浏览器不能播放试听。',
 } as const;

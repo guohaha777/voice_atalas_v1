@@ -1,4 +1,4 @@
-// Preset "sound association" prompts the guide bird shows after each choice. Written by hand, not generated.
+// Preset "sound association" prompts the sound character says after each choice. Written by hand, not generated.
 // When the model / prompt module is connected, it replaces these through services/soundHints.ts; keep these as the offline fallback.
 import type {SoundShape} from '@wanwu-v2/contracts/sound';
 
@@ -30,8 +30,4 @@ export const presetHints:{[K in keyof SoundShape]:Record<SoundShape[K],string>}=
   bursts:'一阵一阵地来，像在和谁一问一答。',
   'fade-in':'慢慢出现的声音，像雨从远处慢慢走近。',
  },
-};
-export const guideLines={
- idle:'选一个特征，我帮你想想它像什么声音～',
- noSound:'先找一个声音，我们一起听听它像什么！',
 };

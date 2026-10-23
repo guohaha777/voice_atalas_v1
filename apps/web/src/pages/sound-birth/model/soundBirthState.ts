@@ -1,8 +1,9 @@
-import {SOUND_CHOICES,SOUND_CONTRACT_VERSION,SOUND_DIMENSIONS,isCompleteShape,missingProvenance,normalizeMakerName,normalizeSoundName} from '@wanwu-v2/contracts/sound';
-import type {SoundDimension,SoundShape,SoundSource,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
+import {SOUND_CHOICES,SOUND_CONTRACT_VERSION,SOUND_DIMENSIONS,missingProvenance,normalizeMakerName,normalizeSoundName} from '@wanwu-v2/contracts/sound';
+import type {ChosenShape,SoundDimension,SoundShape,SoundSource,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import type {CreationEntry} from '../../../app/navigation';
 
-export type CaptureDialog='record'|'library'|null;
+/** `trim`: an upload longer than the source limit, waiting for the child to pick the part to keep. */
+export type CaptureDialog='record'|'library'|'trim'|null;
 /** `area` puts a message next to what it is about: the current-sound bar, the five rows or the card info. */
 export type Notice={tone:'info'|'error';area:'bar'|'editor'|'info';text:string}|null;
 export type SoundBirthState={
@@ -13,7 +14,8 @@ export type SoundBirthState={
  maker:string|null;
  /** The card's info has been checked and confirmed; the card then shows as the finished big card. */
  cardConfirmed:boolean;
- shape:Partial<SoundShape>;
+ /** Only what the child chose; an unchosen dimension keeps the original sound. */
+ shape:ChosenShape;
  cardPhoto:string|null;
  dialog:CaptureDialog;
  reading:boolean;
@@ -29,6 +31,8 @@ export type SoundBirthAction=
  |{type:'maker';name:string}
  |{type:'card';confirmed:boolean}
  |{type:'choose';dimension:SoundDimension;value:string}
+ /** Tapping the chosen option again takes the choice back (that dimension returns to the original). */
+ |{type:'clear';dimension:SoundDimension}
  |{type:'card-photo';url:string|null}
  |{type:'notice';notice:Notice};
 
@@ -62,8 +66,12 @@ export function soundBirthReducer(state:SoundBirthState,action:SoundBirthAction)
   case 'choose':{
    if(!(SOUND_CHOICES[action.dimension] as readonly string[]).includes(action.value))return state;
    const shape={...state.shape,[action.dimension]:action.value};
-   const clearNotice=state.notice?.area==='editor'&&remainingDimensions(shape).length===0;
-   return {...state,shape,notice:clearNotice?null:state.notice};
+   return {...state,shape};
+  }
+  case 'clear':{
+   if(state.shape[action.dimension]===undefined)return state;
+   const shape={...state.shape};delete shape[action.dimension];
+   return {...state,shape};
   }
   case 'card-photo':return {...state,cardPhoto:action.url};
   case 'notice':return {...state,notice:action.notice};
@@ -77,19 +85,20 @@ export function describeShape(shape:Partial<SoundShape>,labels:{[K in SoundDimen
 
 export function remainingDimensions(shape:Partial<SoundShape>){return SOUND_DIMENSIONS.filter(dimension=>shape[dimension]===undefined);}
 
-/** What still blocks 做好了, in the order the page guides the child / teacher through it. */
-export type FinishCheck={kind:'no-source'}|{kind:'missing-shape';dimensions:SoundDimension[]}|{kind:'missing-provenance';fields:ReturnType<typeof missingProvenance>}|{kind:'ready'};
-export function finishCheck(state:Pick<SoundBirthState,'source'|'shape'>):FinishCheck{
+/**
+ * What still blocks 做好了, in the order the page guides the child / teacher through it. The five choices are optional:
+ * a child may go on with the original sound, so only a sound and its provenance are required.
+ */
+export type FinishCheck={kind:'no-source'}|{kind:'missing-provenance';fields:ReturnType<typeof missingProvenance>}|{kind:'ready'};
+export function finishCheck(state:Pick<SoundBirthState,'source'>):FinishCheck{
  if(!state.source)return {kind:'no-source'};
- const dimensions=remainingDimensions(state.shape);
- if(dimensions.length)return {kind:'missing-shape',dimensions};
  const fields=missingProvenance(state.source);
  if(fields.length)return {kind:'missing-provenance',fields};
  return {kind:'ready'};
 }
 
 export function toSoundUnitDraft(state:SoundBirthState,id:string,now:Date):SoundUnitDraft|null{
- if(finishCheck(state).kind!=='ready'||!state.source||!isCompleteShape(state.shape))return null;
+ if(finishCheck(state).kind!=='ready'||!state.source)return null;
  return {version:SOUND_CONTRACT_VERSION,id,sourceId:state.source.id,name:state.name||state.source.label,maker:state.maker,markerIndex:state.markerIndex,
   shape:{...state.shape},input:state.cardPhoto?'paper-card-reference':'manual',createdAt:now.toISOString()};
 }

@@ -3,7 +3,7 @@
 // Only left → right changes what is heard; rows only keep sounds from covering each other.
 import {eventsInOrder} from '@wanwu-v2/contracts/arrangement';
 import type {Arrangement,PlacedEvent,SourceClip,SpanSeconds} from '@wanwu-v2/contracts/arrangement';
-import type {SoundShape,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
+import type {ChosenShape,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {planClip} from '../audio/shapingRules.ts';
 
 /** Room a marker takes on either side of its start, in field units (keeps markers and names apart). */
@@ -58,7 +58,7 @@ export function resettleRows(arrangement:Arrangement):Arrangement{
 export const withSpan=(arrangement:Arrangement,spanSeconds:SpanSeconds)=>resettleRows({...arrangement,spanSeconds});
 
 /** One scheduled occurrence for playback: when it starts, which excerpt, and the sound card's own shape. */
-export type PlannedEvent={eventId:string;unitId:string;sourceId:string;startSeconds:number;clip:SourceClip;shape:SoundShape};
+export type PlannedEvent={eventId:string;unitId:string;sourceId:string;startSeconds:number;clip:SourceClip;shape:ChosenShape};
 /** Playback order and timing derived from the arrangement only — the same data the field and the score read. */
 export function planPlayback(arrangement:Arrangement):PlannedEvent[]{
  return eventsInOrder(arrangement.events).flatMap(event=>{

@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {NEUTRAL_SHAPE,SOUND_CHOICES,SOUND_CONTRACT_VERSION,SOUND_DIMENSIONS,cleanSourceText,normalizeMakerName,isCompleteShape,missingProvenance,normalizeSoundName,parseSoundUnitDraft} from '@wanwu-v2/contracts/sound';
+import {NEUTRAL_SHAPE,SOUND_CHOICES,SOUND_CONTRACT_VERSION,SOUND_SOURCE_MAX_MS,SOUND_DIMENSIONS,cleanSourceText,normalizeMakerName,isCompleteShape,missingProvenance,normalizeSoundName,parseSoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import type {SoundSource} from '@wanwu-v2/contracts/sound';
 import {describeShape,finishCheck,initialSoundBirth,remainingDimensions,soundBirthReducer,toSoundUnitDraft} from '../src/pages/sound-birth/model/soundBirthState.ts';
 import {SessionSourceArchive} from '../src/shared/creation/sourceArchive.ts';
 import {libraryGroups} from '../src/pages/sound-birth/services/soundLibrary.ts';
 import {presetHintProvider} from '../src/pages/sound-birth/services/soundHints.ts';
-import {computePeaks,planShape,SHAPING_RULES} from '../src/shared/audio/shapingRules.ts';
+import {computePeaks,originalGain,planShape,shapeKey,SHAPING_RULES} from '../src/shared/audio/shapingRules.ts';
+import {dragTrimEdge,initialTrim,keyTrim,slideTrim,tapTrim,trimClock} from '../src/pages/sound-birth/model/trimEditing.ts';
 import {parseRoute,routeHref} from '../src/app/router.ts';
 
 const example:SoundSource={id:'example:bird',kind:'example',label:'鸟鸣',durationMs:3200,mimeType:'audio/mpeg',
@@ -55,16 +56,52 @@ test('remaining dimensions follow the row order',()=>{
  assert.deepEqual(remainingDimensions({pitch:'low',duration:'short'}),['contour','intensity','pattern']);
  assert.deepEqual(remainingDimensions(NEUTRAL_SHAPE),[]);
 });
-test('finish guides in order: sound, then the five choices, then provenance',()=>{
+test('finish guides in order: sound, then provenance; the five choices are optional',()=>{
  let state=initialSoundBirth(null);
  assert.equal(finishCheck(state).kind,'no-source');
  state=soundBirthReducer(state,ready(recording));
- assert.deepEqual(finishCheck(state),{kind:'missing-shape',dimensions:['pitch','duration','contour','intensity','pattern']});
- state=chooseAll(state);
  assert.deepEqual(finishCheck(state),{kind:'missing-provenance',fields:['recordedBy','place']});
  assert.equal(toSoundUnitDraft(state,'unit:1',new Date(0)),null);
  state=soundBirthReducer(state,{type:'source-update',source:{...recording,provenance:{...recording.provenance,recordedBy:'小林',place:'学校后山',group:'秋天的后山'}}});
  assert.equal(finishCheck(state).kind,'ready');
+ // Nothing chosen: the unit keeps the original sound in every dimension.
+ assert.deepEqual(toSoundUnitDraft(state,'unit:1',new Date(0))?.shape,{});
+});
+test('tapping a choice again takes it back; only that dimension returns to the original',()=>{
+ let state=soundBirthReducer(initialSoundBirth(null),{type:'choose',dimension:'pitch',value:'high'});
+ state=soundBirthReducer(state,{type:'choose',dimension:'pattern',value:'repeat'});
+ state=soundBirthReducer(state,{type:'clear',dimension:'pitch'});
+ assert.deepEqual(state.shape,{pattern:'repeat'});
+ assert.ok(!('pitch' in state.shape));
+ assert.equal(soundBirthReducer(state,{type:'clear',dimension:'pitch'}),state);
+});
+test('unchosen dimensions plan as the original sound',()=>{
+ const plain=planShape({},3);
+ assert.equal(plain.semitones,0);
+ assert.equal(plain.gain,originalGain);
+ assert.equal(plain.filter,'none');
+ assert.equal(plain.fadeIn,false);
+ assert.deepEqual(plain.events,[{at:0,length:3}]);
+ assert.equal(planShape({},30).totalSeconds,SHAPING_RULES.maxTotalSeconds);
+ assert.notEqual(shapeKey({}),shapeKey(NEUTRAL_SHAPE));
+});
+test('trimming a long upload: starts with the first 45 s, stays inside the file and within 1 – 45 s',()=>{
+ const total=120_000;
+ let range=initialTrim(total);
+ assert.deepEqual(range,{startMs:0,endMs:SOUND_SOURCE_MAX_MS});
+ assert.deepEqual(initialTrim(50_000),{startMs:0,endMs:45_000});
+ assert.deepEqual(dragTrimEdge(range,'end',200_000,total),{startMs:0,endMs:45_000},'never longer than the source limit');
+ range=dragTrimEdge(range,'end',10_000,total);
+ assert.deepEqual(dragTrimEdge(range,'start',9_800,total),{startMs:9_000,endMs:10_000},'never shorter than 1 s');
+ assert.deepEqual(slideTrim(range,500_000,total),{startMs:110_000,endMs:120_000});
+ assert.deepEqual(slideTrim(range,-5_000,total),{startMs:0,endMs:10_000});
+ assert.deepEqual(tapTrim(range,5_000,total),range,'a tap inside changes nothing');
+ assert.deepEqual(tapTrim(range,60_000,total),{startMs:55_000,endMs:65_000});
+ assert.deepEqual(keyTrim(range,'end','ArrowRight',false,total),{startMs:0,endMs:10_500});
+ assert.deepEqual(keyTrim(range,'start','PageUp',false,total),{startMs:5_000,endMs:15_000});
+ assert.equal(keyTrim(range,'start','a',false,total),null);
+ assert.equal(trimClock(65_300),'1:05.3');
+ assert.equal(trimClock(12_400),'0:12.4');
 });
 test('a source update for another source is ignored',()=>{
  const state=soundBirthReducer(initialSoundBirth(null),ready(recording));
@@ -84,6 +121,9 @@ test('a draft round-trips through the contract parser',()=>{
  assert.equal(parseSoundUnitDraft({...draft,shape:{...draft.shape,pitch:'sky'}}),null);
  assert.equal(parseSoundUnitDraft({...draft,version:'sound-v0'}),null);
  assert.equal(isCompleteShape({pitch:'low'}),false);
+ assert.ok(parseSoundUnitDraft({...draft,shape:{pitch:'low'}}),'a partial shape is valid: the rest keeps the original');
+ assert.ok(parseSoundUnitDraft({...draft,shape:{}}));
+ assert.equal(parseSoundUnitDraft({...draft,shape:{colour:'red'}}),null);
 });
 test('library: examples first, then this device grouped by 分组, ungrouped last',()=>{
  const archive=new SessionSourceArchive();
