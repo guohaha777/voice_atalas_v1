@@ -3,7 +3,7 @@ import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
 import {LocalRecorder,RecorderError} from '../../../shared/audio/LocalRecorder';
 import {decodeAudio} from '../../../shared/audio/loadAudio';
 import type {SequencePlayer} from '../../../shared/audio/SequencePlayer';
-import {originalGain} from '../../../shared/audio/shapingRules';
+import {originalGainOf} from '../../../shared/audio/soundAnalysis';
 import {birthCopy} from '../config/copy';
 import type {Notify} from './localSource';
 
@@ -43,7 +43,7 @@ export function useRecording(player:SequencePlayer,playing:string|null,notify:No
    setTake({buffer,mimeType:blob.type||'audio/webm'});setPhase('review');
   }catch(reason){setPhase('idle');notify('bar',birthCopy.errors[reason instanceof RecorderError?reason.reason:'failed']);}
  }
- const listen=()=>{if(!take)return;if(playing==='take')return player.stop();void player.playOne('take',take.buffer,originalGain);};
+ const listen=()=>{if(!take)return;if(playing==='take')return player.stop();void player.playOne('take',take.buffer,originalGainOf(take.buffer));};
  const use=()=>{if(!take)return;onUse(take);setTake(null);setPhase('idle');};
  /** Closing the dialog drops a running recording and an unused take. */
  const cancel=()=>{recorder.current?.cancel();recorder.current=null;setTake(null);setPhase('idle');};

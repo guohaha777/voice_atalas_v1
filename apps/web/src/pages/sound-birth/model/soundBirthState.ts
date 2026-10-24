@@ -1,5 +1,5 @@
 import {SOUND_CHOICES,SOUND_CONTRACT_VERSION,SOUND_DIMENSIONS,missingProvenance,normalizeMakerName,normalizeSoundName} from '@wanwu-v2/contracts/sound';
-import type {ChosenShape,SoundDimension,SoundShape,SoundSource,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
+import type {ChosenShape,SoundAnalysis,SoundDimension,SoundShape,SoundSource,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 
 /** `trim`: an upload longer than the source limit, waiting for the child to pick the part to keep. */
 export type CaptureDialog='record'|'library'|'trim'|null;
@@ -96,8 +96,9 @@ export function finishCheck(state:Pick<SoundBirthState,'source'>):FinishCheck{
  return {kind:'ready'};
 }
 
-export function toSoundUnitDraft(state:SoundBirthState,id:string,now:Date):SoundUnitDraft|null{
+/** `analysis`: the source's 声音体检, kept with the unit so later pages time it from the work's data alone. */
+export function toSoundUnitDraft(state:SoundBirthState,id:string,now:Date,analysis?:SoundAnalysis):SoundUnitDraft|null{
  if(finishCheck(state).kind!=='ready'||!state.source)return null;
  return {version:SOUND_CONTRACT_VERSION,id,sourceId:state.source.id,name:state.name||state.source.label,maker:state.maker,markerIndex:state.markerIndex,
-  shape:{...state.shape},input:state.cardPhoto?'paper-card-reference':'manual',createdAt:now.toISOString()};
+  shape:{...state.shape},input:state.cardPhoto?'paper-card-reference':'manual',createdAt:now.toISOString(),...(analysis?{analysis}:{})};
 }

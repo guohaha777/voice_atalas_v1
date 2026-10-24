@@ -2,6 +2,8 @@
 
 更新：2026-10-23。正式工程：`/Users/hahaking/Projects/voice_atalas/wanwu-shengpu-v2`。仓库 `https://github.com/guohaha777/voice_atalas_v1`，分支 `main`，当前提交 `cf989f7`，工作区干净。
 
+> 2026-10-24：**本文件已被 `HANDOFF4.md` 取代**，只作历史记录。
+
 **本文件取代 `HANDOFF2.md`（历史记录，不要再按它的“下一步”开发）。** 先读根目录 `AGENTS.md`，再读本文件。用户当前指令优先。
 
 ## 1. 这一阶段做什么

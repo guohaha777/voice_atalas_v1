@@ -10,7 +10,7 @@ import {dragEdge,dragWindow,keyEdge,tapAt} from '../src/pages/sound-world/model/
 import {FIELD_INSET,locateSpot,spotPosition} from '../src/pages/sound-world/model/fieldGeometry.ts';
 import {cleanMoodText,offlineMoodInterpreter,parseInterpretation} from '../src/pages/sound-world/services/moodInterpreter.ts';
 import {exampleArrangement,exampleUnit} from '../src/shared/creation/exampleWork.ts';
-import {planClip,planShape} from '../src/shared/audio/shapingRules.ts';
+import {SHAPING_RULES} from '@wanwu-v2/sound-rules/rules';
 import {WorkSession} from '../src/shared/creation/workSession.ts';
 import {parseRoute,routeHref} from '../src/app/router.ts';
 
@@ -112,12 +112,16 @@ test('excerpt editing: edges, sliding window, taps and keys stay inside the reco
  assert.deepEqual(keyEdge(clip,'end','End',false,total),{startMs:1000,endMs:total});
 });
 
-test('field playback of an excerpt plays it as chosen: no 10-second cap, no looping',()=>{
- const long=planClip({...once},30);
- assert.equal(long.totalSeconds,30);assert.equal(long.loop,false);
- assert.ok(planShape({...once,duration:'long'},30).totalSeconds<=10,'the sound-card preview keeps its own limit');
- const repeat=planClip({...once,pattern:'repeat'},2);
- assert.equal(repeat.events.length,3);assert.ok(repeat.events.every(event=>event.length===2));
+test('field playback of an excerpt plays it as chosen: no 10-second cap; timing follows the unit\'s own analysis',()=>{
+ assert.equal(heardSeconds(unit('a',0),{clip:{startMs:0,endMs:30_000}}),30,'no analysis yet: the excerpt as it is');
+ assert.equal(heardSeconds({shape:{...once,pitch:'high'}},{clip:{startMs:0,endMs:2000}}),2,'高低 keeps the length');
+ const {count,waveSeconds,waveGapSeconds}=SHAPING_RULES.pattern.repeat;
+ const repeated=heardSeconds({shape:{...once,pattern:'repeat'}},{clip:{startMs:0,endMs:10_000}});
+ assert.ok(Math.abs(repeated-(count*waveSeconds+(count-1)*waveGapSeconds))<1e-9,'a long running sound comes back in short waves');
+ const frog=exampleUnit('frog',0);
+ assert.equal(frog.analysis?.kind,'series','example units carry the library analysis');
+ const clip={startMs:frog.analysis!.main!.startMs,endMs:frog.analysis!.main!.endMs};
+ assert.ok(heardSeconds({...frog,shape:{duration:'long'}},{clip})>heardSeconds({...frog,shape:{}},{clip}),'长长的 makes each croak longer');
 });
 
 test('rows: start with three, add up to the maximum, take back only an empty last row',()=>{

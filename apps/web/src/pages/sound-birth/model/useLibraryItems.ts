@@ -2,7 +2,7 @@ import {useEffect,useRef,useState} from 'react';
 import {audioSupported} from '../../../shared/audio/audioContext';
 import {AudioLoadError,loadAudio} from '../../../shared/audio/loadAudio';
 import type {SequencePlayer} from '../../../shared/audio/SequencePlayer';
-import {originalGain} from '../../../shared/audio/shapingRules';
+import {originalGainOf} from '../../../shared/audio/soundAnalysis';
 import {EXAMPLE_TIMEOUT_MS} from '../../../shared/creation/exampleSounds';
 import type {SoundSource} from '@wanwu-v2/contracts/sound';
 import {birthCopy} from '../config/copy';
@@ -31,7 +31,7 @@ export function useLibraryItems(player:SequencePlayer,playing:string|null,notify
  const preview=async(item:LibraryItem)=>{
   if(!audioSupported())return notify('bar',birthCopy.noAudio);
   const key=`item:${item.source.id}`;if(playing===key)return player.stop();
-  try{await player.playOne(key,await itemBuffer(item),originalGain);}catch(reason){report(reason);}
+  try{const buffer=await itemBuffer(item);await player.playOne(key,buffer,originalGainOf(buffer));}catch(reason){report(reason);}
  };
  const pick=async(item:LibraryItem)=>{
   if(!audioSupported())return notify('bar',birthCopy.noAudio);

@@ -66,7 +66,7 @@ export function usePiecePlayback(latest:RefObject<ComposeState>,notify:(key:Comp
   const mine=++token.current;setPreparing(true);if(from!=='continue')setPosition(from);
   try{
    const plan=planPlayback(work),total=pieceSeconds(work);
-   const sounds=await Promise.all(plan.map(item=>bank.clip(item.sourceId,item.shape,item.clip)));
+   const sounds=await Promise.all(plan.map(item=>bank.clip(item.sourceId,item.shape,item.clip,item.analysis)));
    // The background is its own layer: if it cannot be made, the child's sounds still play.
    const under=await music.buffer(total).catch(()=>{notify('background-failed');return null;});
    if(mine!==token.current)return;

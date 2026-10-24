@@ -1,6 +1,7 @@
 import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
 import type {SoundDimension,SoundSourceKind} from '@wanwu-v2/contracts/sound';
 import type {RecorderFailure} from '../../../shared/audio/LocalRecorder';
+import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
 
 export const birthCopy={
  title:'给声音，做出你听见的样子',
@@ -28,6 +29,12 @@ export const birthCopy={
  needProvenance:'补齐下面的声音信息，这个声音才能溯源。',
  worldUnavailable:'万物声场还在准备中，暂未开放。你的声音、选择和来源信息都还在这里。',
  noSoundYet:'选好声音后，就能听到每一项的变化。',
+ /** Said by the guide when a choice keeps the sound as it is (see unchangedBy in @wanwu-v2/sound-rules). */
+ unchanged:(dimension:SoundDimension,value:string,reason:'already'|'keeps')=>{
+  const option=(dimensionCopy[dimension].options as Record<string,string>)[value]??value;
+  if(reason==='already')return `它本来就是「${option}」，所以听起来没怎么变。`;
+  return ({contour:'稳稳的：保持它原来的走向，所以听起来差不多。',intensity:'刚刚好：和原来一样响。',pattern:'出现一次：就是它原来出现的样子。'} as Partial<Record<SoundDimension,string>>)[dimension]??'它听起来和原来差不多。';
+ },
  paperCardNote:'读卡还未开放，请对照纸卡照片逐项选择。',
  // 声音信息与可见范围
  info:{

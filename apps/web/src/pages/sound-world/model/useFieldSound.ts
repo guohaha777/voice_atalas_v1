@@ -1,10 +1,10 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {Dispatch,RefObject} from 'react';
 import type {SourceClip} from '@wanwu-v2/contracts/arrangement';
-import type {ChosenShape,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
+import type {ChosenShape,SoundAnalysis,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {audioSupported} from '../../../shared/audio/audioContext';
 import {SequencePlayer} from '../../../shared/audio/SequencePlayer';
-import {originalGain} from '../../../shared/audio/shapingRules';
+import {originalGainOf} from '../../../shared/audio/soundAnalysis';
 import {EXAMPLE_TIMEOUT_MS} from '../../../shared/creation/exampleSounds';
 import {WorkSoundBank,soundFailure} from '../../../shared/creation/workSounds';
 import {eventOf,planPlayback,unitOf} from './soundWorldState';
@@ -53,16 +53,17 @@ export function useFieldSound(latest:RefObject<SoundWorldState>,dispatch:Dispatc
  // Only when the set of sources changes.
  },[sourceIds,bank]);
 
- const clipSound=(sourceId:string,shape:ChosenShape,clip:SourceClip)=>bank.clip(sourceId,shape,clip);
+ /** A unit's excerpt as the field plays it (the unit's own 声音体检 keeps it as long as its tail). */
+ const clipSound=(unit:{sourceId:string;shape:ChosenShape;analysis?:SoundAnalysis|null},clip:SourceClip)=>bank.clip(unit.sourceId,unit.shape,clip,unit.analysis??null);
  const report=(reason:unknown)=>{const failure=soundFailure(reason);if(failure)notify(failure);};
  /** Prepare then play one buffer; rapid taps only play the latest request; tapping what plays stops it. */
- const playOne=async(key:string,make:()=>Promise<AudioBuffer>,{toggle=true,gain=1}:{toggle?:boolean;gain?:number}={})=>{
+ const playOne=async(key:string,make:()=>Promise<AudioBuffer>,{toggle=true,gain=1}:{toggle?:boolean;gain?:number|((buffer:AudioBuffer)=>number)}={})=>{
   if(!audioSupported())return notify('no-audio');
   if(toggle&&player.activeKey()===key){token.current++;player.stop();return;}
   const mine=++token.current;setPreparing(key);
   try{
    const buffer=await make();
-   if(mine===token.current)await player.playOne(key,buffer,gain);
+   if(mine===token.current)await player.playOne(key,buffer,typeof gain==='number'?gain:gain(buffer));
   }catch(reason){if(mine===token.current)report(reason);}
   finally{if(mine===token.current)setPreparing(null);}
  };
@@ -71,14 +72,14 @@ export function useFieldSound(latest:RefObject<SoundWorldState>,dispatch:Dispatc
  const previewUnit=(unit:SoundUnitDraft)=>void playOne(`unit:${unit.id}`,()=>bank.card(unit.sourceId,unit.shape));
  const previewEvent=(eventId:string,toggle=true)=>{
   const work=latest.current.arrangement,event=eventOf(work,eventId),unit=event&&unitOf(work,event.unitId);
-  if(event&&unit)void playOne(`event:${event.id}`,()=>clipSound(unit.sourceId,unit.shape,event.clip),{toggle});
+  if(event&&unit)void playOne(`event:${event.id}`,()=>clipSound(unit,event.clip),{toggle});
  };
  /** Excerpt editor: hear a draft excerpt as it would sound in the field, or the whole original recording. */
  const previewClip=(eventId:string,clip:SourceClip)=>{
   const work=latest.current.arrangement,event=eventOf(work,eventId),unit=event&&unitOf(work,event.unitId);
-  if(unit)void playOne(`clip:${eventId}`,()=>clipSound(unit.sourceId,unit.shape,clip));
+  if(unit)void playOne(`clip:${eventId}`,()=>clipSound(unit,clip));
  };
- const previewSource=(sourceId:string)=>void playOne(`source:${sourceId}`,()=>bank.source(sourceId),{gain:originalGain});
+ const previewSource=(sourceId:string)=>void playOne(`source:${sourceId}`,()=>bank.source(sourceId),{gain:originalGainOf});
  const stopSound=()=>{token.current++;player.stop();setPreparing(null);};
 
  const playAll=async()=>{
@@ -89,7 +90,7 @@ export function useFieldSound(latest:RefObject<SoundWorldState>,dispatch:Dispatc
   const plan=planPlayback(work),mine=++token.current;
   player.stop();setPreparing('all');
   try{
-   const sounds=await Promise.all(plan.map(item=>clipSound(item.sourceId,item.shape,item.clip)));
+   const sounds=await Promise.all(plan.map(item=>clipSound(item,item.clip)));
    if(mine!==token.current)return;
    timeline.current=plan.map((item,index)=>({eventId:item.eventId,start:item.startSeconds,end:item.startSeconds+sounds[index]!.duration}));
    await player.play('all',plan.map((item,index)=>({at:item.startSeconds,buffer:sounds[index]!})),MIX_GAIN);

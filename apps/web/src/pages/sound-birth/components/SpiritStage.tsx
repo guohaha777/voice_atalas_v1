@@ -3,7 +3,7 @@ import type {CSSProperties} from 'react';
 import {SOUND_DIMENSIONS} from '@wanwu-v2/contracts/sound';
 import {SoundSpirit} from '../../../shared/markers/SoundSpirit';
 import type {SpiritHandle} from '../../../shared/markers/SoundSpirit';
-import {computePeaks} from '../../../shared/audio/shapingRules';
+import {computePeaks} from '../../../shared/audio/peaks';
 import {dimensionCopy} from '../../../shared/creation/dimensionCopy';
 import {birthCopy} from '../config/copy';
 import {describeShape,remainingDimensions} from '../model/soundBirthState';

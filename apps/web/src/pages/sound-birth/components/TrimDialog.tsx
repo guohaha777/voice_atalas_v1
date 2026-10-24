@@ -1,6 +1,6 @@
 import {useMemo,useRef} from 'react';
 import type {KeyboardEvent,PointerEvent} from 'react';
-import {computePeaks} from '../../../shared/audio/shapingRules';
+import {computePeaks} from '../../../shared/audio/peaks';
 import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
 import {birthCopy} from '../config/copy';
 import {dragTrimEdge,keyTrim,slideTrim,tapTrim,trimClock,trimSeconds} from '../model/trimEditing';

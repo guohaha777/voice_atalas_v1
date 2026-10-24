@@ -89,6 +89,11 @@ export type SoundUnitDraft={
  shape:ChosenShape;
  input:ShapeInput;
  createdAt:string;
+ /**
+  * 声音体检 of the source this unit uses, kept with the unit so how long it sounds can be worked out from the work's
+  * data alone (field, score, server). Missing for units made before analysis existed; then the original timing is used.
+  */
+ analysis?:SoundAnalysis;
 };
 
 export const SOUND_NAME_MAX=12;
@@ -126,5 +131,56 @@ export function parseSoundUnitDraft(value:unknown):SoundUnitDraft|null{
  if(!isChosenShape(unit.shape))return null;
  if([...(unit.name as string)].length>SOUND_NAME_MAX)return null;
  if(unit.maker!==null&&(typeof unit.maker!=='string'||!unit.maker||[...unit.maker].length>MAKER_NAME_MAX))return null;
+ if(unit.analysis!==undefined&&!isSoundAnalysis(unit.analysis))return null;
  return unit as SoundUnitDraft;
+}
+
+/** A stretch of a source in ms from its start. */
+export type SoundSpan={startMs:number;endMs:number};
+/**
+ * What kind of sound a recording is, found by the 声音体检:
+ * - `one`: a single sound (a cow's moo, an apple landing);
+ * - `series`: separate sounds with quiet between them (frog croaks, drips);
+ * - `texture`: sound that runs together with no quiet gaps (wind, a stream, a cicada chorus, dense birdsong).
+ * The five choices apply to every kind; how each is carried out depends on the kind.
+ */
+export type SoundKind='one'|'series'|'texture';
+export const SOUND_KINDS:readonly SoundKind[]=['one','series','texture'];
+/**
+ * 声音体检 of one source, computed by `@wanwu-v2/sound-rules` with fixed rules (no model) — on the device today, by the
+ * server later, from the same rule files. `rules` names the analysis rules version that produced it, so a stored result
+ * can be recomputed when those rules change. It describes the recording; it never changes it or the child's choices.
+ */
+export type SoundAnalysis={
+ rules:string;
+ durationMs:number;
+ /** Nothing rose above the silence floor (e.g. an empty recording). */
+ silent:boolean;
+ /** From the first to the last sounding moment; null when silent. */
+ main:SoundSpan|null;
+ /** The single sounds (one croak, one chirp) in time order, with their loudest moment in dBFS. */
+ units:(SoundSpan&{peakDb:number})[];
+ kind:SoundKind;
+ /** Typical length of one sound (median, ms) and the 长短 band it falls in. */
+ unitMs:number;
+ lengthBand:DurationChoice;
+ /** Mean loudness of the sounding part (RMS, dBFS) and its highest sample (dBFS). */
+ loudnessDb:number;
+ peakDb:number;
+ /** Spectral centroid of the sounding part and the 高低 band it falls in. */
+ brightnessHz:number;
+ band:PitchChoice;
+};
+
+const finite=(value:unknown):value is number=>typeof value==='number'&&Number.isFinite(value);
+const isSpan=(value:unknown):value is SoundSpan=>!!value&&typeof value==='object'
+ &&finite((value as SoundSpan).startMs)&&finite((value as SoundSpan).endMs)&&(value as SoundSpan).startMs<=(value as SoundSpan).endMs;
+/** Validates a stored or received analysis before shaping trusts it. */
+export function isSoundAnalysis(value:unknown):value is SoundAnalysis{
+ if(!value||typeof value!=='object')return false;
+ const a=value as Record<string,unknown>;
+ return typeof a.rules==='string'&&!!a.rules&&finite(a.durationMs)&&typeof a.silent==='boolean'&&(a.main===null||isSpan(a.main))
+  &&Array.isArray(a.units)&&a.units.every(unit=>isSpan(unit)&&finite((unit as unknown as {peakDb:unknown}).peakDb))
+  &&SOUND_KINDS.includes(a.kind as SoundKind)&&finite(a.unitMs)&&SOUND_CHOICES.duration.includes(a.lengthBand as DurationChoice)
+  &&finite(a.loudnessDb)&&finite(a.peakDb)&&finite(a.brightnessHz)&&SOUND_CHOICES.pitch.includes(a.band as PitchChoice);
 }

@@ -2,7 +2,9 @@ import {useCallback,useEffect,useMemo,useReducer,useRef,useState,useSyncExternal
 import {SOUND_SOURCE_MAX_MS,cleanSourceText,missingProvenance} from '@wanwu-v2/contracts/sound';
 import type {SoundDimension,SoundSource,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {audioSupported} from '../../../shared/audio/audioContext';
+import {unchangedBy} from '@wanwu-v2/sound-rules/shaping';
 import {SequencePlayer} from '../../../shared/audio/SequencePlayer';
+import {analysisOf} from '../../../shared/audio/soundAnalysis';
 import {decodeAudio} from '../../../shared/audio/loadAudio';
 import {newId} from '../../../shared/creation/ids';
 import {FILE_MAX_BYTES,birthCopy} from '../config/copy';
@@ -11,7 +13,7 @@ import {libraryGroups} from '../services/soundLibrary';
 import {presetHintProvider} from '../services/soundHints';
 import type {SoundHint,SoundHintProvider} from '../services/soundHints';
 import {exampleItems} from '../config/examples';
-import {baseName,describeLocal} from './localSource';
+import {baseName,describeExcerpt,describeLocal} from './localSource';
 import type {Notify} from './localSource';
 import {finishCheck,initialSoundBirth,soundBirthReducer,toSoundUnitDraft} from './soundBirthState';
 import {TRIM_FILE_MAX_MS} from './trimEditing';
@@ -51,9 +53,17 @@ export function useSoundBirth(markerIndex:number,onFinish:(draft:SoundUnitDraft,
   dispatch({type:'source-ready',source});
  };
  const archiveAndUse=(source:SoundSource,buffer:AudioBuffer)=>{sessionArchive.save(source,buffer);useSource(source,buffer);};
- const library=useLibraryItems(player,playing,notify,{get:bufferOf,set:(id,buffer)=>buffers.current.set(id,buffer)},useSource);
  const recording=useRecording(player,playing,notify,take=>archiveAndUse(describeLocal('local-recording',birthCopy.defaultRecordingName,take.buffer,take.mimeType),take.buffer));
- const trimming=useTrimUpload(player,playing,(label,part,mimeType)=>archiveAndUse(describeLocal('local-file',label,part,mimeType),part));
+ const trimming=useTrimUpload(player,playing,({label,part,mimeType,range,from})=>
+  archiveAndUse(from?describeExcerpt(from,range,part):describeLocal('local-file',label,part,mimeType),part));
+ /** Longer than a source may be: the child picks the part to keep (the original is untouched). */
+ const openTrim=(buffer:AudioBuffer,label:string,mimeType:string,from:SoundSource|null)=>{
+  trimming.start(buffer,label,mimeType,from);
+  dispatch({type:'reading',reading:false});dispatch({type:'notice',notice:null});dispatch({type:'dialog',dialog:'trim'});
+ };
+ const tooLong=(buffer:AudioBuffer)=>buffer.duration*1000>SOUND_SOURCE_MAX_MS+500;
+ const library=useLibraryItems(player,playing,notify,{get:bufferOf,set:(id,buffer)=>buffers.current.set(id,buffer)},
+  (source,buffer)=>tooLong(buffer)?openTrim(buffer,source.label,source.mimeType,source):useSource(source,buffer));
 
  // Progress follows the audio clock only while something plays.
  useEffect(()=>{
@@ -82,11 +92,7 @@ export function useSoundBirth(markerIndex:number,onFinish:(draft:SoundUnitDraft,
    const buffer=await decodeAudio(await file.arrayBuffer());
    const label=cleanSourceText(baseName(file.name))??birthCopy.defaultRecordingName,mimeType=file.type||'audio/*';
    if(buffer.duration*1000>TRIM_FILE_MAX_MS){dispatch({type:'reading',reading:false});return notify('bar',birthCopy.tooLong);}
-   // Longer than a source may be: the child picks the part to keep (the file on the device is untouched).
-   if(buffer.duration*1000>SOUND_SOURCE_MAX_MS+500){
-    trimming.start(buffer,label,mimeType);
-    dispatch({type:'reading',reading:false});dispatch({type:'notice',notice:null});dispatch({type:'dialog',dialog:'trim'});return;
-   }
+   if(tooLong(buffer))return openTrim(buffer,label,mimeType,null);
    archiveAndUse(describeLocal('local-file',label,buffer,mimeType),buffer);
   }catch{dispatch({type:'reading',reading:false});notify('bar',birthCopy.fileUnreadable);}
  };
@@ -97,11 +103,17 @@ export function useSoundBirth(markerIndex:number,onFinish:(draft:SoundUnitDraft,
   library.abort();dispatch({type:'dialog',dialog:null});
  };
 
+ /** 声音体检 of the current source (cached per buffer). */
+ const analysisNow=()=>{const source=latest.current.source,buffer=source&&bufferOf(source.id);return buffer?analysisOf(buffer):null;};
  const choose=(dimension:SoundDimension,value:string)=>{
   dispatch({type:'choose',dimension,value});setBlocked(false);setLastChosen(dimension);
-  // Ask the guide for an association; a newer choice cancels an older request.
-  hintRequest.current?.abort();const controller=new AbortController();hintRequest.current=controller;
-  void hints.hint({dimension,value,shape:{...latest.current.shape,[dimension]:value},sourceLabel:latest.current.source?.label??null},controller.signal)
+  hintRequest.current?.abort();
+  // When the sound is already like that, say so — otherwise the child may think the choice did nothing.
+  const same=unchangedBy(dimension,value,analysisNow());
+  if(same)setHint({text:birthCopy.unchanged(dimension,value,same),origin:'preset',key:`${dimension}:${value}:same`});
+  // Otherwise ask the guide for an association; a newer choice cancels an older request.
+  const controller=new AbortController();hintRequest.current=controller;
+  if(!same)void hints.hint({dimension,value,shape:{...latest.current.shape,[dimension]:value},sourceLabel:latest.current.source?.label??null},controller.signal)
    .then(result=>{if(result&&!controller.signal.aborted)setHint({...result,key:`${dimension}:${value}`});}).catch(()=>{});
   if(!latest.current.source)return notify('editor',birthCopy.noSoundYet,'info');
   void preview.play({...latest.current.shape,[dimension]:value},'current',true);
@@ -133,7 +145,7 @@ export function useSoundBirth(markerIndex:number,onFinish:(draft:SoundUnitDraft,
    case 'missing-provenance':return notify('info',birthCopy.needProvenance,'info');
    case 'ready':{
     if(!state.cardConfirmed)dispatch({type:'card',confirmed:true});
-    const draft=toSoundUnitDraft(state,newId('unit'),new Date());if(!draft||!state.source)return;
+    const draft=toSoundUnitDraft(state,newId('unit'),new Date(),analysisNow()??undefined);if(!draft||!state.source)return;
     player.stop();
     if(onFinish(draft,state.source).status==='unavailable'){setBlocked(true);notify('editor',birthCopy.worldUnavailable,'info');}
    }

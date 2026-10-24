@@ -1,7 +1,8 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {KeyboardEvent,PointerEvent} from 'react';
 import type {SourceClip} from '@wanwu-v2/contracts/arrangement';
-import {computePeaks,semitonesOf} from '../../../shared/audio/shapingRules';
+import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
+import {computePeaks} from '../../../shared/audio/peaks';
 import {dragEdge,dragWindow,keyEdge,tapAt} from './clipEditing';
 import type {ClipEdge} from './clipEditing';
 import {eventOf,heardSeconds,unitOf} from './soundWorldState';
@@ -31,8 +32,13 @@ export function useClipEditor(world:SoundWorld,eventId:string,onDone:()=>void){
  // Stop any preview when the editor closes.
  useEffect(()=>()=>world.stopSound(),[]);
 
- const totalMs=buffer?Math.round(buffer.duration*1000):world.durations[unit?.sourceId??'']??0;
- const peaks=useMemo(()=>buffer?computePeaks(Array.from({length:buffer.numberOfChannels},(_,i)=>buffer.getChannelData(i)),PEAK_BINS):[],[buffer]);
+ // A source longer than the limit (a long library example placed straight into the field) offers its first 45 s.
+ const totalMs=Math.min(SOUND_SOURCE_MAX_MS,buffer?Math.round(buffer.duration*1000):world.durations[unit?.sourceId??'']??0);
+ const peaks=useMemo(()=>{
+  if(!buffer)return [];
+  const frames=Math.min(buffer.length,Math.round(SOUND_SOURCE_MAX_MS/1000*buffer.sampleRate));
+  return computePeaks(Array.from({length:buffer.numberOfChannels},(_,i)=>buffer.getChannelData(i).subarray(0,frames)),PEAK_BINS);
+ },[buffer]);
  const clip=draft&&totalMs?{startMs:Math.min(draft.startMs,totalMs),endMs:Math.min(draft.endMs,totalMs)}:draft;
 
  const msAt=(clientX:number)=>{
@@ -55,12 +61,11 @@ export function useClipEditor(world:SoundWorld,eventId:string,onDone:()=>void){
  };
  const end=()=>{drag.current=null;};
 
- const rate=unit?2**(semitonesOf(unit.shape)/12):1;
  // Playhead over the waveform: the whole recording, or the draft part when it plays once straight through.
  let playheadMs:number|null=null;
  if(unit&&world.playing===`source:${unit.sourceId}`)playheadMs=world.elapsed*1000;
  else if(clip&&unit&&world.playing===`clip:${eventId}`&&(!unit.shape.pattern||unit.shape.pattern==='once'||unit.shape.pattern==='fade-in'))
-  playheadMs=Math.min(clip.endMs,clip.startMs+world.elapsed*1000*rate);
+  playheadMs=Math.min(clip.endMs,clip.startMs+world.elapsed*1000);
 
  return {
   unit,event,buffer,failed,peaks,totalMs,clip,playheadMs,wave,

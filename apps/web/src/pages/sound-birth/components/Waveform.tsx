@@ -1,5 +1,5 @@
 import {useId,useMemo} from 'react';
-import {computePeaks} from '../../../shared/audio/shapingRules';
+import {computePeaks} from '../../../shared/audio/peaks';
 import {Glyph} from '../../../shared/ui/PaperIcon';
 import styles from './Waveform.module.css';
 

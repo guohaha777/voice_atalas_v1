@@ -1,8 +1,9 @@
 import {useRef,useState} from 'react';
 import type {ChosenShape,SoundSource} from '@wanwu-v2/contracts/sound';
+import {planCard,shapeKey} from '@wanwu-v2/sound-rules/shaping';
 import {renderShaped} from '../../../shared/audio/renderShaped';
 import type {SequencePlayer} from '../../../shared/audio/SequencePlayer';
-import {originalGain,planShape,shapeKey} from '../../../shared/audio/shapingRules';
+import {analysisOf,originalGainOf} from '../../../shared/audio/soundAnalysis';
 import {birthCopy} from '../config/copy';
 import type {Notify} from './localSource';
 
@@ -24,7 +25,7 @@ export function useShapedPreview(player:SequencePlayer,playing:string|null,notif
   const token=++renderToken.current,cacheKey=`${source.id}|${shapeKey(next)}`;
   let rendered=renders.current.get(cacheKey);
   try{
-   if(!rendered){rendered=await renderShaped(buffer,planShape(next,buffer.duration));renders.current.set(cacheKey,rendered);}
+   if(!rendered){rendered=await renderShaped(buffer,planCard(next,analysisOf(buffer),source.id));renders.current.set(cacheKey,rendered);}
    if(token!==renderToken.current)return;
    if(show){setCurrentBuffer(rendered);setShown('current');}
    await player.playOne(key,rendered);
@@ -33,7 +34,7 @@ export function useShapedPreview(player:SequencePlayer,playing:string|null,notif
  const playCompare=(target:CompareTarget)=>{
   if(playing===target){player.stop();return;}
   if(!sourceBuffer)return;
-  if(target==='original'){renderToken.current++;setShown('original');void player.playOne('original',sourceBuffer,originalGain);}
+  if(target==='original'){renderToken.current++;setShown('original');void player.playOne('original',sourceBuffer,originalGainOf(sourceBuffer));}
   else void play(shape,'current',true);
  };
  /** The waveform's own play button plays whichever version it is showing. */

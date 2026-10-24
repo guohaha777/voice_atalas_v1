@@ -1,0 +1,13 @@
+{
+ "name": "@wanwu-v2/sound-rules",
+ "version": "0.1.0",
+ "private": true,
+ "type": "module",
+ "description": "声音体检与五维度塑形规则：参数在 rules/*.json（音乐角色调这里），算法是纯函数，前端预览与后端渲染共用",
+ "dependencies": {"@wanwu-v2/contracts": "0.1.0"},
+ "exports": {
+  "./rules": "./src/rules.ts",
+  "./analysis": "./src/analysis.ts",
+  "./shaping": "./src/shaping.ts"
+ }
+}

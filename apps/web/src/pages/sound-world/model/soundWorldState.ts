@@ -5,7 +5,8 @@
 import {ARRANGEMENT_MAX_EVENTS,ARRANGEMENT_MAX_UNITS,DEFAULT_ROWS,MAX_ROWS,MIN_CLIP_MS,SPAN_CHOICES,isValidMood} from '@wanwu-v2/contracts/arrangement';
 import type {Arrangement,MoodChoice,PlacedEvent,SourceClip,SpanSeconds} from '@wanwu-v2/contracts/arrangement';
 import {SOUND_SOURCE_MAX_MS} from '@wanwu-v2/contracts/sound';
-import type {SoundUnitDraft} from '@wanwu-v2/contracts/sound';
+import type {SoundAnalysis,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
+import {defaultClipFor} from '@wanwu-v2/sound-rules/shaping';
 import {MARKER_HALF,coverageEnd,freeRow,rowIsFree,unitOf,withSpan} from '../../../shared/creation/arrangementTiming.ts';
 // Timing and row tidying live in shared/creation (万物成曲 reads the same); re-exported for this page's modules.
 export {MARKER_HALF,clipSeconds,freeRow,heardSeconds,planPlayback,resettleRows,rowIsFree,unitOf} from '../../../shared/creation/arrangementTiming.ts';
@@ -55,9 +56,13 @@ export function clampRow(row:number,rows:number){return Math.min(rows-1,Math.max
 
 // ----- excerpts and lengths -----
 /**
- * Default excerpt for a newly placed sound: the whole original recording (up to the 45 s limit); the child shortens it
- * with 剪一剪. If the length is not known yet it starts at the limit and is fitted as soon as the audio is decoded.
+ * Excerpt for a newly placed sound: the whole sound without the silence around it (up to 45 s); the child picks a
+ * part with 剪一剪 — 长短 changes how long each sound lasts, not which part is used. Before the audio is analysed: the
+ * whole recording, fitted once it is decoded.
  */
+export function placedClip(analysis:SoundAnalysis|null,sourceMs:number|null):SourceClip{
+ return analysis?fitClip(defaultClipFor(analysis,MIN_CLIP_MS),analysis.durationMs):defaultClip(sourceMs);
+}
 export function defaultClip(sourceMs:number|null):SourceClip{
  return fitClip({startMs:0,endMs:SOUND_SOURCE_MAX_MS},sourceMs);
 }

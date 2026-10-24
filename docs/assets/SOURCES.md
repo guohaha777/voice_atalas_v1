@@ -12,6 +12,25 @@
 
 水滴来源为室内水滴落入容器的录音，交互提示标为“滴水声”。松鼠使用树叶环境声，没有将其标为松鼠叫声。蜗牛只做动作，不配虚构叫声。
 
+## 声音库示例声音（2026-10-24）
+
+声音诞生、万物声场、万物成曲用到的示例声音来自 `docs/assets/library-recipe.json`：**整段原件**只转为单声道 32 kHz / MP3 48 kbps，不截取、不淡入淡出、不改响度，节选由孩子在页面里自己做（超过 45 秒的鸟鸣在声音诞生里会弹出选段框）。首页角色点击用的仍是上面的短片段，两套互不影响。
+
+| id | 原件 | 名称 | 作者 / 许可 |
+| --- | --- | --- | --- |
+| `bird` | `bird.mp3`（约 59 秒） | 鸟鸣 | 用户提供，2026-08-10 授权公开使用 |
+| `frog` | `frog.oga` | 蛙鸣 | MichaeltheFox8621，CC BY-SA 4.0 |
+| `cicada` | `cicada.ogg` | 蝉鸣 | Siobhan Leachman / Ambrosia10，CC0 1.0 |
+| `drop` | `drop.ogg` | 滴水声 | ZooFari，CC BY-SA 3.0 |
+| `leaves` | `leaves.mp3` | 风吹树叶 | 用户提供，2026-08-10 授权公开使用 |
+| `cow` | `cow.mp3` | 牛叫 | 用户提供（旧 demo `voicedemo`），2026-08-10 授权公开使用，见 [旧授权记录](legacy-audio-authorization.md) |
+| `apple` | `falling apple.mp3` | 苹果落地 | 同上 |
+| `bicycle` | `bicycle.mp3` | 自行车 | 同上 |
+
+交付文件、原件的 SHA-256 与字节数记录在 [library-release-manifest.json](library-release-manifest.json)，`npm run check:assets` 会核对；原件变了而没重新生成会报错。
+
+**新增一段示例声音**：① 确认来源和许可；② 把原件放进 `assets-source/audio/`；③ 在 `library-recipe.json` 的 `sounds` 里加一条（id、文件、名称、作者、许可，五项预设可选）；④ 运行 `npm run assets:library`（需要本机有 ffmpeg）；⑤ 在本文件和公开的 `legal/sound-sources.html` 补上来源。页面代码不用改。
+
 公开来源原文件保存在 `assets-source/audio/home/`。原件和交付文件的 SHA-256 见 [audio-provenance.json](audio-provenance.json)。CC BY-SA 对相应改编声音文件继续适用，不表示整个程序改用该许可。
 
 ## 图片

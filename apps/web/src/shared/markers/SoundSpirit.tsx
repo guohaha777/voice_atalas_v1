@@ -1,4 +1,5 @@
 import {useEffect,useId,useImperativeHandle,useRef} from 'react';
+import {createPortal} from 'react-dom';
 import type {ReactNode,Ref} from 'react';
 import {ArtPicture} from '../media/ArtPicture';
 import type {ArtVariants} from '../media/types';
@@ -34,7 +35,7 @@ const clamp=(x:number,a:number,b:number)=>Math.max(a,Math.min(b,x));
 const mix=(a:number,b:number,t:number)=>a+(b-a)*t;
 const ease=(x:number)=>x*x*(3-2*x);
 const rad=(d:number)=>d*Math.PI/180;
-const WIDE=900,STAR_COLOURS=['#ffe576','#c0e64f','#ffd4d9','#9fe8ff'];
+const WIDE=900,STAR_COUNT=12,STAR_COLOURS=['#ffe576','#c0e64f','#ffd4d9','#9fe8ff'];
 const STAR='M16 2.8l3.8 8.4 9 1-6.7 6.1 1.9 9L16 22.7l-8 4.6 1.9-9-6.7-6.1 9-1z';
 
 type Spring={x:number;v:number};
@@ -65,14 +66,16 @@ export function SoundSpirit({index,awake,compact=false,label,greetLabel,onGreet,
  const marker=markerFor(index),asset=hero[marker.id]!,pose=spiritPoses[marker.id]!,crop=asset.crop;
  const clipId='spirit'+useId().replace(/[^a-zA-Z0-9_-]/g,'');
  const root=useRef<HTMLDivElement>(null),body=useRef<HTMLDivElement>(null),effects=useRef<HTMLDivElement>(null);
+ /** The cheer's stars fly far: they get a layer over the whole page so speech bubbles and panels never cover them. */
+ const burst=useRef<HTMLDivElement>(null);
  const armL=useRef<SVGPathElement>(null),armR=useRef<SVGPathElement>(null);
  const eyes=useRef<(SVGGElement|null)[]>([]),pupils=useRef<(SVGGElement|null)[]>([]);
  const live=useRef({awake,compact,reach,level});live.current={awake,compact,reach,level};
  const fx=useRef({hop:0,hopV:0,poke:0,waveUntil:0,cheerUntil:0,blinkStart:0,nextBlink:0,eyeOpen:.4,gx:0,gy:0,amp:0,bob:0,tapStart:0,prevLevel:0,lastTap:0});
  const calm=()=>matchMedia(media['reduced-motion']).matches;
 
- const effect=(className:string,x:number,y:number,vars:Record<string,string>,ms:number,html='')=>{
-  const layer=effects.current;if(!layer||calm())return;
+ const effect=(className:string,x:number,y:number,vars:Record<string,string>,ms:number,html='',layer=effects.current)=>{
+  if(!layer||calm())return;
   const node=document.createElement('span');node.className=className;node.style.left=`${x}px`;node.style.top=`${y}px`;
   for(const [key,value] of Object.entries(vars))node.style.setProperty(key,value);
   node.innerHTML=html;layer.appendChild(node);setTimeout(()=>node.remove(),ms);
@@ -82,11 +85,12 @@ export function SoundSpirit({index,awake,compact=false,label,greetLabel,onGreet,
  const cheer=()=>{
   fx.current.cheerUntil=performance.now()+2400;
   const r=root.current?.getBoundingClientRect();if(!r)return;
-  const scale=r.width/crop.width,cx=(313-crop.left)*scale,cy=(200-crop.top)*scale;
-  for(let i=0;i<10;i++){
-   const a=i/10*Math.PI*2+Math.random()*.4,d=(110+Math.random()*90)*Math.min(1,scale*1.6);
+  // Viewport pixels: the burst layer covers the whole page.
+  const scale=r.width/crop.width,cx=r.left+(313-crop.left)*scale,cy=r.top+(200-crop.top)*scale;
+  for(let i=0;i<STAR_COUNT;i++){
+   const a=i/STAR_COUNT*Math.PI*2+Math.random()*.4,d=(110+Math.random()*90)*Math.min(1,scale*1.6);
    effect(styles.spark!,cx,cy,{'--dx':`${Math.cos(a)*d}px`,'--dy':`${Math.sin(a)*d*.8-20}px`},1400,
-    `<svg viewBox="0 0 32 32"><path d="${STAR}" fill="${STAR_COLOURS[i%4]}"/></svg>`);
+    `<svg viewBox="0 0 32 32"><path d="${STAR}" fill="${STAR_COLOURS[i%4]}"/></svg>`,burst.current);
   }
  };
  useImperativeHandle(handle,()=>({wave,hop,cheer}));
@@ -206,5 +210,6 @@ export function SoundSpirit({index,awake,compact=false,label,greetLabel,onGreet,
    {label!==undefined&&<span className={styles.label}>{label}</span>}
   </div>
   <div ref={effects} className={styles.effects} aria-hidden="true"/>
+  {createPortal(<div ref={burst} className={styles.burst} aria-hidden="true"/>,document.body)}
  </div>;
 }

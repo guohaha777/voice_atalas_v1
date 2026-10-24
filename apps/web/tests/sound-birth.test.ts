@@ -6,7 +6,9 @@ import {describeShape,finishCheck,initialSoundBirth,remainingDimensions,soundBir
 import {SessionSourceArchive} from '../src/shared/creation/sourceArchive.ts';
 import {libraryGroups} from '../src/pages/sound-birth/services/soundLibrary.ts';
 import {presetHintProvider} from '../src/pages/sound-birth/services/soundHints.ts';
-import {computePeaks,originalGain,planShape,shapeKey,SHAPING_RULES} from '../src/shared/audio/shapingRules.ts';
+import {computePeaks} from '../src/shared/audio/peaks.ts';
+import {exampleSounds,exampleSourceUrl} from '../src/shared/creation/exampleSounds.ts';
+import {describeExcerpt} from '../src/pages/sound-birth/model/localSource.ts';
 import {dragTrimEdge,initialTrim,keyTrim,slideTrim,tapTrim,trimClock} from '../src/pages/sound-birth/model/trimEditing.ts';
 import {parseRoute,routeHref} from '../src/app/router.ts';
 
@@ -75,16 +77,6 @@ test('tapping a choice again takes it back; only that dimension returns to the o
  assert.ok(!('pitch' in state.shape));
  assert.equal(soundBirthReducer(state,{type:'clear',dimension:'pitch'}),state);
 });
-test('unchosen dimensions plan as the original sound',()=>{
- const plain=planShape({},3);
- assert.equal(plain.semitones,0);
- assert.equal(plain.gain,originalGain);
- assert.equal(plain.filter,'none');
- assert.equal(plain.fadeIn,false);
- assert.deepEqual(plain.events,[{at:0,length:3}]);
- assert.equal(planShape({},30).totalSeconds,SHAPING_RULES.maxTotalSeconds);
- assert.notEqual(shapeKey({}),shapeKey(NEUTRAL_SHAPE));
-});
 test('trimming a long upload: starts with the first 45 s, stays inside the file and within 1 – 45 s',()=>{
  const total=120_000;
  let range=initialTrim(total);
@@ -139,19 +131,6 @@ test('library: examples first, then this device grouped by 分组, ungrouped las
  archive.update({...at('r1','第三课','小林')});
  assert.deepEqual(libraryGroups([exampleItem],archive.list()).map(group=>group.title),['示例声音','第三课','秋天的后山']);
 });
-test('shaping plan follows the agreed mapping and stays within the preview length',()=>{
- const high=planShape({...NEUTRAL_SHAPE,pitch:'high'},3);
- assert.ok(Math.abs(high.rate-2**(3/12))<1e-9);
- assert.ok(planShape({...NEUTRAL_SHAPE,intensity:'soft'},3).gain<planShape({...NEUTRAL_SHAPE,intensity:'loud'},3).gain);
- assert.equal(planShape({...NEUTRAL_SHAPE,duration:'short'},3).totalSeconds,SHAPING_RULES.duration.shortSeconds);
- const long=planShape({...NEUTRAL_SHAPE,duration:'long'},1);
- assert.equal(long.loop,true);
- assert.ok(long.totalSeconds>=SHAPING_RULES.duration.longMinSeconds);
- assert.equal(planShape({...NEUTRAL_SHAPE,pattern:'repeat'},3).events.length,3);
- assert.equal(planShape({...NEUTRAL_SHAPE,pattern:'bursts'},3).events.length,4);
- assert.equal(planShape({...NEUTRAL_SHAPE,pattern:'fade-in'},3).fadeIn,true);
- for(const pattern of ['once','repeat','bursts','fade-in'] as const)assert.ok(planShape({...NEUTRAL_SHAPE,duration:'long',pattern},30).totalSeconds<=SHAPING_RULES.maxTotalSeconds);
-});
 test('peaks are normalised and robust to empty input',()=>{
  const peaks=computePeaks([new Float32Array([0,.5,0,-1,0,.25])],3);
  assert.equal(peaks.length,3);
@@ -188,4 +167,26 @@ test('the guide has a preset association for every choice and reports its origin
   assert.equal(hint.origin,'preset');
  }
  assert.equal(await presetHintProvider.hint({dimension:'pitch',value:'sky',shape:{},sourceLabel:null}),null);
+});
+
+test('the sound library lists every recipe sound as a whole recording, with credit and valid presets',()=>{
+ assert.deepEqual(exampleSounds.map(sound=>sound.id),['bird','frog','cicada','drop','leaves','cow','apple','bicycle']);
+ for(const sound of exampleSounds){
+  assert.match(sound.url,/^\/media\/sounds\/library\/[a-z-]+\.[0-9a-f]{10}\.mp3$/);
+  assert.ok(sound.by&&sound.label&&sound.durationMs>0);
+  assert.equal(exampleSourceUrl(`example:${sound.id}`),sound.url);
+ }
+ assert.ok(exampleSounds.find(sound=>sound.id==='bird')!.durationMs>SOUND_SOURCE_MAX_MS,'the bird recording is longer than 45 s: the child trims it');
+ assert.equal(exampleSourceUrl('example:bird#0-45000'),null,'a chosen part is its own source');
+});
+test('a part of a long example stays an example with its own id and is not listed twice',()=>{
+ const archive=new SessionSourceArchive();
+ const example:SoundSource={id:'example:bird',kind:'example',label:'鸟鸣',durationMs:59_455,mimeType:'audio/mpeg',
+  provenance:{recordedBy:'旧版项目授权录音',recordedOn:null,place:null,group:'示例声音',provenanceUrl:'/legal/sound-sources.html'}};
+ const part={length:1,duration:30,sampleRate:1,numberOfChannels:1,getChannelData:()=>new Float32Array(1)} as unknown as AudioBuffer;
+ const excerpt=describeExcerpt(example,{startMs:8000,endMs:38_000},part);
+ assert.equal(excerpt.id,'example:bird#8000-38000');assert.equal(excerpt.kind,'example');assert.equal(excerpt.durationMs,30_000);
+ assert.equal(excerpt.provenance.recordedBy,'旧版项目授权录音');
+ archive.save(excerpt,part);
+ assert.deepEqual(libraryGroups([],archive.list()).map(group=>group.title),['示例声音']);
 });

@@ -14,7 +14,8 @@
 | pages/<页面> | 页面布局、页面内组件与流程状态 | 每个页面独立验收，避免在首页追加全流程 |
 | config | 图片、坐标、透明度、动画参数 | 视觉调整不改播放与开场状态逻辑 |
 | shared/ui、media、audio、markers、scene、creation、inspiration、platform | 基础组件与图标（含工作页弹窗 `WorkSheet`、顶栏入口 `WorkHeaderActions`、工作页标题行 + 向导 `WorkIntro`、心情脸 `MoodFace`）、资源加载、声音录放 / 塑形 / 排程（工作页统一 `SequencePlayer`）、声音标记、首页场景素材与工作页背景、当前作品 / 书架 / 本机来源档案 / 示例声音与示例作品 / 时间与行 / 五项与心情文案 / 本地 ID、课本灵感、设备提示 | 后续页面按需复用；页面之间不互相引用内部实现；两页以上用到的东西放这里，只保留一份 |
-| packages/contracts（`@wanwu-v2/contracts`） | 前后端共同的数据契约；已有 `sound-v1`、`arrangement-v1`、`work-v1` | 以包名引用，新增领域先写类型和校验，再加存储 |
+| packages/contracts（`@wanwu-v2/contracts`） | 前后端共同的数据契约；已有 `sound-v1`（含声音体检结果 `SoundAnalysis`）、`arrangement-v1`、`work-v1` | 以包名引用，新增领域先写类型和校验，再加存储 |
+| packages/sound-rules（`@wanwu-v2/sound-rules`） | 声音体检与五维度塑形：数值在 `rules/*.json`（带版本、范围校验），算法是纯函数；页面和渲染器只读这里，自己不写数值 | 音乐角色改 JSON + `npm test`；听感变化上线后另存新版本文件。说明见包内 README |
 | 后端（未开发） | 身份、音源与作品、文件存储、AI 网关 | 接在仓库 / 服务端口之后，页面不直接访问云资源 |
 
 没有为了预留而实现假的服务器、数据库、账号或空 API。当前首页只使用本站静态资源，不收集个人信息，不向模型发送内容。
@@ -28,7 +29,7 @@
 ## 声音诞生页
 
 - 路由 `/create`，代码单独分包，弹窗打开时预取。`pages/sound-birth/` 分为 `components/`（声音条、我的声卡、声卡信息、五行选择、录音 / 声音库 / 纸卡对话框）、`model/`（纯 reducer `soundBirthState.ts`；编排 hook `useSoundBirth.ts`，拆出 `useRecording`（录音）、`useTrimUpload`（长文件截取）、`useLibraryItems`（声音库加载与试听）、`useShapedPreview`（塑形渲染与对比试听）和 `localSource.ts`）、`config/`（文案、示例声音条目、向导动物、提示文案）、`services/`（声音库分组、向导提示端口）。五项文案、本机来源档案、背景层、弹窗面板和顶栏入口都在 shared，与万物声场共用。
-- 数据走 `@wanwu-v2/contracts/sound`：来源与溯源信息、五项、交给声场的 `SoundUnitDraft`。原声只读，塑形在浏览器离线渲染（`shared/audio/`）。本机来源档案和示例声音清单在 `shared/creation/`，与万物声场共用。
+- 数据走 `@wanwu-v2/contracts/sound`：来源与溯源信息、五项、交给声场的 `SoundUnitDraft`。原声只读：先做声音体检、再按卡片塑形，规则在 `packages/sound-rules`（2026-10-24 起 `shaping-v2`），浏览器只负责离线渲染（`shared/audio/renderShaped.ts`、`grains.ts`）和按缓冲区缓存体检结果（`shared/audio/soundAnalysis.ts`）。本机来源档案和示例声音清单在 `shared/creation/`，与万物声场共用。
 - 向导提示走 `services/soundHints.ts` 的 `SoundHintProvider` 接口，当前是本地预设文案；接模型时实现同一接口即可。
 - 首页场景的素材清单放在 `shared/scene/`（`homeScene.ts` + 生成的 JSON），首页、弹窗和声音诞生页都通过它取同一批已缓存的文件。
 - 图标：`shared/ui/PaperIcon.tsx` 里的 `PaperIcon`（彩色纸片图标，按色卡上色）和 `Glyph`（实心小图标，跟随文字颜色）；心情脸是 `MoodFace.tsx`。作品书架保留原版的 `KidIcon` 与 `shared/scene/WorkBackdrop`（首页灌木淡背景）。

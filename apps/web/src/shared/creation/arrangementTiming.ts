@@ -3,16 +3,16 @@
 // Only left → right changes what is heard; rows only keep sounds from covering each other.
 import {eventsInOrder} from '@wanwu-v2/contracts/arrangement';
 import type {Arrangement,PlacedEvent,SourceClip,SpanSeconds} from '@wanwu-v2/contracts/arrangement';
-import type {ChosenShape,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
-import {planClip} from '../audio/shapingRules.ts';
+import type {ChosenShape,SoundAnalysis,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
+import {clipHeardSeconds} from '@wanwu-v2/sound-rules/shaping';
 
 /** Room a marker takes on either side of its start, in field units (keeps markers and names apart). */
 export const MARKER_HALF=.05;
 
 export const clipSeconds=(clip:SourceClip)=>(clip.endMs-clip.startMs)/1000;
-/** How long this occurrence is heard: the excerpt with the card's 出现方式 and 高低 applied. */
-export function heardSeconds(unit:Pick<SoundUnitDraft,'shape'>,event:Pick<PlacedEvent,'clip'>){
- return planClip(unit.shape,clipSeconds(event.clip)).totalSeconds;
+/** How long this occurrence is heard: the excerpt with the card's 长短 (stretch) and 出现方式 (layout); 高低 keeps the length. */
+export function heardSeconds(unit:Pick<SoundUnitDraft,'shape'|'analysis'>,event:Pick<PlacedEvent,'clip'>){
+ return clipHeardSeconds(unit.shape,unit.analysis??null,event.clip);
 }
 export function unitOf(arrangement:Arrangement|null,unitId:string){return arrangement?.units.find(unit=>unit.id===unitId)??null;}
 
@@ -58,12 +58,12 @@ export function resettleRows(arrangement:Arrangement):Arrangement{
 export const withSpan=(arrangement:Arrangement,spanSeconds:SpanSeconds)=>resettleRows({...arrangement,spanSeconds});
 
 /** One scheduled occurrence for playback: when it starts, which excerpt, and the sound card's own shape. */
-export type PlannedEvent={eventId:string;unitId:string;sourceId:string;startSeconds:number;clip:SourceClip;shape:ChosenShape};
+export type PlannedEvent={eventId:string;unitId:string;sourceId:string;startSeconds:number;clip:SourceClip;shape:ChosenShape;analysis:SoundAnalysis|null};
 /** Playback order and timing derived from the arrangement only — the same data the field and the score read. */
 export function planPlayback(arrangement:Arrangement):PlannedEvent[]{
  return eventsInOrder(arrangement.events).flatMap(event=>{
   const unit=unitOf(arrangement,event.unitId);
-  return unit?[{eventId:event.id,unitId:unit.id,sourceId:unit.sourceId,startSeconds:event.at*arrangement.spanSeconds,clip:event.clip,shape:unit.shape}]:[];
+  return unit?[{eventId:event.id,unitId:unit.id,sourceId:unit.sourceId,startSeconds:event.at*arrangement.spanSeconds,clip:event.clip,shape:unit.shape,analysis:unit.analysis??null}]:[];
  });
 }
 

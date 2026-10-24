@@ -16,6 +16,8 @@
 .label{position:absolute;right:15%;bottom:17%;max-width:52%;display:flex;justify-content:flex-end;white-space:nowrap;pointer-events:auto;
  font-size:max(var(--font-caption),7.8cqw);line-height:1.2;font-weight:500;letter-spacing:.12em;color:#2f3530;font-variant-numeric:tabular-nums}
 .effects{position:absolute;inset:0;z-index:3;overflow:visible;pointer-events:none}
+/* The cheer's stars: over the whole page (above speech bubbles and panels), clipped to the window so they never scroll it. */
+.burst{position:fixed;inset:0;z-index:50;overflow:hidden;pointer-events:none}
 .ripple{position:absolute;width:110px;height:26px;margin:-13px 0 0 -55px;border-radius:50%;background:radial-gradient(ellipse at center,#a5cf33aa 0%,#a5cf3350 45%,#a5cf3300 72%);transform:scale(.3);animation:ripple .7s var(--wk-ease) forwards}
 .spark{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;animation:spark 1.3s var(--wk-ease) forwards}
 .spark svg{display:block;width:100%;height:100%}

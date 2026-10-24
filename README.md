@@ -2,7 +2,7 @@
 
 本目录是本次重新开发的正式项目根目录，与比赛 demo、旧 `wanwu-shengpu` 工程分开。目前完成首页、入口选择弹窗和声音诞生页（等待验收），后续逐页确认。源码已进入 [voice_atalas_v1](https://github.com/guohaha777/voice_atalas_v1)，用户已将此前首页部署至 https://voiceatalas.netlify.app/ 。本轮手绘标题、开场修正和入口弹窗尚未推送或更新线上。
 
-新对话接续请先读 [开发交接 HANDOFF](HANDOFF.md)，其中汇总最新视觉、交互修订及后续页面边界。
+新对话接续请先读 [开发交接 HANDOFF4](HANDOFF4.md)（成曲规则阶段，取代此前的 HANDOFF / HANDOFF2 / HANDOFF3）；声音规则见 [packages/sound-rules/README.md](packages/sound-rules/README.md)。
 
 ## 本机运行
 
@@ -22,10 +22,12 @@ npm run dev
 | `apps/web/src/` | React + TypeScript 前端，页面、组件、交互控制器 | 是，打包后进入 |
 | `apps/web/public/media/home/` | 定稿角色 / 环境 / 开场图与手绘标题，各有移动、桌面、兼容版本 | 是；浏览器按尺寸选一种 |
 | `apps/web/public/media/shared/markers/`、`media/shared/markers-hero/` | 四款声音标记的压缩衍生图（普通 / 声音诞生角色用大图） | 是 |
-| `apps/web/public/media/sounds/home/` | 5 段按需播放的短声音 | 是；点击后请求 |
+| `apps/web/public/media/sounds/home/` | 5 段按需播放的短声音（首页角色点击） | 是；点击后请求 |
+| `apps/web/public/media/sounds/library/` | 声音库示例声音：整段原件转码（不截取），清单在 `docs/assets/library-recipe.json` | 是；试听 / 选用时请求 |
 | `apps/web/public/legal/` | 公开的声音来源与许可 | 是 |
 | `assets-source/home/`、`start/`、`shared/` | 首页、入口弹窗、声音标记的透明 PNG 原件 | 否 |
 | `packages/contracts/` | 数据契约工作区包 `@wanwu-v2/contracts` | 是，按需打包 |
+| `packages/sound-rules/` | 声音体检与五维度塑形规则 `@wanwu-v2/sound-rules`；数值在 `rules/*.json`，音乐角色调这里 | 是，按需打包 |
 | `assets-source/audio/home/` | 原始授权录音与公开许可录音 | 否 |
 | `docs/product/` | 两份需求文件的原文快照 | 否 |
 | `docs/assets/` | 来源、许可、压缩配方、资源哈希清单 | 否 |
@@ -67,6 +69,8 @@ npm test
 npm run build
 # 仅在替换原件、修改压缩配方后执行：
 npm run assets:build
+# 只更新声音库示例声音（新增 / 替换原件后；需要 ffmpeg）：
+npm run assets:library
 ```
 
 图片预算（包含两张开场图）：移动 341.9 KiB、桌面 694.9 KiB、PNG 兼容 339.5 KiB；每段声音 17–20 KiB。`check:assets` 校验资源实际字节和 SHA-256，阻止原件、文档和源录音进入公开目录。重建工具只读取项目内已归档资源，不依赖旧工程或实验室。

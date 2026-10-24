@@ -9,7 +9,7 @@ import {mockSoundWorldRepository} from '../services/soundWorldRepository';
 import type {LibraryScope,SoundWorldRepository} from '../services/soundWorldRepository';
 import {offlineMoodInterpreter} from '../services/moodInterpreter';
 import type {MoodInterpreter} from '../services/moodInterpreter';
-import {defaultClip,eventOf,initialSoundWorld,nudge,rowEndSpot,soundWorldReducer,unitOf} from './soundWorldState';
+import {eventOf,initialSoundWorld,nudge,placedClip,rowEndSpot,soundWorldReducer,unitOf} from './soundWorldState';
 import type {NoticeKey} from './soundWorldState';
 import {useFieldSound} from './useFieldSound';
 import {useMood} from './useMood';
@@ -49,10 +49,10 @@ export function useSoundWorld(onFinish:(arrangement:Arrangement)=>FinishResult,r
  const placeUnit=(unitId:string,spot:FieldSpot)=>{
   const unit=unitOf(latest.current.arrangement,unitId);if(!unit)return;
   stopAll();const eventId=newId('event');
-  const clip=defaultClip(sound.durations[unit.sourceId]??null);
+  const clip=placedClip(unit.analysis??sound.bank.analysisNow(unit.sourceId),sound.durations[unit.sourceId]??null);
   dispatch({type:'place',unitId,eventId,at:spot.at,row:spot.row,clip,now:new Date()});
   // Feedback when a sound lands: exactly the excerpt it will play.
-  void playOne(`event:${eventId}`,()=>clipSound(unit.sourceId,unit.shape,clip),{toggle:false});
+  void playOne(`event:${eventId}`,()=>clipSound(unit,clip),{toggle:false});
  };
  /** Moving never changes a sound, so it stays quiet. */
  const moveEvent=(eventId:string,spot:FieldSpot&{exact?:boolean})=>{
