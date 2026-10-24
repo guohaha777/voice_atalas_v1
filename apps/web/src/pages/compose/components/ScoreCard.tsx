@@ -1,5 +1,5 @@
 import {useRef} from 'react';
-import type {CSSProperties,MouseEvent} from 'react';
+import type {CSSProperties,MouseEvent,ReactNode} from 'react';
 import {SoundMarker} from '../../../shared/markers/SoundMarker';
 import {markerFor,markerNumber} from '../../../shared/markers/markers';
 import {Glyph} from '../../../shared/ui/PaperIcon';
@@ -7,7 +7,8 @@ import {composeCopy} from '../config/copy';
 import {SCORE_INSET,scorePosition,secondsAt,secondsLabel} from '../model/scoreLayout';
 import type {Compose} from '../model/useCompose';
 import {Transport} from './Transport';
-import styles from '../ComposePage.module.css';
+import styles from './ScoreCard.module.css';
+import {ui} from '../../../shared/ui/controls';
 
 /** A sound short enough that its seconds go beside the name instead of on the tail (fraction of the piece). */
 const SHORT_TAIL=.09;
@@ -17,10 +18,10 @@ const SHORT_TAIL=.09;
  * right on the player's seconds. The playhead, the progress bar below and the "now sounding" glow read one time.
  * Tapping a sound or empty space plays from there.
  */
-export function ScoreCard({compose,onBack}:{compose:Compose;onBack:()=>void}){
+export function ScoreCard({compose,onBack,shelfLink}:{compose:Compose;onBack:()=>void;shelfLink:ReactNode}){
  const {layout,state}=compose;
  const area=useRef<HTMLDivElement>(null);
- if(!layout||!state.arrangement)return <section className={styles.scoreCard} aria-busy="true"><p className={styles.loading}>{composeCopy.loading}</p></section>;
+ if(!layout||!state.arrangement)return <section className={`${ui.limeCard} ${styles.scoreCard}`} aria-busy="true"><p className={styles.loading}>{composeCopy.loading}</p></section>;
  const {rows,items,totalSeconds,ticks,spanMark,spanSeconds}=layout;
  const seek=(event:MouseEvent<HTMLDivElement>)=>{
   if((event.target as HTMLElement).closest('[data-item]'))return;
@@ -28,8 +29,8 @@ export function ScoreCard({compose,onBack}:{compose:Compose;onBack:()=>void}){
   if(box&&items.length)compose.playFrom(secondsAt(box,event.clientX,totalSeconds));
  };
  const playhead=totalSeconds?compose.now/totalSeconds:0;
- return <section className={styles.scoreCard} aria-labelledby="score-title">
-  <span className={styles.tape} aria-hidden="true"/>
+ return <section className={`${ui.limeCard} ${styles.scoreCard}`} aria-labelledby="score-title">
+  <span className={ui.tape} aria-hidden="true"/>
   <div className={styles.scoreHead}>
    <h2 id="score-title">{composeCopy.scoreTitle}</h2>
    {state.arrangement.origin==='example'&&<span className={styles.exampleBadge}><Glyph name="sounds"/>{composeCopy.exampleBadge}</span>}
@@ -37,13 +38,13 @@ export function ScoreCard({compose,onBack}:{compose:Compose;onBack:()=>void}){
     {layout.legend.map(unit=><li key={unit.id}><SoundMarker index={unit.markerIndex} label={null} className={styles.legendMarker}/><span>{markerNumber(unit.markerIndex)} · {unit.name}</span></li>)}
    </ul>
   </div>
-  <p className={styles.scoreHint}><Glyph name="sounds"/>{composeCopy.listenPrompt(compose.discoveries)}</p>
+  {/* Just saved: the squirrel says so; this slot offers the way to the shelf for a while instead of the listening prompt. */}
+  {shelfLink?<p className={styles.shelfLink}>{shelfLink}</p>:<p className={styles.scoreHint}><Glyph name="sounds"/>{composeCopy.listenPrompt(compose.discoveries)}</p>}
   <div className={styles.score} data-rows={rows} style={{'--rows':rows} as CSSProperties}>
    <div ref={area} className={styles.scoreField} onClick={seek} title={items.length?composeCopy.scoreSeek:undefined}>
     {Array.from({length:rows},(_,row)=><div key={row} className={styles.scoreLane} aria-hidden="true"/>)}
     {spanMark!==null&&<div className={styles.overrun} style={{left:scorePosition(spanMark)}} aria-hidden="true"><span>{composeCopy.spanMark(spanSeconds)}</span></div>}
     {!items.length&&<div className={styles.emptyScore}>
-     <p>{composeCopy.emptyScore}</p>
      <button type="button" onClick={onBack}><Glyph name="back"/>{composeCopy.emptyAction}</button>
     </div>}
     {/* Length tails under the markers: as long as each sound is heard, on the same seconds scale as the ruler. */}

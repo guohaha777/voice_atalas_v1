@@ -8,15 +8,16 @@ import type {SoundWorld} from '../model/useSoundWorld';
 import type {useFieldDrag} from '../model/useFieldDrag';
 import type {LibraryScope} from '../services/soundWorldRepository';
 import {libraryScopes} from '../services/soundWorldRepository';
-import styles from '../SoundWorldPage.module.css';
+import styles from './SoundPalette.module.css';
+import {ui} from '../../../shared/ui/controls';
 
 /** 选一个声音: the work's sounds as cards. Tap a card to pick it (or drag it into the field); 试听 is a separate button. */
 export function SoundPalette({world,bind,onMore,onInspiration}:{world:SoundWorld;bind:ReturnType<typeof useFieldDrag>['bind'];onMore:(scope:LibraryScope)=>void;onInspiration:()=>void}){
  const {arrangement,selection}=world.state;
- return <section className={styles.palette} aria-labelledby="palette-title">
-  <span className={styles.tape} aria-hidden="true"/>
+ return <section className={`${ui.limeCard} ${styles.palette}`} aria-labelledby="palette-title">
+  <span className={ui.tape} aria-hidden="true"/>
   <h2 id="palette-title">{worldCopy.paletteTitle}</h2>
-  <ul className={styles.paletteList}>
+  <ul className={styles.paletteList} aria-label="可选声音列表" tabIndex={0}>
    {arrangement?.units.map(unit=>{
     const selected=selection?.kind==='unit'&&selection.unitId===unit.id,count=placedCount(arrangement,unit.id);
     const key=`unit:${unit.id}`,listening=world.playing===key,waiting=world.preparing===key;

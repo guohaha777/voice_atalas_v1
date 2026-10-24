@@ -5,6 +5,7 @@ import {homeMotion} from '../config/scene';
 import {ForestOpening} from './ForestOpening';
 import {initialIntro} from './introState';
 import styles from '../HomePage.module.css';
+import {media} from '../../../styles/breakpoints';
 function policy(){
  return {...readPerformanceHints(),
   seen:readSessionFlag(homeMotion.storageKey),
@@ -20,7 +21,7 @@ export function useForestOpening(scene:RefObject<HTMLDivElement|null>,curtain:Re
   const opening=new ForestOpening(scene.current,curtain.current,hints,setState,{fore:styles.fore!,left:styles['fore-left']!,right:styles['fore-right']!});
   controller.current=opening;void opening.start(attempt>0);
   const hidden=()=>{if(document.hidden)opening.stop('HIDDEN');};
-  const reduced=()=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)opening.stop('REDUCED');};
+  const reduced=()=>{if(matchMedia(media['reduced-motion']).matches)opening.stop('REDUCED');};
   document.addEventListener('visibilitychange',hidden);const unsubscribe=subscribeReducedMotion(reduced);
   return()=>{opening.dispose();document.removeEventListener('visibilitychange',hidden);unsubscribe();};
  },[attempt,scene,curtain]);

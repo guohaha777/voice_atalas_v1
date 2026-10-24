@@ -3,7 +3,7 @@ import {Glyph} from '../../../shared/ui/PaperIcon';
 import {birthCopy} from '../config/copy';
 import type {useSoundBirth} from '../model/useSoundBirth';
 import type {LibraryItem} from '../services/soundLibrary';
-import styles from '../SoundBirthPage.module.css';
+import styles from './LibraryDialog.module.css';
 
 type Birth=ReturnType<typeof useSoundBirth>;
 const copy=birthCopy.libraryDialog;

@@ -43,6 +43,7 @@ export function PaperIcon({name,tone,className}:{name:PaperIconName;tone:PaperTo
 }
 
 const glyphs={
+ settings:<><path d="M6 9h20M6 23h20M6 16h20" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"/><circle cx="12" cy="9" r="3.2" fill="currentColor"/><circle cx="21" cy="16" r="3.2" fill="currentColor"/><circle cx="11" cy="23" r="3.2" fill="currentColor"/></>,
  play:<path d="M11 8.3c0-1.7 1.9-2.7 3.3-1.8l10.6 7.3c1.3.9 1.3 2.8 0 3.7L14.3 24.8c-1.4 1-3.3-.1-3.3-1.8z" fill="currentColor"/>,
  stop:<rect x="8" y="8" width="16" height="16" rx="4.5" fill="currentColor"/>,
  back:<path d="M26.5 16H6.5m6.5-6.5L6.5 16l6.5 6.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>,

@@ -17,7 +17,9 @@ import {TrimDialog} from './components/TrimDialog';
 import styles from './SoundBirthPage.module.css';
 
 /** 声音诞生 (采集与转译 merged): bring in a sound with its provenance, set the five choices, compare with the original. */
-export function SoundBirthPage({markerIndex,onNavigate,onFinish}:{markerIndex:number;onNavigate:(path:string)=>void;onFinish:(draft:SoundUnitDraft,source:SoundSource)=>FinishResult}){
+export function SoundBirthPage({markerIndex,onNavigate,onFinish,entryMotion=true}:{entryMotion?:boolean;markerIndex:number;onNavigate:(path:string)=>void;onFinish:(draft:SoundUnitDraft,source:SoundSource)=>FinishResult}){
+ // Keep the entry mode for this mount; finishing the crossfade must not restart the page entrance.
+ const [animateEntry]=useState(entryMotion);
  // Hand-off to 万物声场 goes through the app, which adds the unit to the current work and opens the field.
  const birth=useSoundBirth(markerIndex,onFinish);
  // The row being looked at: the character's right hand points at it (or at the panel title when there is none).
@@ -31,9 +33,11 @@ export function SoundBirthPage({markerIndex,onNavigate,onFinish}:{markerIndex:nu
   const root=editor.current;if(!root)return null;
   return (active&&root.querySelector(`[data-dimension="${active}"] [data-reach]`))||root.querySelector('[data-reach="title"]');
  },[active]);
- return <div className={styles.shell}>
+ return <div className={styles.shell} data-entry-motion={animateEntry?'default':'still'}>
   <FlowHeader steps={flowSteps} current="birth" onNavigate={onNavigate} aside={<WorkHeaderActions onNavigate={onNavigate} onLibrary={()=>birth.dispatch({type:'dialog',dialog:'library'})}/>}/>
   <main className={styles.page}>
+   {/* The title heads the right column; the card on the left starts level with the source bar, below it. */}
+   <header className={styles.intro}><h1>{birthCopy.title}</h1><p>{birthCopy.subtitle}</p></header>
    {/* Left: the sound itself — its card, and the sound as a character standing under it. */}
    <div className={styles.left}>
     <SoundCard birth={birth}/>
@@ -41,7 +45,6 @@ export function SoundBirthPage({markerIndex,onNavigate,onFinish}:{markerIndex:nu
    </div>
    {/* Right: bring a sound in, then make it look like what you heard. */}
    <div className={styles.right}>
-    <header className={styles.intro}><h1>{birthCopy.title}</h1><p>{birthCopy.subtitle}</p></header>
     <CurrentSoundBar birth={birth}/>
     <ShapeEditor ref={editor} birth={birth} onBack={()=>onNavigate('/')} active={active} onActive={setActive}/>
    </div>

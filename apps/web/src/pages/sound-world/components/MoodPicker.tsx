@@ -6,7 +6,8 @@ import {MoodFace} from '../../../shared/ui/MoodFace';
 import {moodLabels} from '../../../shared/creation/moodCopy';
 import {worldCopy} from '../config/copy';
 import type {SoundWorld} from '../model/useSoundWorld';
-import styles from '../SoundWorldPage.module.css';
+import sheet from './sheet.module.css';
+import styles from './MoodPicker.module.css';
 
 /**
  * 这首曲子的心情: seven preset moods, 先不选, and 自己写 (the child's own words) — the last only while a model is connected
@@ -48,9 +49,9 @@ function CustomMoodDialog({world,initial,onClose}:{world:SoundWorld;initial:stri
   <form className={styles.customMood} onSubmit={event=>{event.preventDefault();void submit();}}>
    <input ref={input} value={text} maxLength={MOOD_TEXT_MAX} placeholder={copy.placeholder} aria-label={copy.title} onChange={event=>setText(event.target.value)}/>
    <p role="status" className={sheetStyles.note}>{world.interpreting?copy.working:failed?copy.failed:''}</p>
-   <div className={styles.clipActions}>
-    <button type="button" className={styles.clipCancel} onClick={onClose}>{copy.cancel}</button>
-    <button type="submit" className={styles.clipApply} disabled={!text.trim()||world.interpreting}>{copy.submit}</button>
+   <div className={sheet.clipActions}>
+    <button type="button" className={sheet.clipCancel} onClick={onClose}>{copy.cancel}</button>
+    <button type="submit" className={sheet.clipApply} disabled={!text.trim()||world.interpreting}>{copy.submit}</button>
    </div>
   </form>
  </WorkSheet>;

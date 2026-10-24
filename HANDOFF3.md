@@ -41,14 +41,17 @@ assets-source/         原始素材（不进 public）
 | 想改什么 | 改哪里 |
 | --- | --- |
 | 配色、阴影、选中样式 | `styles/global.css` 的 `--wk-*`（含 `--wk-selected-fill / --wk-selected-lift`）。**优先改令牌，不要在页面里写死颜色** |
-| 页面布局、卡片、按钮 | 各页 `XxxPage.module.css`（每页自己的样式，互不影响） |
+| 按钮、胶带绿卡的外观 | `shared/ui/controls.module.css`（`ui.pill` + `ui.go / ui.outline / ui.back`、`ui.limeCard` + `ui.tape`），改一处四页同步 |
+| 页面布局 | 各页 `XxxPage.module.css`（只放页面布局） |
+| 某个组件的外观与响应式 | 同名 `components/Xxx.module.css`（例如五行选择在 `sound-birth/components/ShapeEditor.module.css`） |
+| 屏幕档位（短屏、手机等） | `styles/breakpoints.ts` 一处定义；CSS 写 `@media(--short)`，不要写死像素（构建会检查） |
 | 工作页标题行 + 向导动物 | `shared/ui/WorkIntro.module.css`；各页用 CSS 变量传入动物底色 / 大小 / 边距（声场、成曲、书架共用；声音诞生保留自己的） |
 | 弹窗外观、主次按钮 | `shared/ui/WorkSheet.module.css`（所有工作页弹窗）、`Dialog.module.css`（首页弹窗） |
 | 顶栏 | `shared/ui/FlowHeader.module.css`、`WorkHeaderActions.tsx` |
-| 图标 | `shared/ui/KidIcon.tsx`（工作页，32×32 内联 SVG）、`Icon.tsx`（首页细线）、`MoodFace.tsx`（心情脸） |
+| 图标 | `shared/ui/PaperIcon.tsx`（`PaperIcon` 彩色纸片、`Glyph` 实心小图标）、`MoodFace.tsx`（心情脸）；作品书架仍用原版 `KidIcon.tsx` |
 | 声音标记 | `shared/markers`（四张纸艺 PNG + 编号叠加），**不要烘焙文字进图** |
 | 课本灵感弹窗 | `shared/inspiration/InspirationDialog.module.css` |
-| 工作页背景 | `shared/scene/WorkBackdrop`（首页环境层，12% 透明度） |
+| 工作页背景 | 令牌 `--wk-page-bg`（声音诞生、万物声场、万物成曲）；作品书架用 `shared/scene/WorkBackdrop`（首页环境层，12% 透明度） |
 | 文案 | 各页 `config/copy.ts`（心情 / 五项文案在 `shared/creation/moodCopy.ts`、`dimensionCopy.ts`） |
 
 ## 4. 用户已定的视觉规则（调风格时不能违反）

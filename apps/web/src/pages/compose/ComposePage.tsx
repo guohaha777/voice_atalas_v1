@@ -15,8 +15,10 @@ import {ScoreCard} from './components/ScoreCard';
 import {BackgroundCard,InspirationCard,SpanCard} from './components/SideCards';
 import styles from './ComposePage.module.css';
 
+/** The squirrel speaks for the page: a notice (if any) first, otherwise what to do next. One voice, no repeated hints. */
 function guideText(compose:Compose){
- const {arrangement,lastAction}=compose.state;
+ const {arrangement,lastAction,notice}=compose.state;
+ if(notice)return composeCopy.notices[notice.key];
  if(!arrangement)return guideLines.loading;
  if(compose.playing)return guideLines.playing;
  if(!arrangement.events.length)return guideLines.empty;
@@ -36,7 +38,6 @@ export function ComposePage({onNavigate}:{onNavigate:(path:string)=>void}){
  const compose=useCompose();
  const [dialog,setDialog]=useState<Dialog>(null);
  const text=guideText(compose);
- const notice=compose.state.notice;
  const savedNote=compose.state.lastAction==='saved'&&compose.shelved;
  const requestSave=()=>{if(compose.canSave())setDialog('save');};
  const startAgain=async()=>{setDialog(null);await compose.startNew();onNavigate('/create');};
@@ -49,19 +50,15 @@ export function ComposePage({onNavigate}:{onNavigate:(path:string)=>void}){
  return <div className={styles.shell}>
   <FlowHeader steps={flowSteps} current="compose" onNavigate={onNavigate} aside={<WorkHeaderActions onNavigate={onNavigate}/>}/>
   <main className={styles.page}>
-   <WorkIntro title={composeCopy.title} subtitle={composeCopy.subtitle} guide={composeGuide} text={text} fit className={styles.intro}/>
+   <WorkIntro title={composeCopy.title} subtitle={composeCopy.subtitle} guide={composeGuide} text={text} tone={compose.state.notice?.tone} fit className={styles.intro}/>
    <div className={styles.workspace}>
-    <ScoreCard compose={compose} onBack={()=>onNavigate('/world')}/>
+    <ScoreCard compose={compose} onBack={()=>onNavigate('/world')} shelfLink={savedNote?<button type="button" onClick={()=>onNavigate('/works')}><Glyph name="shelf"/>{composeCopy.goShelf}</button>:null}/>
     <div className={styles.side}>
      <SpanCard compose={compose}/>
      <InspirationCard compose={compose} onOpen={()=>setDialog('textbook')}/>
      <BackgroundCard compose={compose}/>
     </div>
    </div>
-   <p className={styles.notice} role="status" aria-live="polite" data-tone={savedNote?'info':notice?.tone}>
-    {savedNote?<>{composeCopy.savedNote}<button type="button" onClick={()=>onNavigate('/works')}><Glyph name="shelf"/>{composeCopy.goShelf}</button></>
-     :notice?composeCopy.notices[notice.key]:''}
-   </p>
    <FooterBar compose={compose} onSave={requestSave} onBack={()=>onNavigate('/world')} onAgain={again}/>
   </main>
   {dialog==='save'&&<SaveDialog compose={compose} onClose={()=>setDialog(null)}/>}

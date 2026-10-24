@@ -8,7 +8,9 @@ import type {TrimEdge,TrimRange} from '../model/trimEditing';
 import type {useSoundBirth} from '../model/useSoundBirth';
 import {Equalizer} from './Equalizer';
 import {Glyph} from '../../../shared/ui/PaperIcon';
-import styles from '../SoundBirthPage.module.css';
+import controls from './controls.module.css';
+import styles from './TrimDialog.module.css';
+import {ui} from '../../../shared/ui/controls';
 
 type Birth=ReturnType<typeof useSoundBirth>;
 const copy=birthCopy.trimDialog;
@@ -68,11 +70,11 @@ export function TrimDialog({birth}:{birth:Birth}){
   <div className={styles.trimScale} aria-hidden="true"><span>0:00.0</span><span>{trimClock(totalMs)}</span></div>
   <p className={styles.trimReadout} aria-live="polite">{copy.picked(trimClock(range.startMs),trimClock(range.endMs),trimSeconds(range.endMs-range.startMs))}</p>
   <div className={styles.trimTools}>
-   <button type="button" className={styles.secondary} aria-pressed={trim.playing} onClick={birth.listenTrim}>{trim.playing?<Equalizer/>:<Glyph name="play"/>}{trim.playing?copy.stop:copy.listen}</button>
+   <button type="button" className={`${ui.pill} ${ui.outline} ${controls.secondary}`} aria-pressed={trim.playing} onClick={birth.listenTrim}>{trim.playing?<Equalizer/>:<Glyph name="play"/>}{trim.playing?copy.stop:copy.listen}</button>
   </div>
   <div className={sheetStyles.actions}>
    <button type="button" className={styles.trimCancel} onClick={birth.closeDialog}>{copy.cancel}</button>
-   <button type="button" className={styles.primary} onClick={birth.useTrim}><Glyph name="check"/>{copy.use}</button>
+   <button type="button" className={`${ui.pill} ${ui.go} ${controls.primary}`} onClick={birth.useTrim}><Glyph name="check"/>{copy.use}</button>
   </div>
  </WorkSheet>;
 }

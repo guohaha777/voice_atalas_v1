@@ -31,4 +31,4 @@
 @keyframes hop-shadow{0%,60%,100%{transform:none;opacity:1}22%{transform:scale(.7);opacity:.55}}
 @keyframes bob{0%,100%{transform:rotate(var(--tilt))}50%{transform:translateY(-.05em) rotate(calc(var(--tilt) - 3deg))}}
 @keyframes breathe{0%,100%{transform:rotate(var(--tilt))}50%{transform:rotate(var(--tilt)) scale(1.03,.97)}}
-@media(prefers-reduced-motion:reduce){.pebble *{animation:none!important}}
+@media(--reduced-motion){.pebble *{animation:none!important}}

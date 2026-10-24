@@ -4,7 +4,8 @@ import {worldCopy} from '../config/copy';
 import {secondsText} from '../model/clipEditing';
 import {useClipEditor} from '../model/useClipEditor';
 import type {SoundWorld} from '../model/useSoundWorld';
-import styles from '../SoundWorldPage.module.css';
+import sheet from './sheet.module.css';
+import styles from './ClipEditor.module.css';
 
 const copy=worldCopy.clipEditor;
 const pct=(ms:number,total:number)=>`${total?ms/total*100:0}%`;
@@ -23,7 +24,7 @@ export function ClipEditor({world,eventId,onClose}:{world:SoundWorld;eventId:str
  } as const);
  return <WorkSheet title={copy.title(unit.name)} description={copy.description} className={styles.clipSheet} onClose={onClose}>
   <div className={styles.clipBody}>
-   {editor.failed?<p className={styles.scopeClosed}>{copy.failed}</p>
+   {editor.failed?<p className={sheet.scopeClosed}>{copy.failed}</p>
    :!ready?<p className={styles.clipLoading} role="status">{copy.loading}</p>
    :<>
     <div ref={editor.wave} className={styles.clipWave} onClick={event=>editor.tapWave(event.clientX)}>
@@ -47,9 +48,9 @@ export function ClipEditor({world,eventId,onClose}:{world:SoundWorld;eventId:str
     </div>
    </>}
   </div>
-  <div className={styles.clipActions}>
-   <button type="button" className={styles.clipCancel} onClick={onClose}>{copy.cancel}</button>
-   <button type="button" className={styles.clipApply} disabled={!ready} onClick={editor.apply}><Glyph name="check"/>{copy.apply}</button>
+  <div className={sheet.clipActions}>
+   <button type="button" className={sheet.clipCancel} onClick={onClose}>{copy.cancel}</button>
+   <button type="button" className={sheet.clipApply} disabled={!ready} onClick={editor.apply}><Glyph name="check"/>{copy.apply}</button>
   </div>
  </WorkSheet>;
 }

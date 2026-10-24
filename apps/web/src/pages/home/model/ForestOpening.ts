@@ -2,6 +2,7 @@ import {homeMotion,introLayers} from '../config/scene';
 import {initialIntro,transitionIntro,shouldRememberIntro} from './introState';
 import type {IntroPolicy,IntroState,IntroEvent} from './introState';
 import {writeSessionFlag} from '../../../shared/platform/capabilities';
+import {media} from '../../../styles/breakpoints';
 
 type StyleNames={fore:string;left:string;right:string};
 // Owns only the empty curtain host. React owns the resting scene and page controls.
@@ -38,9 +39,9 @@ export class ForestOpening {
   for(const [index,asset] of introLayers.entries()){
    const layer=document.createElement('div');layer.className=`${this.styles.fore} ${index===0?this.styles.left:this.styles.right}`;
    const picture=document.createElement('picture');picture.style.opacity=String(homeMotion.foregroundOpacity);
-   for(const [tier,media] of [['mobile','(max-width: 700px)'],['desktop','']] as const){
+   for(const [tier,query] of [['mobile',media.phone],['desktop','']] as const){
     const source=document.createElement('source');source.type='image/webp';source.srcset=asset.variants[tier].url;
-    if(media)source.media=media;picture.append(source);
+    if(query)source.media=query;picture.append(source);
    }
    const image=document.createElement('img');image.alt='';image.decoding='async';image.fetchPriority='high';image.src=asset.variants.fallback.url;
    let retried=false;

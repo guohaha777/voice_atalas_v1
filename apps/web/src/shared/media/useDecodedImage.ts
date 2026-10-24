@@ -1,12 +1,13 @@
 import {useEffect,useState} from 'react';
+import {media} from '../../styles/breakpoints';
 type Variants={mobile:string;desktop:string;fallback:string};
 type Resource={url:string;ready:boolean;failed:boolean};
 // Decode before showing a bitmap. Resize/fallback loads never replace a previously ready image with a blank one.
 export function useDecodedImage(variants:Variants,deadlineMs:number):Resource{
- const [mobile,setMobile]=useState(()=>matchMedia('(max-width: 700px)').matches);
+ const [mobile,setMobile]=useState(()=>matchMedia(media.phone).matches);
  const [resource,setResource]=useState<Resource>({url:'',ready:false,failed:false});
  useEffect(()=>{
-  const query=matchMedia('(max-width: 700px)'),change=()=>setMobile(query.matches);
+  const query=matchMedia(media.phone),change=()=>setMobile(query.matches);
   if(query.addEventListener){query.addEventListener('change',change);return()=>query.removeEventListener('change',change);}
   query.addListener(change);return()=>query.removeListener(change);
  },[]);

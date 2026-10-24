@@ -1,9 +1,9 @@
 // Child-facing wording for the five dimensions — the one copy every page uses (声音诞生 editor, 万物声场 excerpt editor,
 // later 万物成曲). Option order follows SOUND_CHOICES in the contract.
 import type {SoundDimension,SoundShape} from '@wanwu-v2/contracts/sound';
-import type {KidIconName} from '../ui/KidIcon';
+import type {PaperIconName} from '../ui/PaperIcon';
 
-type DimensionCopy<K extends SoundDimension>={label:string;icon:KidIconName;options:Record<SoundShape[K],string>};
+type DimensionCopy<K extends SoundDimension>={label:string;icon:PaperIconName;options:Record<SoundShape[K],string>};
 
 export const dimensionCopy:{[K in SoundDimension]:DimensionCopy<K>}={
  pitch:{label:'高低',icon:'pitch',options:{low:'低低的',mid:'中间的',high:'高高的'}},

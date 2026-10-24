@@ -19,7 +19,6 @@ export const birthCopy={
  bubble:{empty:'先给我一个声音吧！',fresh:(name:string)=>`我是「${name}」，给我变个样子吧～`,shaped:(desc:string)=>`我现在${desc}`,sounding:'听，我在唱歌～',hello:'你好呀！'},
  greet:'声音标记，点一点和它打招呼',rename:'改名字',original:'听原声',current:'听现在的',stopPlaying:'停',
  keepOriginal:'原声保留，随时可以比较。',
- emptyCard:'先在上方录音、上传，或从声音库挑选。',
  sourceLabel:{example:'示例声音','local-recording':'本机录音 · 未上传','local-file':'本机文件 · 未上传'} satisfies Record<SoundSourceKind,string>,
  // Editor
  tapToClear:'再点一下取消',

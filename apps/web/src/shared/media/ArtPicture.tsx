@@ -2,6 +2,7 @@ import {useLayoutEffect,useRef,useState} from 'react';
 import type {CSSProperties,ReactNode} from 'react';
 import type {ArtVariants} from './types';
 import styles from './ArtPicture.module.css';
+import {media} from '../../styles/breakpoints';
 
 type ArtPictureProps={variants:ArtVariants;className?:string;style?:CSSProperties;priority?:'high'|'low'|'auto';fallback?:ReactNode};
 
@@ -17,7 +18,7 @@ export function ArtPicture({variants,className='',style,priority='auto',fallback
  useLayoutEffect(()=>{const node=image.current;if(node?.complete&&node.naturalWidth>0)setState('ready');},[]);
  if(state==='failed')return <>{fallback}</>;
  return <picture className={`${styles.picture} ${className}`} style={style} data-state={state}>
-  {!usePng&&<><source media="(max-width: 700px)" type="image/webp" srcSet={variants.mobile.url}/><source type="image/webp" srcSet={variants.desktop.url}/></>}
+  {!usePng&&<><source media={media.phone} type="image/webp" srcSet={variants.mobile.url}/><source type="image/webp" srcSet={variants.desktop.url}/></>}
   <img ref={image} src={variants.fallback.url} width={variants.desktop.width} height={variants.desktop.height} alt="" draggable={false} decoding="async" fetchPriority={priority}
    onLoad={()=>setState('ready')} onError={()=>{if(!usePng)setUsePng(true);else setState('failed');}}/>
  </picture>;

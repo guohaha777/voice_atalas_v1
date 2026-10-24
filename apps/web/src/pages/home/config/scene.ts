@@ -3,8 +3,11 @@ export const homeAssets = homeScene;
 export const sceneLayers = homeAssets.layers.filter(layer=>layer.kind!=='foreground');
 export const introLayers = homeAssets.layers.filter(layer=>layer.kind==='foreground');
 export const foliageOpacity:Record<string,number> = {
- 'env-upper-left':.32,'env-canopy-right':.46,'env-perch-left':.56,'env-bank-right':.58,'env-pond-left':.75,
+ 'env-upper-left':.22,'env-canopy-right':.36,'env-perch-left':.46,'env-bank-right':.48,'env-pond-left':.65,
 };
+// Swap only the green palette: brighter yellow-green foliage, softer sage frog.
+// These display filters preserve the artwork, alpha, placement, and non-green colours.
+export const homeGreenTones={foliage:{hue:-18,saturation:1.5},frog:{hue:16,saturation:.55}};
 export const homeMotion = {deadlineMs:1800,durationMs:1500,foregroundOpacity:.94,storageKey:'wanwu:home:intro:v2'};
 
 // Keep each character in the same coordinate space as its supporting branch or bank.

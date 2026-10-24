@@ -4,7 +4,9 @@ import {Glyph} from '../../../shared/ui/PaperIcon';
 import {birthCopy} from '../config/copy';
 import type {useSoundBirth} from '../model/useSoundBirth';
 import {Waveform} from './Waveform';
-import styles from '../SoundBirthPage.module.css';
+import controls from './controls.module.css';
+import styles from './RecordDialog.module.css';
+import {ui} from '../../../shared/ui/controls';
 
 type Birth=ReturnType<typeof useSoundBirth>;
 const copy=birthCopy.recordDialog;
@@ -17,10 +19,10 @@ export function RecordDialog({birth}:{birth:Birth}){
  return <WorkSheet title={copy.title} description={copy.description} onClose={birth.closeDialog}>
   <div className={styles.recorder} data-phase={phase}>
    {phase==='review'&&take?<>
-    <Waveform buffer={take} progress={progress} label="刚录的声音" playing={birth.playing==='take'} onPlay={birth.listenTake}/>
+    <Waveform className={styles.recorderWave} buffer={take} progress={progress} label="刚录的声音" playing={birth.playing==='take'} onPlay={birth.listenTake}/>
     <div className={sheetStyles.actions}>
-     <button type="button" className={styles.secondary} onClick={()=>void birth.startRecording()}><Glyph name="replay"/>{copy.retake}</button>
-     <button type="button" className={styles.primary} onClick={birth.useTake}>{copy.use}<Glyph name="arrow"/></button>
+     <button type="button" className={`${ui.pill} ${ui.outline} ${controls.secondary}`} onClick={()=>void birth.startRecording()}><Glyph name="replay"/>{copy.retake}</button>
+     <button type="button" className={`${ui.pill} ${ui.go} ${controls.primary}`} onClick={birth.useTake}>{copy.use}<Glyph name="arrow"/></button>
     </div>
    </>:<>
     <p className={styles.recTime} role="timer" aria-live="off">{phase==='recording'&&<span className={styles.recDot} aria-hidden="true"/>}{seconds(birth.record.ms)}<small> / {seconds(SOUND_SOURCE_MAX_MS)}</small></p>

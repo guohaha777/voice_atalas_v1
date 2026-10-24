@@ -4,6 +4,7 @@ import {ResponsivePicture} from '../../../shared/media/ResponsivePicture';
 import type {SceneLayer} from '../../../shared/media/types';
 import {sceneLayers,homeAssets,foliageOpacity,sceneGroups,mobilePlacement,characterScale} from '../config/scene';
 import styles from '../HomePage.module.css';
+import {HomeToneFilters} from './HomeToneFilters';
 type Props={sceneRef:RefObject<HTMLDivElement|null>;waiting:boolean;active:{id:string|null;phase:string};onInteract:(asset:SceneLayer,el:HTMLElement)=>void};
 function Layer({asset,active,onInteract,group}:{asset:SceneLayer;active:Props['active'];onInteract:Props['onInteract'];group:readonly [number,number,number,number]}){
  const [failed,setFailed]=useState(false);
@@ -24,6 +25,7 @@ function Layer({asset,active,onInteract,group}:{asset:SceneLayer;active:Props['a
  return <div className={className} style={style} data-id={asset.id} aria-hidden="true">{picture}</div>;
 }
 export function HomeScene({sceneRef,waiting,active,onInteract}:Props){return <div ref={sceneRef} className={[styles.scene,waiting?styles['pending-intro']:''].join(' ')} aria-label="可以点击试听的自然小伙伴">
+ <HomeToneFilters/>
  {sceneGroups.map(group=><div key={group.id} className={styles.sceneGroup} data-group={group.id} style={{'--space-w':group.rect[2],'--space-h':group.rect[3]} as CSSProperties}>
   {sceneLayers.filter(asset=>(group.members as readonly string[]).includes(asset.id)).map(asset=><Layer key={asset.id} asset={asset} group={group.rect} active={active} onInteract={onInteract}/>)}
  </div>)}

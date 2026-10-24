@@ -59,8 +59,7 @@
 | `shared/creation/` | `sourceArchive`（本次打开期间的本机档案）、`exampleSounds`（示例声音清单与许可）、`dimensionCopy`（五项文案，声场也用这一份）、`ids`、`workSession`（交给声场的当前作品） |
 | `shared/markers/` | 四款中立声音标记，编号或名字叠加；`SoundSpirit` + `spiritPoses` 为本页的标记角色（眼睛、手臂、拍地、欢呼），使用大尺寸衍生图 `marker-hero-assets.generated.json` |
 | `shared/scene/` | 首页场景素材清单与访问函数（首页、弹窗、本页共用） |
-| `shared/ui/KidIcon.tsx`、`FlowHeader.tsx`、`WorkHeaderActions.tsx`、`WorkSheet.tsx` | 童趣图标；四步流程顶栏；顶栏“声音库 · 作品书架”；录音 / 声音库 / 纸卡共用的弹窗面板 |
-| `shared/scene/WorkBackdrop.tsx` | 工作页四周的首页灌木背景（12% 不透明，手机不显示） |
+| `shared/ui/PaperIcon.tsx`、`controls.module.css`、`FlowHeader.tsx`、`WorkHeaderActions.tsx`、`WorkSheet.tsx` | 纸片图标与实心小图标；共用按钮 / 胶带绿卡；四步流程顶栏；顶栏“声音库 · 作品书架”；录音 / 声音库 / 纸卡共用的弹窗面板 |
 | `styles/global.css` `--wk-*` | 工作页配色：奶油黄、粉、黄、草绿、天蓝；色块上的文字用深色 |
 
 ## 弱网与资源
@@ -106,7 +105,7 @@
 3. 标记数字改为做声音的人；五项改为平铺；声卡信息移到我的声卡。
 4.～7. 视觉迭代：纸色质感 → 参考图白底彩色按键 → 首页 / 标记配色与一屏 → 回到第五版样式并铺满一屏。
 8. 通透青绿色、选中实心色块、确认后变大声卡、右侧小鸟联想提示、图标体积感。
-9. 春季配色与童趣图标（`KidIcon`）。
+9. 春季配色与童趣图标（本页已换为 `PaperIcon` / `Glyph`）。
 10. 背景加首页四周灌木，按首页方式贴边，不透明度最终 12%。
 11. （2026-10-23）按页面草稿改版：左声卡 + 声音标记角色，右标题 + 采集页签 + 五行；小鸟向导并入角色气泡；本页图标换成实心纸片；选中统一草绿；去掉灌木背景。
 

@@ -4,7 +4,7 @@ import {Glyph} from '../../../shared/ui/PaperIcon';
 import {WorkSheet,sheetStyles} from '../../../shared/ui/WorkSheet';
 import {composeCopy} from '../config/copy';
 import type {Compose} from '../model/useCompose';
-import styles from '../ComposePage.module.css';
+import styles from './ComposeDialogs.module.css';
 
 const save=composeCopy.saveDialog;
 

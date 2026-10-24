@@ -3,7 +3,7 @@ import {Glyph} from '../../../shared/ui/PaperIcon';
 import {worldCopy} from '../config/copy';
 import {spotPosition} from '../model/fieldGeometry';
 import type {SoundWorld} from '../model/useSoundWorld';
-import styles from '../SoundWorldPage.module.css';
+import styles from './EventToolbar.module.css';
 
 /**
  * Small floating tools for the selected occurrence: 剪一剪 · 复制 · 移除, each with text (tapping the sound itself plays

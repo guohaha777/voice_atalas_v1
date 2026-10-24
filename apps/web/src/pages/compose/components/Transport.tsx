@@ -3,7 +3,7 @@ import {Glyph} from '../../../shared/ui/PaperIcon';
 import {composeCopy} from '../config/copy';
 import {clockText} from '../model/scoreLayout';
 import type {Compose} from '../model/useCompose';
-import styles from '../ComposePage.module.css';
+import styles from './Transport.module.css';
 
 /**
  * 播放 / 暂停 · 从头听 · a draggable progress bar. The bar's value is the same playback time the score's playhead and

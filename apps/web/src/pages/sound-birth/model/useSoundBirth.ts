@@ -1,65 +1,59 @@
 import {useCallback,useEffect,useMemo,useReducer,useRef,useState,useSyncExternalStore} from 'react';
 import {SOUND_SOURCE_MAX_MS,cleanSourceText,missingProvenance} from '@wanwu-v2/contracts/sound';
-import type {ChosenShape,SoundDimension,SoundSource,SoundSourceKind,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
+import type {SoundDimension,SoundSource,SoundUnitDraft} from '@wanwu-v2/contracts/sound';
 import {audioSupported} from '../../../shared/audio/audioContext';
 import {SequencePlayer} from '../../../shared/audio/SequencePlayer';
-import {LocalRecorder,RecorderError} from '../../../shared/audio/LocalRecorder';
-import {AudioLoadError,decodeAudio,loadAudio} from '../../../shared/audio/loadAudio';
-import {renderShaped} from '../../../shared/audio/renderShaped';
-import {sliceBuffer} from '../../../shared/audio/sliceBuffer';
-import {originalGain,planShape,shapeKey} from '../../../shared/audio/shapingRules';
+import {decodeAudio} from '../../../shared/audio/loadAudio';
 import {newId} from '../../../shared/creation/ids';
-import {EXAMPLE_TIMEOUT_MS} from '../../../shared/creation/exampleSounds';
 import {FILE_MAX_BYTES,birthCopy} from '../config/copy';
 import {sessionArchive} from '../../../shared/creation/sourceArchive';
 import {libraryGroups} from '../services/soundLibrary';
 import {presetHintProvider} from '../services/soundHints';
 import type {SoundHint,SoundHintProvider} from '../services/soundHints';
 import {exampleItems} from '../config/examples';
-import type {LibraryItem} from '../services/soundLibrary';
+import {baseName,describeLocal} from './localSource';
+import type {Notify} from './localSource';
 import {finishCheck,initialSoundBirth,soundBirthReducer,toSoundUnitDraft} from './soundBirthState';
-import type {Notice} from './soundBirthState';
-import {TRIM_FILE_MAX_MS,initialTrim} from './trimEditing';
-import type {TrimRange} from './trimEditing';
+import {TRIM_FILE_MAX_MS} from './trimEditing';
+import {useLibraryItems} from './useLibraryItems';
+import {useRecording} from './useRecording';
+import {useShapedPreview} from './useShapedPreview';
+import {useTrimUpload} from './useTrimUpload';
 
 export type FinishResult={status:'unavailable'}|{status:'opened'};
-/** Which compare target the waveform shows; also the play keys for original / current. */
-export type CompareTarget='original'|'current';
-export type RecordPhase='idle'|'starting'|'recording'|'review';
+export type {CompareTarget} from './useShapedPreview';
+export type {RecordPhase} from './useRecording';
 export type ProvenanceField='label'|'recordedBy'|'recordedOn'|'place'|'group';
 
-const baseName=(file:string)=>file.replace(/\.[^.]+$/,'').trim();
-const today=()=>{const now=new Date();return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;};
-
+/** 声音诞生: bring a sound in (library, file, recording), shape it with the five choices, check its card, finish.
+ *  Recording, trimming, library loading and the shaped preview live in their own hooks; this one ties them together. */
 export function useSoundBirth(markerIndex:number,onFinish:(draft:SoundUnitDraft,source:SoundSource)=>FinishResult,hints:SoundHintProvider=presetHintProvider){
  const [state,dispatch]=useReducer(soundBirthReducer,markerIndex,initialSoundBirth);
  const local=useSyncExternalStore(sessionArchive.subscribe,sessionArchive.list);
  const [playing,setPlaying]=useState<string|null>(null);
  const [progress,setProgress]=useState(0);
- const [shown,setShown]=useState<CompareTarget>('original');
- const [currentBuffer,setCurrentBuffer]=useState<AudioBuffer|null>(null);
- const [loadingId,setLoadingId]=useState<string|null>(null);
- const [recordPhase,setRecordPhase]=useState<RecordPhase>('idle');
- const [recordMs,setRecordMs]=useState(0);
- const [take,setTake]=useState<{buffer:AudioBuffer;mimeType:string}|null>(null);
  const [blocked,setBlocked]=useState(false);
- /** A too-long upload being trimmed: the decoded file (only read), its name and the part to keep. */
- const [trim,setTrim]=useState<{buffer:AudioBuffer;label:string;mimeType:string;range:TrimRange}|null>(null);
  const [lastChosen,setLastChosen]=useState<SoundDimension|null>(null);
  const [hint,setHint]=useState<(SoundHint&{key:string})|null>(null);
  const hintRequest=useRef<AbortController|null>(null);
  const player=useMemo(()=>new SequencePlayer(setPlaying),[]);
  const buffers=useRef(new Map<string,AudioBuffer>());
- const renders=useRef(new Map<string,AudioBuffer>());
- const recorder=useRef<LocalRecorder|null>(null);
- const loads=useRef<AbortController|null>(null);
- const renderToken=useRef(0);
  const photo=useRef<string|null>(null);
  const latest=useRef(state);latest.current=state;
 
- const notify=useCallback((area:NonNullable<Notice>['area'],text:string,tone:'info'|'error'='error')=>dispatch({type:'notice',notice:{tone,area,text}}),[]);
+ const notify=useCallback<Notify>((area,text,tone='error')=>dispatch({type:'notice',notice:{tone,area,text}}),[]);
  const bufferOf=(id:string)=>buffers.current.get(id)??sessionArchive.buffer(id);
  const sourceBuffer=state.source?bufferOf(state.source.id):null;
+
+ const preview=useShapedPreview(player,playing,notify,()=>{const source=latest.current.source;return {source,buffer:source&&bufferOf(source.id)||null};},sourceBuffer??null,state.shape);
+ const useSource=(source:SoundSource,buffer:AudioBuffer)=>{
+  buffers.current.set(source.id,buffer);player.stop();preview.reset();setBlocked(false);
+  dispatch({type:'source-ready',source});
+ };
+ const archiveAndUse=(source:SoundSource,buffer:AudioBuffer)=>{sessionArchive.save(source,buffer);useSource(source,buffer);};
+ const library=useLibraryItems(player,playing,notify,{get:bufferOf,set:(id,buffer)=>buffers.current.set(id,buffer)},useSource);
+ const recording=useRecording(player,playing,notify,take=>archiveAndUse(describeLocal('local-recording',birthCopy.defaultRecordingName,take.buffer,take.mimeType),take.buffer));
+ const trimming=useTrimUpload(player,playing,(label,part,mimeType)=>archiveAndUse(describeLocal('local-file',label,part,mimeType),part));
 
  // Progress follows the audio clock only while something plays.
  useEffect(()=>{
@@ -70,56 +64,14 @@ export function useSoundBirth(markerIndex:number,onFinish:(draft:SoundUnitDraft,
 
  // Leaving the page or hiding the tab stops sound; a running recording is stopped and kept for review.
  useEffect(()=>{
-  const hidden=()=>{if(document.visibilityState!=='hidden')return;player.stop();if(recorder.current)void stopRecording();};
+  const hidden=()=>{if(document.visibilityState!=='hidden')return;player.stop();if(recording.active())void recording.stop();};
   document.addEventListener('visibilitychange',hidden);
   return()=>{
    document.removeEventListener('visibilitychange',hidden);
-   player.stop();recorder.current?.cancel();recorder.current=null;loads.current?.abort();
+   player.stop();
    if(photo.current)URL.revokeObjectURL(photo.current);
   };
  },[player]);
-
- useEffect(()=>{
-  if(recordPhase!=='recording')return;
-  const timer=setInterval(()=>setRecordMs(recorder.current?.elapsedMs()??0),200);
-  return()=>clearInterval(timer);
- },[recordPhase]);
-
- const useSource=(source:SoundSource,buffer:AudioBuffer)=>{
-  buffers.current.set(source.id,buffer);player.stop();setShown('original');setCurrentBuffer(null);setBlocked(false);
-  dispatch({type:'source-ready',source});
- };
- /** New local sources start from the last values used on this device, so a class outing is filled in once. */
- const describeLocal=(kind:Exclude<SoundSourceKind,'example'>,label:string,buffer:AudioBuffer,mimeType:string):SoundSource=>({
-  id:newId(kind==='local-file'?'file':'recording'),kind,label,durationMs:Math.round(buffer.duration*1000),mimeType,
-  provenance:{recordedBy:sessionArchive.recent('recordedBy')[0]??null,recordedOn:today(),place:sessionArchive.recent('place')[0]??null,group:sessionArchive.recent('group')[0]??null,provenanceUrl:null},
- });
- const archiveAndUse=(source:SoundSource,buffer:AudioBuffer)=>{sessionArchive.save(source,buffer);useSource(source,buffer);};
-
- const reportLoad=(reason:unknown,area:NonNullable<Notice>['area'])=>{
-  if(reason instanceof AudioLoadError&&reason.reason==='aborted')return;
-  notify(area,reason instanceof AudioLoadError&&reason.reason==='decode'?birthCopy.fileUnreadable:birthCopy.slowNetwork);
- };
- const itemBuffer=async(item:LibraryItem)=>{
-  const cached=bufferOf(item.source.id);if(cached)return cached;
-  if(!item.url)throw new AudioLoadError('network');
-  loads.current?.abort();const controller=new AbortController();loads.current=controller;
-  setLoadingId(item.source.id);
-  try{const buffer=await loadAudio(item.url,{signal:controller.signal,timeoutMs:EXAMPLE_TIMEOUT_MS});buffers.current.set(item.source.id,buffer);return buffer;}
-  finally{if(loads.current===controller){loads.current=null;setLoadingId(null);}}
- };
- const previewItem=async(item:LibraryItem)=>{
-  if(!audioSupported())return notify('bar',birthCopy.noAudio);
-  const key=`item:${item.source.id}`;if(playing===key)return player.stop();
-  try{await player.playOne(key,await itemBuffer(item),originalGain);}catch(reason){reportLoad(reason,'bar');}
- };
- const pickItem=async(item:LibraryItem)=>{
-  if(!audioSupported())return notify('bar',birthCopy.noAudio);
-  try{
-   const buffer=await itemBuffer(item);
-   useSource(item.source.kind==='example'?{...item.source,durationMs:Math.round(buffer.duration*1000)}:item.source,buffer);
-  }catch(reason){reportLoad(reason,'bar');}
- };
 
  const chooseFile=async(file:File)=>{
   if(!audioSupported())return notify('bar',birthCopy.noAudio);
@@ -132,74 +84,19 @@ export function useSoundBirth(markerIndex:number,onFinish:(draft:SoundUnitDraft,
    if(buffer.duration*1000>TRIM_FILE_MAX_MS){dispatch({type:'reading',reading:false});return notify('bar',birthCopy.tooLong);}
    // Longer than a source may be: the child picks the part to keep (the file on the device is untouched).
    if(buffer.duration*1000>SOUND_SOURCE_MAX_MS+500){
-    player.stop();setTrim({buffer,label,mimeType,range:initialTrim(Math.round(buffer.duration*1000))});
+    trimming.start(buffer,label,mimeType);
     dispatch({type:'reading',reading:false});dispatch({type:'notice',notice:null});dispatch({type:'dialog',dialog:'trim'});return;
    }
    archiveAndUse(describeLocal('local-file',label,buffer,mimeType),buffer);
   }catch{dispatch({type:'reading',reading:false});notify('bar',birthCopy.fileUnreadable);}
  };
-
- // ----- recording dialog: idle → starting → recording → review → use / retake -----
- const openRecord=()=>{player.stop();setTake(null);setRecordPhase('idle');dispatch({type:'notice',notice:null});dispatch({type:'dialog',dialog:'record'});};
- const startRecording=async()=>{
-  player.stop();setTake(null);setRecordMs(0);setRecordPhase('starting');
-  const next=new LocalRecorder();recorder.current=next;
-  try{await next.start(SOUND_SOURCE_MAX_MS);if(recorder.current===next)setRecordPhase('recording');}
-  catch(reason){
-   if(recorder.current===next)recorder.current=null;
-   setRecordPhase('idle');notify('bar',birthCopy.errors[reason instanceof RecorderError?reason.reason:'failed']);
-  }
- };
- async function stopRecording(){
-  const active=recorder.current;if(!active)return;
-  recorder.current=null;
-  try{
-   const blob=await active.stop();
-   const buffer=await decodeAudio(await blob.arrayBuffer());
-   setTake({buffer,mimeType:blob.type||'audio/webm'});setRecordPhase('review');
-  }catch(reason){setRecordPhase('idle');notify('bar',birthCopy.errors[reason instanceof RecorderError?reason.reason:'failed']);}
- }
- const listenTake=()=>{if(!take)return;if(playing==='take')return player.stop();void player.playOne('take',take.buffer,originalGain);};
- const useTake=()=>{if(!take)return;archiveAndUse(describeLocal('local-recording',birthCopy.defaultRecordingName,take.buffer,take.mimeType),take.buffer);setTake(null);setRecordPhase('idle');};
- // ----- trimming a too-long upload -----
- const setTrimRange=(range:TrimRange)=>{if(playing==='trim')player.stop();setTrim(current=>current&&{...current,range});};
- const listenTrim=()=>{
-  if(!trim)return;if(playing==='trim')return player.stop();
-  void player.playOne('trim',sliceBuffer(trim.buffer,trim.range.startMs,trim.range.endMs),originalGain);
- };
- const useTrim=()=>{
-  if(!trim)return;
-  const part=sliceBuffer(trim.buffer,trim.range.startMs,trim.range.endMs);
-  archiveAndUse(describeLocal('local-file',trim.label,part,trim.mimeType),part);setTrim(null);
- };
+ const openRecord=()=>{recording.open();dispatch({type:'notice',notice:null});dispatch({type:'dialog',dialog:'record'});};
  const closeDialog=()=>{
-  recorder.current?.cancel();recorder.current=null;setTake(null);setRecordPhase('idle');setTrim(null);
+  recording.cancel();trimming.cancel();
   if(playing==='take'||playing==='trim'||playing?.startsWith('item:'))player.stop();
-  loads.current?.abort();dispatch({type:'dialog',dialog:null});
+  library.abort();dispatch({type:'dialog',dialog:null});
  };
 
- // ----- shaped preview -----
- /** Render (cached) and play. Rapid taps only play the most recent request. */
- const playShape=async(shape:ChosenShape,key:string,show:boolean)=>{
-  const source=latest.current.source,buffer=source&&bufferOf(source.id);
-  if(!source||!buffer)return;
-  const token=++renderToken.current,cacheKey=`${source.id}|${shapeKey(shape)}`;
-  let rendered=renders.current.get(cacheKey);
-  try{
-   if(!rendered){rendered=await renderShaped(buffer,planShape(shape,buffer.duration));renders.current.set(cacheKey,rendered);}
-   if(token!==renderToken.current)return;
-   if(show){setCurrentBuffer(rendered);setShown('current');}
-   await player.playOne(key,rendered);
-  }catch{if(token===renderToken.current)notify('editor',birthCopy.noAudio);}
- };
- const playCompare=(target:CompareTarget)=>{
-  if(playing===target){player.stop();return;}
-  if(!sourceBuffer)return;
-  if(target==='original'){renderToken.current++;setShown('original');void player.playOne('original',sourceBuffer,originalGain);}
-  else void playShape(state.shape,'current',true);
- };
- /** The waveform's own play button plays whichever version it is showing. */
- const playShown=()=>playCompare(shown==='current'&&currentBuffer?'current':'original');
  const choose=(dimension:SoundDimension,value:string)=>{
   dispatch({type:'choose',dimension,value});setBlocked(false);setLastChosen(dimension);
   // Ask the guide for an association; a newer choice cancels an older request.
@@ -207,7 +104,7 @@ export function useSoundBirth(markerIndex:number,onFinish:(draft:SoundUnitDraft,
   void hints.hint({dimension,value,shape:{...latest.current.shape,[dimension]:value},sourceLabel:latest.current.source?.label??null},controller.signal)
    .then(result=>{if(result&&!controller.signal.aborted)setHint({...result,key:`${dimension}:${value}`});}).catch(()=>{});
   if(!latest.current.source)return notify('editor',birthCopy.noSoundYet,'info');
-  void playShape({...latest.current.shape,[dimension]:value},'current',true);
+  void preview.play({...latest.current.shape,[dimension]:value},'current',true);
  };
  /** Take a choice back: that dimension returns to the original, and the result plays so the change can be heard. */
  const clear=(dimension:SoundDimension)=>{
@@ -215,7 +112,7 @@ export function useSoundBirth(markerIndex:number,onFinish:(draft:SoundUnitDraft,
   hintRequest.current?.abort();setHint(null);
   if(!latest.current.source)return;
   const shape={...latest.current.shape};delete shape[dimension];
-  void playShape(shape,'current',true);
+  void preview.play(shape,'current',true);
  };
  const updateSource=(field:ProvenanceField,value:string)=>{
   const source=latest.current.source;if(!source||source.kind==='example')return;
@@ -243,16 +140,19 @@ export function useSoundBirth(markerIndex:number,onFinish:(draft:SoundUnitDraft,
   }
  };
 
+ const {shown,currentBuffer}=preview,trim=trimming.trim;
  const displayBuffer=shown==='current'&&currentBuffer?currentBuffer:sourceBuffer;
  const showingCurrent=!!currentBuffer&&displayBuffer===currentBuffer;
  return {
-  state,dispatch,playing,loadingId,blocked,lastChosen,hint,local,groups:useMemo(()=>libraryGroups(exampleItems,local),[local]),
+  state,dispatch,playing,loadingId:library.loadingId,blocked,lastChosen,hint,local,groups:useMemo(()=>libraryGroups(exampleItems,local),[local]),
   wave:{buffer:displayBuffer,original:sourceBuffer??null,target:showingCurrent?'current' as const:'original' as const,progress:playing===(showingCurrent?'current':'original')?progress:0},
-  record:{phase:recordPhase,ms:recordMs,take:take?.buffer??null,progress:playing==='take'?progress:0},
-  trim:trim&&{buffer:trim.buffer,label:trim.label,range:trim.range,playing:playing==='trim',progress:playing==='trim'?progress:0},setTrimRange,listenTrim,useTrim,
+  record:{phase:recording.phase,ms:recording.ms,take:recording.take?.buffer??null,progress:playing==='take'?progress:0},
+  trim:trim&&{buffer:trim.buffer,label:trim.label,range:trim.range,playing:playing==='trim',progress:playing==='trim'?progress:0},
+  setTrimRange:trimming.setRange,listenTrim:trimming.listen,useTrim:trimming.use,
   suggestions:{recordedBy:sessionArchive.recent('recordedBy'),place:sessionArchive.recent('place'),group:sessionArchive.recent('group')},
-  previewItem,pickItem,chooseFile,openRecord,startRecording,stopRecording,listenTake,useTake,closeDialog,
-  playCompare,playShown,choose,clear,updateSource,setCardPhoto,finish,
+  previewItem:library.preview,pickItem:library.pick,chooseFile,openRecord,startRecording:recording.start,stopRecording:recording.stop,
+  listenTake:recording.listen,useTake:recording.use,closeDialog,
+  playCompare:preview.playCompare,playShown:preview.playShown,choose,clear,updateSource,setCardPhoto,finish,
   confirmCard:()=>{
    if(latest.current.source&&missingProvenance(latest.current.source).length){notify('info',birthCopy.needProvenance,'info');return;}
    dispatch({type:'card',confirmed:true});

@@ -21,27 +21,31 @@
 
 ## 首页进入声音诞生与弹窗基础层
 
-- 首页“开始成曲”直接跳转 `/create`（2026-10-23 删除了开始方式弹窗与 `?from=` 入口参数；录音、上传、声音库、拍照读声卡都在声音诞生页上选）。首页空闲约 3 秒后预取声音诞生页代码。
+- 首页“开始成曲”直接跳转 `/create`（2026-10-23 删除了开始方式弹窗与 `?from=` 入口参数；录音、上传、声音库、拍照读声卡都在声音诞生页上选）。
+- 下一步页面的代码用 `app/prefetch.ts` 的 `prefetchWhenIdle` 预取：等当前页加载完、页面图片到齐（最多等 20 秒）、再过一段延时（首页 3 秒，其余 1.5 秒）并在浏览器空闲时才取；省流量模式或 2G 网络下不预取，进入页面时照常加载。
 - `shared/ui/Dialog.tsx` 复用原生 modal 的焦点约束、Esc 与背景关闭，管理滚动锁和关闭后的焦点恢复；`NoticeDialog`（首页未开放入口）与工作页的 `WorkSheet` 复用该基础层。打开弹窗时暂停首页试听与当前角色动作，不在关闭后自动续播。
 
 ## 声音诞生页
 
-- 路由 `/create`，代码单独分包，弹窗打开时预取。`pages/sound-birth/` 分为 `components/`（声音条、我的声卡、声卡信息、五行选择、录音 / 声音库 / 纸卡对话框）、`model/`（纯 reducer `soundBirthState.ts` + 编排 hook `useSoundBirth.ts`）、`config/`（文案、示例声音条目、向导动物、提示文案）、`services/`（声音库分组、向导提示端口）。五项文案、本机来源档案、背景层、弹窗面板和顶栏入口都在 shared，与万物声场共用。
+- 路由 `/create`，代码单独分包，弹窗打开时预取。`pages/sound-birth/` 分为 `components/`（声音条、我的声卡、声卡信息、五行选择、录音 / 声音库 / 纸卡对话框）、`model/`（纯 reducer `soundBirthState.ts`；编排 hook `useSoundBirth.ts`，拆出 `useRecording`（录音）、`useTrimUpload`（长文件截取）、`useLibraryItems`（声音库加载与试听）、`useShapedPreview`（塑形渲染与对比试听）和 `localSource.ts`）、`config/`（文案、示例声音条目、向导动物、提示文案）、`services/`（声音库分组、向导提示端口）。五项文案、本机来源档案、背景层、弹窗面板和顶栏入口都在 shared，与万物声场共用。
 - 数据走 `@wanwu-v2/contracts/sound`：来源与溯源信息、五项、交给声场的 `SoundUnitDraft`。原声只读，塑形在浏览器离线渲染（`shared/audio/`）。本机来源档案和示例声音清单在 `shared/creation/`，与万物声场共用。
 - 向导提示走 `services/soundHints.ts` 的 `SoundHintProvider` 接口，当前是本地预设文案；接模型时实现同一接口即可。
 - 首页场景的素材清单放在 `shared/scene/`（`homeScene.ts` + 生成的 JSON），首页、弹窗和声音诞生页都通过它取同一批已缓存的文件。
-- 图标分两套：首页和弹窗用细线 `shared/ui/Icon.tsx`；工作页用圆润童趣的 `shared/ui/KidIcon.tsx`。工作页配色令牌是 `styles/global.css` 里的 `--wk-*`。
+- 图标：`shared/ui/PaperIcon.tsx` 里的 `PaperIcon`（彩色纸片图标，按色卡上色）和 `Glyph`（实心小图标，跟随文字颜色）；心情脸是 `MoodFace.tsx`。作品书架保留原版的 `KidIcon` 与 `shared/scene/WorkBackdrop`（首页灌木淡背景）。
+- 屏幕档位只有一份：`styles/breakpoints.ts`（`phone / tiny / one-column / narrow / narrow-compose / short / shorter / tablet-short / header-compact / sheet-narrow / reduced-motion`）。CSS 写 `@media(--short)`，构建时由 `vite.config.ts` 的小插件展开；代码里用 `media.phone` 等。`scripts/check-styles.mjs`（随 `npm run build` 运行）拒绝写死像素的媒体查询、未知档位，以及超过 220 行的源文件。组件内部按容器宽度的 `@container` 仍写在组件里。
+- 每个组件的外观和它的响应式规则放在同名 `components/Xxx.module.css`；页面级 `XxxPage.module.css` 只放页面布局。页面内多个组件共用的少量样式放在 `components/controls.module.css`（声音诞生）、`components/sheet.module.css`（万物声场）。
+- 样式分三层：`styles/global.css` 的 `--wk-*` 令牌（颜色、阴影、胶带、页面底色、`wk-rise` 入场动画，cascade layer `wk-base`）；`shared/ui/controls.module.css` 的共用外观（胶囊按钮 `pill` + `go / outline / back`，胶带绿卡 `limeCard + tape`，layer `wk-ui`，在代码里用 `ui.*`）；各页、各组件的模块只管尺寸和位置。页面样式不在任何 layer 里，所以总能覆盖共用外观，与 CSS 加载顺序无关。
 
 ## 万物声场页
 
 - 路由 `/world`，代码单独分包，在声音诞生页时预取。声音诞生“做好了”经 `App` 把 `SoundUnitDraft` + 来源交给 `shared/creation/workSession.ts`（本次打开期间的当前作品），再打开本页；标记编号由作品分配。
-- `pages/sound-world/` 分为 `components/`（左栏声音、声场、浮动工具、心情、找更多声音）、`model/`（纯 reducer `soundWorldState.ts`、几何换算 `fieldGeometry.ts`、拖动 `useFieldDrag.ts`、编排 hook `useSoundWorld.ts`）、`config/`（文案、mock 示例单元与示例摆放、青蛙向导）、`services/`（`SoundWorldRepository` 端口 + mock 实现，文件头列出预留 REST 路径）。
+- `pages/sound-world/` 分为 `components/`（左栏声音、声场、浮动工具、心情、找更多声音）、`model/`（纯 reducer `soundWorldState.ts`、几何换算 `fieldGeometry.ts`、拖动 `useFieldDrag.ts`、编排 hook `useSoundWorld.ts`，拆出 `useFieldSound`（声音库、单个试听、整段试听与游标）和 `useMood`（心情））、`config/`（文案、mock 示例单元与示例摆放、青蛙向导）、`services/`（`SoundWorldRepository` 端口 + mock 实现，文件头列出预留 REST 路径）。
 - 数据走 `@wanwu-v2/contracts/arrangement`：事件只存 0–1 先后位置与行号（行只管错开摆放，不改变声音；默认 3 行可加到 5 行），不存像素；声音身份 `unitId` 与事件身份分开。整段试听用 `shared/audio/SequencePlayer.ts` 在同一音频时钟上排程，游标、高亮读同一时间，万物成曲可复用。
 - 详见 `docs/development/sound-world-acceptance.md`。
 
 ## 万物成曲页与作品书架
 
-- 路由 `/compose`（在声场时预取）和 `/works`（在成曲时预取），各自分包。`pages/compose/` 分为 `components/`（曲谱卡、播放条、右栏三卡、底栏与特征面板、弹窗）、`model/`（纯 reducer `composeState.ts`、曲谱派生 `scoreLayout.ts`、音乐特征 `discoveries.ts`、背景曲与演奏 `backgroundSynth.ts`、编排 hook `useCompose.ts`）、`config/`（文案、特征讲解文案、松鼠向导、示例乐器与心情节奏）、`services/`（`ComposeRepository`、`BackgroundLibrary` 两个端口 + mock，文件头列出预留 REST 路径）。`pages/works/` 同样分层，端口 `ShelfRepository`。
+- 路由 `/compose`（在声场时预取）和 `/works`（在成曲时预取），各自分包。`pages/compose/` 分为 `components/`（曲谱卡、播放条、右栏三卡、底栏与特征面板、弹窗）、`model/`（纯 reducer `composeState.ts`、曲谱派生 `scoreLayout.ts`、音乐特征 `discoveries.ts`、背景曲与演奏 `backgroundSynth.ts`、编排 hook `useCompose.ts`，拆出 `usePiecePlayback`（同一时钟的播放 / 暂停 / 跳转 / 拖动）和 `useBackgroundMusic`（乐器、节奏与背景渲染缓存））、`config/`（文案、特征讲解文案、松鼠向导、示例乐器与心情节奏）、`services/`（`ComposeRepository`、`BackgroundLibrary` 两个端口 + mock，文件头列出预留 REST 路径）。`pages/works/` 同样分层，端口 `ShelfRepository`。
 - 课本灵感是共用模块 `shared/inspiration/`（示例节奏目录端口 `InspirationCatalog`、试听合成、教学音乐本机选择与后端流程说明、`InspirationDialog`），万物声场摆放前就能选，万物成曲沿用同一个选择。
 - 曲谱只从 `arrangement-v1` 派生，不存储。声场与成曲共用 `shared/creation/arrangementTiming.ts`（开始秒、听到的长度、整首长度、行整理、切换长度）、`exampleWork.ts`（示例单元与示例摆放）、`workSounds.ts`（音源加载与塑形缓存）。
 - 播放只有一个时间：`shared/audio/SequencePlayer` 支持从任意秒开始、整首长度和分层音量；竖线、进度条、时钟、高亮都读它。背景是独立的 `background` 层。

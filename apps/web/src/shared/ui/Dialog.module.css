@@ -2,7 +2,7 @@
 .dialog::backdrop{background:#eff2ecbb}
 .close{position:absolute;top:12px;right:12px;display:grid;place-items:center;width:44px;height:44px;border:0;background:none;color:#757b76}
 .close:hover{color:var(--ink)}.close svg{width:19px;height:19px}
-.header{text-align:center}.header h2{margin:0;font-size:28px;font-weight:500;letter-spacing:.06em;line-height:1.5}
-.description{margin:14px 0 0;font-size:13px;color:var(--muted);line-height:1.9}
-@media(max-width:700px){.dialog{width:calc(100vw - 24px);max-height:calc(100dvh - 24px);padding:46px 22px 25px}.header h2{font-size:22px;letter-spacing:.025em}.description{font-size:12px;margin-top:10px}.close{top:5px;right:5px}}
+.header{text-align:center}.header h2{margin:0;font-size:var(--font-dialog-title);font-weight:500;letter-spacing:.04em;line-height:var(--line-title)}
+.description{margin:14px 0 0;font-size:var(--font-small);color:var(--muted);line-height:1.9}
+@media(--phone){.dialog{width:calc(100vw - 24px);max-height:calc(100dvh - 24px);padding:46px 22px 25px}.header h2{font-size:var(--font-dialog-title);letter-spacing:.025em}.description{font-size:var(--font-label);margin-top:10px}.close{top:5px;right:5px}}
 @supports not (height:100dvh){.dialog{max-height:calc(100vh - 48px)}}

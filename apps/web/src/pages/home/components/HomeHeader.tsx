@@ -7,6 +7,7 @@ export function HomeHeader({onNavigate}:{onNavigate:(page:HomeDestination)=>void
  <nav className={styles.nav} aria-label="主导航">
   <button type="button" onClick={()=>onNavigate('library')}><Glyph name="bars"/>声音库</button>
   <button type="button" onClick={()=>onNavigate('shelf')}><Glyph name="shelf"/>作品书架</button>
-  <button type="button" onClick={()=>onNavigate('login')}><Glyph name="person"/>老师 / 贡献者登录</button>
+  <button type="button" onClick={()=>onNavigate('login')}><Glyph name="person"/><span>登陆</span></button>
+  <button type="button" onClick={()=>onNavigate('api')}><Glyph name="settings"/><span>API 输入</span></button>
  </nav>
 </header>;}

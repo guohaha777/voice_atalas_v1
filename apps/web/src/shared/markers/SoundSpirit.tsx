@@ -6,6 +6,7 @@ import generated from './marker-hero-assets.generated.json';
 import {markerFor} from './markers';
 import {spiritArm,spiritPoses} from './spiritPoses';
 import styles from './SoundSpirit.module.css';
+import {media} from '../../styles/breakpoints';
 
 type Crop={left:number;top:number;width:number;height:number};
 const hero=generated.assets as Record<string,{label:string;crop:Crop;variants:ArtVariants}>;
@@ -68,7 +69,7 @@ export function SoundSpirit({index,awake,compact=false,label,greetLabel,onGreet,
  const eyes=useRef<(SVGGElement|null)[]>([]),pupils=useRef<(SVGGElement|null)[]>([]);
  const live=useRef({awake,compact,reach,level});live.current={awake,compact,reach,level};
  const fx=useRef({hop:0,hopV:0,poke:0,waveUntil:0,cheerUntil:0,blinkStart:0,nextBlink:0,eyeOpen:.4,gx:0,gy:0,amp:0,bob:0,tapStart:0,prevLevel:0,lastTap:0});
- const calm=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const calm=()=>matchMedia(media['reduced-motion']).matches;
 
  const effect=(className:string,x:number,y:number,vars:Record<string,string>,ms:number,html='')=>{
   const layer=effects.current;if(!layer||calm())return;

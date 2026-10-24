@@ -6,7 +6,7 @@ import type {PaperIconName,PaperTone} from '../../../shared/ui/PaperIcon';
 import {composeCopy} from '../config/copy';
 import {secondsLabel,spanChoices} from '../model/scoreLayout';
 import type {Compose} from '../model/useCompose';
-import styles from '../ComposePage.module.css';
+import styles from './SideCards.module.css';
 
 /** Card icon: a solid paper cut-out in a palette colour (no backing shape), as on 声音诞生. */
 const Badge=({icon,tone}:{icon:PaperIconName;tone:PaperTone})=>

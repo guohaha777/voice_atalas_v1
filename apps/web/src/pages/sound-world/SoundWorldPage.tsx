@@ -23,9 +23,12 @@ import {MoreSoundsDialog} from './components/MoreSoundsDialog';
 import {SoundField} from './components/SoundField';
 import {SoundPalette} from './components/SoundPalette';
 import styles from './SoundWorldPage.module.css';
+import {ui} from '../../shared/ui/controls';
 
+/** The frog speaks for the page: a notice (if any) first, otherwise what to do next. One voice, no repeated hints. */
 function guideText(world:SoundWorld){
- const {arrangement,selection,lastAction}=world.state;
+ const {arrangement,selection,lastAction,notice}=world.state;
+ if(notice)return worldCopy.notices[notice.key];
  if(!arrangement)return guideLines.loading;
  if(world.playing==='all')return guideLines.playing;
  if(selection?.kind==='unit')return guideLines.unitSelected(unitOf(arrangement,selection.unitId)?.name??'');
@@ -65,26 +68,24 @@ export function SoundWorldPage({onNavigate,onFinish}:{onNavigate:(path:string)=>
   addEventListener('keydown',key);return()=>removeEventListener('keydown',key);
  },[]);
  const text=guideText(world);
- const notice=world.state.notice;
  const busy=world.preparing==='all',playingAll=world.playing==='all';
  const dragUnit=drag&&(drag.item.kind==='unit'?unitOf(world.state.arrangement,drag.item.unitId)
   :unitOf(world.state.arrangement,world.state.arrangement?.events.find(event=>drag.item.kind==='event'&&event.id===drag.item.eventId)?.unitId??''));
  return <div className={styles.shell} data-dragging={!!drag||undefined}>
   <FlowHeader steps={flowSteps} current="world" onNavigate={onNavigate} aside={<WorkHeaderActions onNavigate={onNavigate} onLibrary={()=>setMore('example')}/>}/>
   <main className={styles.page}>
-   <WorkIntro title={worldCopy.title} subtitle={worldCopy.subtitle} guide={worldGuide} text={text} fit/>
+   <WorkIntro title={worldCopy.title} subtitle={worldCopy.subtitle} guide={worldGuide} text={text} tone={world.state.notice?.tone} fit/>
    <div className={styles.workspace}>
     <SoundPalette world={world} bind={bind} onMore={setMore} onInspiration={()=>setInspiring(true)}/>
     <div className={styles.stageColumn}>
      <SoundField world={world} area={area} locate={locate} drag={drag} bind={bind} onTrim={setTrimming}/>
      <MoodPicker world={world}/>
-     <p className={styles.notice} role="status" aria-live="polite" data-tone={notice?.tone}>{notice?worldCopy.notices[notice.key]:''}</p>
      <div className={styles.actions}>
-      <button type="button" className={styles.backButton} onClick={()=>onNavigate('/create')}><Glyph name="back"/>{worldCopy.back}</button>
-      <button type="button" className={styles.playAll} aria-pressed={playingAll} data-busy={busy||undefined} disabled={!world.state.arrangement} onClick={()=>void world.playAll()}>
+      <button type="button" className={`${ui.pill} ${ui.back} ${styles.backButton}`} onClick={()=>onNavigate('/create')}><Glyph name="back"/>{worldCopy.back}</button>
+      <button type="button" className={`${ui.pill} ${ui.go} ${styles.playAll}`} aria-pressed={playingAll} data-busy={busy||undefined} disabled={!world.state.arrangement} onClick={()=>void world.playAll()}>
        <span className={styles.playIcon}><Glyph name={playingAll?'stop':'play'}/></span>{busy?worldCopy.preparing:playingAll?worldCopy.stopAll:worldCopy.playAll}
       </button>
-      <button type="button" className={styles.finish} aria-disabled={world.state.blocked||undefined} onClick={()=>void world.finish()}>
+      <button type="button" className={`${ui.pill} ${ui.outline} ${ui.forward} ${styles.finish}`} aria-disabled={world.state.blocked||undefined} onClick={()=>void world.finish()}>
        {world.state.blocked?worldCopy.finishUnavailable:worldCopy.finish}<Glyph name="arrow"/>
       </button>
      </div>

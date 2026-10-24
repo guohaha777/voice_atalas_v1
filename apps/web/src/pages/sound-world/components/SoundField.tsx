@@ -11,7 +11,7 @@ import {MARKER_HALF,canRemoveRow,eventOf,heardSeconds,unitOf} from '../model/sou
 import type {DragState,useFieldDrag} from '../model/useFieldDrag';
 import type {FieldSpot,SoundWorld} from '../model/useSoundWorld';
 import {EventToolbar} from './EventToolbar';
-import styles from '../SoundWorldPage.module.css';
+import styles from './SoundField.module.css';
 
 type Props={world:SoundWorld;area:RefObject<HTMLDivElement|null>;locate:(x:number,y:number)=>FieldSpot|null;drag:DragState;
  bind:ReturnType<typeof useFieldDrag>['bind'];onTrim:(eventId:string)=>void};
@@ -53,7 +53,8 @@ export function SoundField({world,area,locate,drag,bind,onTrim}:Props){
  return <section className={styles.field} aria-labelledby="field-title" data-armed={!!selectedUnit||undefined} data-rows={rows}>
   <h2 id="field-title" className={styles.srOnly}>{worldCopy.fieldLabel}</h2>
   <div className={styles.fieldHead}>
-   <p className={styles.fieldHint}>{worldCopy.fieldHint}</p>
+   {/* Keep the original wrapping/space so removing the hint does not move tools or sound markers. */}
+   <p className={styles.fieldHintSpace} aria-hidden="true">{worldCopy.fieldHintLayout}</p>
    {arrangement.origin==='example'&&<div className={styles.exampleBadge}>
     <span><Glyph name="sounds"/>{worldCopy.exampleBadge}</span>
     <button type="button" onClick={world.clearEvents}>{worldCopy.clearExample}</button>
@@ -75,7 +76,6 @@ export function SoundField({world,area,locate,drag,bind,onTrim}:Props){
    </div>
    <div ref={area} className={styles.lanes} onClick={tap} onPointerMove={track} onPointerLeave={()=>setHover(null)}>
     {rowIndexes.map(row=><div key={row} className={styles.lane} aria-hidden="true"/>)}
-    {!arrangement.events.length&&<p className={styles.emptyHint}>{worldCopy.emptyField}</p>}
     {target&&<span className={styles.dropTarget} style={spotPosition(target,rows)} aria-hidden="true"><Glyph name="plus"/></span>}
     {/* Length tails sit under the markers: a bar as long as the sound is heard, on the same seconds scale as the ruler. */}
     {arrangement.events.map(event=>{

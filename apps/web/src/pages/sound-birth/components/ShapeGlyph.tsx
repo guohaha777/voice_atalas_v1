@@ -1,5 +1,5 @@
 import type {SoundDimension} from '@wanwu-v2/contracts/sound';
-import styles from '../SoundBirthPage.module.css';
+import styles from './ShapeGlyph.module.css';
 
 const guides=[16,32,48];
 /** Small data-free diagrams for each option: solid dots, bars and lines (no hollow rings); SVG, so no image requests. */

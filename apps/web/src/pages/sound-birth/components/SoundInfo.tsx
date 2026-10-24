@@ -3,7 +3,7 @@ import {SOURCE_TEXT_MAX,missingProvenance} from '@wanwu-v2/contracts/sound';
 import {Glyph} from '../../../shared/ui/PaperIcon';
 import {birthCopy} from '../config/copy';
 import type {ProvenanceField,useSoundBirth} from '../model/useSoundBirth';
-import styles from '../SoundBirthPage.module.css';
+import styles from './SoundInfo.module.css';
 
 type Birth=ReturnType<typeof useSoundBirth>;
 const copy=birthCopy.info;

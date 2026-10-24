@@ -6,7 +6,7 @@ import {discoveryText} from './discoveryCopy';
 
 export const composeCopy={
  title:'看着曲谱，听听自己的小曲子',
- subtitle:'声音按摆放的先后响起；竖线走到哪里，哪个声音就亮起来。',
+ subtitle:'声音按摆放的先后响起，这就是你的小曲子。',
  loading:'正在打开曲谱…',
  // Score
  scoreTitle:'声音曲谱',
@@ -26,7 +26,6 @@ export const composeCopy={
  },
  exampleBadge:'示例摆放',
  legendLabel:'曲谱里的声音',
- emptyScore:'声场里还没有声音',
  emptyAction:'回声场摆一摆',
  seconds:(value:string)=>`${value}秒`,
  itemLabel:(number:string,name:string,start:string,seconds:string)=>`${number} ${name}，第 ${start} 秒响起，响 ${seconds} 秒。点一下从这里听`,
@@ -35,7 +34,7 @@ export const composeCopy={
  // Transport
  play:'播放',pause:'暂停',preparing:'准备中',restart:'从头听',
  progressLabel:'播放进度',
- progressHint:'播放到哪个声音，它就会亮起来；拖动圆点可以跳到别处。',
+ progressHint:'拖动圆点可以跳到别处。',
  progressValue:(now:string,total:string)=>`${now}，共 ${total}`,
  // Length
  spanTitle:'想听多久？',
@@ -84,7 +83,6 @@ export const composeCopy={
   share:'分享链接',shareOff:'未开放',
   cancel:'先不存',submit:'放进作品书架',update:'更新书架里的这首',
  },
- savedNote:'已放进作品书架（仅本次打开期间保留，刷新就没了）。',
  goShelf:'去作品书架看看',
  againDialog:{
   title:'再来一首？',

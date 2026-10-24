@@ -12,6 +12,7 @@ export const destinations={
  create:{label:'开始成曲',page:'声音诞生',path:'/create',ready:true},
  library:{label:'声音库',page:'声音库',path:'/sounds',ready:false},
  shelf:{label:'作品书架',page:'作品书架',path:'/works',ready:true},
- login:{label:'老师 / 贡献者登录',page:'登录',path:'/sign-in',ready:false},
+ login:{label:'登陆',page:'登录',path:'/sign-in',ready:false},
+ api:{label:'API 输入',page:'模型配置',ready:true},
 } as const;
 export type HomeDestination=keyof typeof destinations;

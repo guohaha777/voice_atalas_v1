@@ -2,335 +2,64 @@
    → mood → back · listen · finish. Visual language of 声音诞生: soft ground, a taped paper card, white panels with
    pressed trays and raised pads, solid icons, lime for every action and choice, yellow only for "sounding now".
    Placed markers have little faces that light up while they sound. Desktop fills one screen; phones stack and scroll. */
+/* Page layout and the footer actions; each component keeps its own look and responsive rules in components/*.module.css. */
+/* 万物声场 · structure from 03-sound-world.png: guide + title (shared/ui/WorkIntro) → 选一个声音 | the field (rows only spread sounds out; time runs left → right on a seconds ruler)
+   → mood → back · listen · finish. Visual language of 声音诞生: soft ground, a taped paper card, white panels with
+   pressed trays and raised pads, solid icons, lime for every action and choice, yellow only for "sounding now".
+   Placed markers have little faces that light up while they sound. Desktop fills one screen; phones stack and scroll. */
 .shell{min-height:100vh;min-height:100dvh;color:var(--wk-ink);
- background:radial-gradient(900px 520px at 4% -6%,#e9f7a766,transparent 70%),radial-gradient(760px 520px at 98% 4%,#d8f4ff55,transparent 70%),radial-gradient(900px 600px at 50% 110%,#fff0c455,transparent 70%),#fbfdf4}
+ background:var(--wk-page-bg)}
 .shell[data-dragging]{cursor:grabbing;user-select:none}
 .page{position:relative;z-index:1;display:flex;flex-direction:column;max-width:1320px;min-height:calc(100dvh - 64px);margin:0 auto;padding:0 32px 20px}
-.field{border-radius:34px;background:#fff;box-shadow:var(--wk-shadow),0 0 0 1px #26301a05}
-.palette,.stageColumn{animation:rise .5s var(--wk-ease) both}
-.palette{animation-delay:.05s}.stageColumn{animation-delay:.1s}
-.srOnly{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-
-/* ---------- workspace ---------- */
+.stageColumn{animation:global(wk-rise) .5s var(--wk-ease) .1s both}
 .workspace{flex:1;min-height:0;display:grid;grid-template-columns:minmax(260px,300px) minmax(0,1fr);gap:20px;align-items:stretch}
-
-/* 选一个声音 */
-.palette{position:relative;display:flex;flex-direction:column;min-height:0;padding:20px 14px 12px;border:3px solid var(--wk-lime);border-radius:30px;background:linear-gradient(180deg,var(--wk-green-mid) 0%,var(--wk-cream) 34%,#fff 100%);box-shadow:0 14px 34px #a5cf3340,0 2px 0 #8fb82c40}
-.tape{position:absolute;top:-13px;left:50%;width:84px;height:24px;margin-left:-42px;border-radius:4px;background:#ffd4d9d9 repeating-linear-gradient(90deg,#ffffff40 0 2px,transparent 2px 6px);box-shadow:0 1px 3px #26301a1a;transform:rotate(-2deg)}
-.palette h2{display:flex;align-items:center;gap:7px;margin:0 6px 12px;font-size:19px;font-weight:800;letter-spacing:.02em}
-.palette h2::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--wk-green-deep)}
-.paletteList{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;margin:0;padding:2px;list-style:none;overflow-y:auto;overscroll-behavior:contain}
-.paletteItem{position:relative;flex-shrink:0}
-.pick{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;width:100%;min-height:96px;padding:8px 12px 8px 8px;border:0;border-radius:22px;background:#fff;color:inherit;text-align:left;box-shadow:0 3px 0 var(--wk-line-strong),0 6px 12px #26301a0d;transition:box-shadow .16s,transform .15s var(--wk-ease),background .2s;touch-action:manipulation}
-.pick:hover{transform:translateY(-2px);box-shadow:0 5px 0 var(--wk-line-strong),0 10px 16px #26301a12}
-.pick:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wk-line-strong)}
-.paletteItem[data-selected] .pick{background:var(--wk-selected-fill);box-shadow:var(--wk-selected-lift);transform:translateY(-1px)}
-.paletteItem[data-selected] .pickText small,.paletteItem[data-selected] .listen{color:#3f4f16}
-.paletteItem[data-selected] .pickText em{background:#ffffffa6}
-.paletteItem[data-selected] .listenIcon{background:#fff;box-shadow:0 3px 8px #7fa61a40}
-.paletteMarker{--marker-size:76px;width:76px}
-.paletteItem[data-selected] .paletteMarker{animation:pop .32s var(--wk-ease)}
-.pickText{display:flex;flex-direction:column;gap:2px;min-width:0;padding-bottom:40px}
-.pickText b{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pickText small{display:flex;align-items:center;gap:6px;min-height:18px;font-size:12px;font-weight:600;color:var(--wk-muted)}
-.pickText em{padding:1px 8px;border-radius:10px;background:var(--wk-soft);font-style:normal;font-weight:700}
-/* 试听 sits on the card but is its own button: listening never selects, selecting never plays. */
-.listen{position:absolute;left:96px;bottom:10px;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px 0 4px;border:0;border-radius:999px;background:none;color:var(--wk-muted);font-size:14px;font-weight:700;transition:color .16s}
-.listen::before{content:"";position:absolute;inset:-3px -2px}
-/* Solid play button (no outlined ring). */
-.listenIcon{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift);transition:background .16s,color .16s,box-shadow .16s}
-.listen svg{width:16px;height:16px}
-.listen:hover{color:var(--wk-ink)}.listen:hover .listenIcon{filter:brightness(1.05)}
-.listen[aria-pressed=true] .listenIcon{background:linear-gradient(180deg,#fff3ad,var(--wk-sun));box-shadow:0 4px 10px #ffd84a66}
-.listen[data-waiting] .listenIcon{animation:pulse 1s ease-in-out infinite}
-.paletteFoot{display:flex;flex-direction:column;gap:8px;padding-top:12px}
-/* 课本灵感 entry: a pink book icon from the spring palette (no backing circle) and the current choice. */
-.inspiration{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:6px 12px 6px 6px;border:0;border-radius:18px;background:#fff;color:var(--wk-ink);text-align:left;box-shadow:0 3px 0 var(--wk-line-strong),0 6px 10px #26301a0a;transition:box-shadow .16s,transform .15s var(--wk-ease)}
-.inspiration:hover{transform:translateY(-2px)}.inspiration:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wk-line-strong)}
-.inspiration[data-on]{background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift)}
-.inspiration[data-on] .inspirationText small{color:#3f4f16}
-.inspirationBadge{display:inline-flex;flex-shrink:0;padding-left:4px}
-.inspirationBadge svg{width:34px;height:34px;filter:drop-shadow(0 2px 2px #26301a22)}
-.inspirationText{display:flex;flex-direction:column;min-width:0}
-.inspirationText b{font-size:15px;font-weight:800}
-.inspirationText small{font-size:12px;font-weight:600;color:var(--wk-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.more{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;border:0;border-radius:999px;background:#fff;color:var(--wk-on-fill);font-size:16px;font-weight:700;box-shadow:inset 0 0 0 3px var(--wk-lime),0 4px 10px #a5cf3326;transition:box-shadow .16s,transform .15s var(--wk-ease)}
-.more svg{width:20px;height:20px}.more:hover{background:var(--wk-green-soft)}.more:active{transform:translateY(2px) scale(.985)}
-.scopes{display:flex;justify-content:space-around;margin:-2px 0 0}
-.scopes button{min-width:44px;min-height:36px;padding:0 6px;border:0;background:none;color:var(--wk-muted);font-size:13px;font-weight:600}
-.scopes button:hover{color:var(--wk-green-text)}
-.scopes button+button{position:relative}.scopes button+button::before{content:"";position:absolute;left:-8px;top:50%;width:3px;height:3px;border-radius:50%;background:var(--wk-line-strong)}
-
-/* ---------- the field ---------- */
 .stageColumn{display:flex;flex-direction:column;min-width:0;min-height:0}
-.field{--mk:clamp(58px,9.4vh,88px);position:relative;flex:1;min-height:300px;display:flex;flex-direction:column;padding:12px 22px 8px 12px}
-.fieldHead{display:flex;align-items:center;gap:10px;min-height:40px;margin:0 0 8px 52px}
-.fieldHint{flex:1;min-width:0;margin:0;font-size:13px;font-weight:600;color:var(--wk-muted)}
-.fieldLoading{margin:auto;font-size:15px;color:var(--wk-muted)}
-.fieldGrid{--rows:3;flex:1;min-height:0;display:grid;grid-template-columns:44px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:8px}
-/* Row buttons: a quiet number when idle, a green + while a sound is selected (place at the row's end / move there). */
-.rowButtons{display:grid;grid-template-rows:repeat(var(--rows),1fr);gap:8px}
-.rowButton{display:grid;place-items:center;min-height:36px;border:0;border-radius:16px;background:none;color:#a5ad9b;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;transition:background .16s,color .16s}
-.rowButton span{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 2px 0 var(--wk-line-strong)}
-.rowButton svg{width:16px;height:16px;padding:5px;border-radius:50%;background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift);box-sizing:content-box}
-.field[data-armed] .rowButton:hover{background:var(--wk-green-soft)}
-.lanes{position:relative;display:grid;grid-template-rows:repeat(var(--rows),1fr);gap:8px;min-height:0}
-.field[data-armed] .lanes{cursor:copy}
-/* Soft, slightly irregular paper trays pressed into the panel rather than a grid. The tints only alternate for the eye;
-   rows carry no meaning for the sound — only left → right does. */
-.lane{border-radius:34px 52px 40px 60px/26px 34px 30px 40px;background:linear-gradient(100deg,#f3f8e0,#f8fbea 55%,#f1f7da);box-shadow:inset 0 2px 6px #26301a12,inset 0 0 0 1px #e8f0cc;transition:filter .2s}
-.lane:nth-child(3n+1){background:linear-gradient(100deg,#ecf8fd,#f4fbfe 60%,#eaf7fc);box-shadow:inset 0 2px 6px #1f4f5c12,inset 0 0 0 1px #d8eef6}
-.lane:nth-child(3n+2){border-radius:52px 36px 58px 42px/32px 26px 38px 30px}
-.lane:nth-child(3n){background:linear-gradient(100deg,#f9f8e6,#fcfbf0 55%,#f6f5de);box-shadow:inset 0 2px 6px #4a40001a,inset 0 0 0 1px #ecebcc;border-radius:40px 58px 34px 50px/30px 40px 26px 34px}
-.field[data-armed] .lane{filter:saturate(1.25)}
-.emptyHint{position:absolute;left:50%;top:50%;margin:0;transform:translate(-50%,-50%);padding:10px 18px;border-radius:999px;background:#ffffffd9;font-size:15px;font-weight:700;color:var(--wk-muted);white-space:nowrap;pointer-events:none}
-.events{position:absolute;inset:0;margin:0;padding:0;list-style:none;pointer-events:none}
-.placed{position:absolute;z-index:1;transform:translate(-50%,calc(var(--mk) * -.5 - 4px));pointer-events:auto;transition:left .28s var(--wk-ease),top .28s var(--wk-ease)}
-.placed[data-selected]{z-index:3}
-.placed[data-dragging]{opacity:.3;transition:none}
-.placedButton{display:flex;flex-direction:column;align-items:center;gap:2px;padding:0;border:0;background:none;color:inherit;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
-.placedButton:active{cursor:grabbing}
-.placedButton:focus-visible{outline-offset:2px;border-radius:18px}
-.placedMarker{--marker-size:var(--mk);width:var(--mk);filter:drop-shadow(0 6px 6px #26301a26);transition:transform .16s var(--wk-ease)}
-.placedButton:hover .placedMarker{transform:translateY(-2px) scale(1.03)}
-.placed[data-selected] .placedMarker{border-radius:50%;box-shadow:0 0 0 3px #fff,0 0 0 6px var(--wk-green-deep)}
-.placed[data-sounding] .placedMarker{animation:bob .9s ease-in-out infinite;filter:drop-shadow(0 0 10px #ffd84a) drop-shadow(0 6px 8px #26301a1f)}
-.placedName small{margin-left:6px;font-size:.92em;font-weight:600;color:var(--wk-muted)}
-.placedName{max-width:calc(var(--mk) + 84px);padding:1px 9px;border-radius:999px;background:#fff;box-shadow:0 2px 0 var(--wk-line-strong);font-size:13px;font-weight:700;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.placed[data-sounding] .placedName{background:var(--wk-sun)}
-.dropTarget{position:absolute;z-index:0;display:grid;place-items:center;width:var(--mk);height:var(--mk);border:3px dashed var(--wk-green-deep);border-radius:46% 54% 50% 50%/55% 52% 48% 45%;background:#ffffffb3;color:var(--wk-green-text);transform:translate(-50%,calc(-50% - 10px));pointer-events:none;animation:breathe 1.6s ease-in-out infinite}
-.dropTarget svg{width:28px;height:28px}
-.playhead{position:absolute;top:-6px;bottom:-6px;z-index:2;width:3px;margin-left:-1.5px;border-radius:3px;background:var(--wk-sun-deep);box-shadow:0 0 0 3px #ffe57666;pointer-events:none}
-.playhead::before{content:"";position:absolute;top:-4px;left:50%;width:11px;height:11px;border-radius:50%;background:var(--wk-sun-deep);transform:translateX(-50%)}
-.ruler{grid-column:2;position:relative;height:22px}
-.ruler i{position:absolute;left:0;right:0;top:4px;height:2px;background:#c9cfc0}
-.ruler i::after{content:"";position:absolute;right:-1px;top:50%;width:8px;height:8px;border-top:2px solid #c9cfc0;border-right:2px solid #c9cfc0;transform:translateY(-50%) rotate(45deg)}
-.ruler span{position:absolute;top:8px;transform:translateX(-50%);font-size:12px;font-weight:700;color:#7d8571;font-variant-numeric:tabular-nums;white-space:nowrap}
-.ruler span::before{content:"";position:absolute;left:50%;top:-6px;width:2px;height:6px;background:#c9cfc0}
-/* Length tail: starts under the marker centre and runs right as long as the sound is heard (same scale as the ruler). */
-.tail{position:absolute;z-index:0;display:flex;align-items:center;width:min(max(var(--len),calc(var(--mk) * .5 + 8px)),calc(100% - var(--left)));height:24px;margin:0;padding:0;border:0;background:none;transform:translateY(-50%);cursor:pointer;transition:left .28s var(--wk-ease),top .28s var(--wk-ease)}
-.tail::before{content:"";position:absolute;inset:-8px 0}
-.tailBar{display:block;width:100%;height:14px;border-radius:0 999px 999px 0;background:var(--tail);box-shadow:inset 0 2px 0 #ffffff80,inset 0 -2px 0 var(--tail-line),0 2px 4px #26301a14;transition:filter .16s,box-shadow .16s}
-.tail[data-marker=marker-sage]{--tail:#dbe6d4;--tail-line:#c8d8bf}.tail[data-marker=marker-ochre]{--tail:#f7e2b3;--tail-line:#ecd096}
-.tail[data-marker=marker-slate]{--tail:#d7e1ec;--tail-line:#c0cfe0}.tail[data-marker=marker-lilac]{--tail:#e6dbee;--tail-line:#d4c4e1}
-.tail:hover .tailBar{filter:saturate(1.4) brightness(.97)}
-.tail[data-selected] .tailBar{box-shadow:inset 0 0 0 2px var(--wk-green-deep)}
-.tail[data-sounding] .tailBar{background:linear-gradient(90deg,var(--wk-sun),var(--tail))}
-.tail[data-dragging]{opacity:.3;transition:none}
-.tail[data-overflow] .tailBar{border-radius:0;-webkit-mask-image:linear-gradient(90deg,#000 80%,#0000);mask-image:linear-gradient(90deg,#000 80%,#0000)}
-.tail[data-overflow] .tailText{right:18%}
-.tailText{position:absolute;right:8px;font-size:12px;font-weight:700;color:#4f584a;font-variant-numeric:tabular-nums;pointer-events:none}
-.tail:focus-visible{outline-offset:2px;border-radius:12px}
-.rowTools{display:flex;gap:6px;flex-shrink:0}
-.rowTool{display:inline-flex;align-items:center;gap:4px;min-height:36px;padding:0 14px;border:0;border-radius:999px;background:var(--wk-soft);color:#4c5640;font-size:13px;font-weight:700;box-shadow:inset 0 0 0 1px var(--wk-line-strong);transition:background .16s,transform .12s}
-.rowTool::before{content:"";position:absolute;width:44px;height:44px}
-.rowTool{position:relative}.rowTool svg{width:15px;height:15px}
-.rowTool[data-primary]{background:#fff;color:var(--wk-on-fill);box-shadow:inset 0 0 0 2px var(--wk-lime)}
-.rowTool:hover:not(:disabled){background:var(--wk-green-soft);color:var(--wk-green-text)}.rowTool:active:not(:disabled){transform:scale(.95)}
-.rowTool:disabled{opacity:.45;cursor:default}
-/* More rows: smaller markers so each row still holds a marker and its name. */
-.field[data-rows="4"]{--mk:clamp(50px,7.6vh,72px)}
-.field[data-rows="5"]{--mk:clamp(44px,6.2vh,60px)}
-.field[data-rows="5"] .placedName{font-size:12px}
-.exampleBadge{display:flex;align-items:center;gap:8px}
-.exampleBadge span{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;background:#ffffffe6;font-size:13px;font-weight:700;color:var(--wk-green-text);box-shadow:inset 0 0 0 1px var(--wk-green-mid)}
-.exampleBadge span svg{width:15px;height:15px}
-.exampleBadge button{min-height:36px;padding:0 14px;border:0;border-radius:999px;background:var(--wk-selected-fill);color:var(--wk-on-fill);font-size:13px;font-weight:700;box-shadow:var(--wk-selected-lift);transition:transform .12s}
-.exampleBadge button:active{transform:scale(.95)}
-
-/* Floating tools for the selected occurrence: under the marker and its name, above it in the bottom row. */
-.toolbar{position:absolute;z-index:4;display:flex;padding:5px;border-radius:22px;background:#fff;box-shadow:0 14px 30px #26301a26,0 1px 0 var(--wk-line-strong);
- --tx:-50%;--ty:calc(var(--mk) * .5 + 26px);transform:translate(var(--tx),var(--ty));animation:bubbleIn .22s var(--wk-ease)}
-.toolbar[data-side=above]{--ty:calc(-100% - var(--mk) * .5 - 14px)}
-/* Near either end the tools hug the field edge instead of hanging outside it. */
-.toolbar[data-edge=start]{left:0!important;--tx:0}
-.toolbar[data-edge=end]{left:100%!important;--tx:-100%}
-.toolbar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:64px;min-height:56px;padding:4px 10px;border:0;border-radius:14px;background:none;color:var(--wk-ink);font-size:12px;font-weight:700;white-space:nowrap;transition:background .14s}
-.toolbar button+button{box-shadow:-1px 0 0 var(--wk-line)}
-.toolbar button:hover{background:var(--wk-green-soft)}
-.toolbar svg{width:22px;height:22px;color:#4c5640}
-.toolbar button[aria-pressed=true]{background:var(--wk-sun)}
-.toolbar button[data-tone=remove]:hover{background:var(--wk-alert-soft);color:var(--wk-alert)}
-
-/* ---------- mood ---------- */
-.mood{display:flex;align-items:center;gap:14px;padding:10px 4px 0 14px}
-.moodTitle{flex-shrink:0;font-size:15px;font-weight:800;color:var(--wk-ink)}
-.moodOptions{flex:1;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px;padding:5px;border-radius:22px;background:#f3f7e2;box-shadow:inset 0 2px 6px #26301a12}
-.moodOption{position:relative;display:flex;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:46px;padding:0 3px;border:0;border-radius:16px;background:#fff;color:#4c5640;font-size:13px;font-weight:700;box-shadow:0 3px 0 var(--wk-line-strong),0 6px 10px #26301a0a;transition:box-shadow .15s,background .25s,transform .15s var(--wk-ease)}
-.moodOption span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.moodFace{width:27px;height:27px;flex-shrink:0;transition:transform .2s var(--wk-ease)}
-.moodOption small{position:absolute;top:-7px;right:-2px;padding:0 6px;border-radius:8px;background:var(--wk-soft);font-size:10px;font-weight:700;color:var(--wk-muted);box-shadow:inset 0 0 0 1px var(--wk-line-strong)}
-.moodOption:hover{transform:translateY(-2px);box-shadow:0 5px 0 var(--wk-line-strong),0 10px 14px #26301a10}.moodOption:hover .moodFace{transform:rotate(-8deg) scale(1.08)}
-.moodOption[aria-checked=true]{background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift);transform:translateY(-1px)}
-.moodOption[aria-checked=true] .moodFace{animation:pop .32s var(--wk-ease)}
-.moodOption:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wk-line-strong)}
-.customMood input{width:100%;min-height:52px;margin-top:20px;padding:0 18px;border:0;border-radius:16px;background:var(--wk-soft);font:inherit;font-size:17px;font-weight:700;color:var(--wk-ink);box-shadow:inset 0 0 0 2px var(--wk-line-strong);outline:0}
-.customMood input:focus{box-shadow:inset 0 0 0 2.5px var(--wk-green-deep)}
-/* Field length switch */
-.span{display:flex;align-items:center;gap:2px;padding:3px;border-radius:999px;background:var(--wk-green-soft);box-shadow:inset 0 1px 3px #a5cf3340}
-.span span{padding:0 8px 0 10px;font-size:12px;font-weight:700;color:var(--wk-green-text);white-space:nowrap}
-.span button{position:relative;min-width:52px;min-height:32px;padding:0 10px;border:0;border-radius:999px;background:none;color:#56615a;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;transition:background .16s,color .16s}
-.span button::before{content:"";position:absolute;inset:-6px -1px}
-.span button[aria-checked=true]{background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift)}
-
-/* ---------- notice + actions ---------- */
-.notice{min-height:0;margin:8px 0 0 14px;font-size:14px;line-height:22px;color:var(--wk-muted)}
-.notice:not(:empty){padding:8px 16px;border-radius:14px;background:var(--wk-alert-soft);font-weight:600;color:var(--wk-alert)}
-.notice[data-tone=info]:not(:empty){background:var(--wk-green-soft);color:var(--wk-green-text)}
-.actions{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:12px 0 0 14px}
-.backButton,.playAll,.finish{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:54px;padding:0 24px;border:0;border-radius:999px;font-size:17px;font-weight:700;letter-spacing:.02em;white-space:nowrap;transition:transform .15s var(--wk-ease),box-shadow .2s,background .2s,color .16s}
-.backButton svg,.finish svg{width:20px;height:20px;transition:transform .2s var(--wk-ease)}
-.backButton{justify-self:start;background:var(--wk-soft);color:#4c5640;box-shadow:inset 0 0 0 1px var(--wk-line-strong);font-weight:600}
-.backButton:hover{background:#eef3dc}
-.playAll{min-width:260px;background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift)}
+/* Back on the left, 听听这段声音 in the centre, 摆好了 on the right — one centre line, natural widths. */
+.actions{container-type:inline-size;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;padding:12px 0 0 14px}
+/* Looks from ui.pill + ui.back / ui.go / ui.outline; here only size and place. */
+.backButton,.playAll,.finish{min-height:54px}
+.backButton{justify-self:start}
+.playAll{min-width:min(260px,100%)}
 .playIcon{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#ffffffb3}
 .playIcon svg{width:17px;height:17px}
-.playAll[aria-pressed=true]{background:linear-gradient(180deg,#fff3ad,var(--wk-sun));box-shadow:inset 0 1px 0 #ffffff80,0 10px 22px #ffd84a66}
 .playAll[data-busy] .playIcon{animation:pulse 1s ease-in-out infinite}
 .playAll:disabled{opacity:.5;cursor:progress}
-.finish{justify-self:end;background:#fff;color:var(--wk-on-fill);box-shadow:inset 0 0 0 3px var(--wk-lime),0 4px 10px #a5cf3326}
-.finish:hover:not([aria-disabled=true]){background:var(--wk-green-soft)}
-.finish:hover:not([aria-disabled=true]) svg{transform:translateX(4px)}
-.finish[aria-disabled=true]{background:var(--wk-soft);color:var(--wk-muted);box-shadow:none;cursor:default}
+.finish{justify-self:end}
 .backButton:active,.playAll:active:not(:disabled),.finish:active:not([aria-disabled=true]){transform:translateY(2px) scale(.985)}
-
-/* ---------- drag ghost ---------- */
 .dragGhost{position:fixed;z-index:50;transform:translate(-50%,-50%) rotate(-6deg) scale(1.08);pointer-events:none;filter:drop-shadow(0 16px 18px #26301a38)}
 .ghostMarker{--marker-size:72px;width:72px}
-
-/* ---------- 找更多声音 ---------- */
-/* Dialog panel and note line: shared/ui/WorkSheet. */
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:20px;padding:4px;border-radius:999px;background:var(--wk-soft)}
-.tabs button{min-height:44px;border:0;border-radius:999px;background:none;color:var(--wk-muted);font-size:15px;font-weight:700;transition:background .16s,color .16s}
-.tabs button[aria-selected=true]{background:#fff;color:var(--wk-ink);box-shadow:0 4px 12px #26301a14}
-.scopePanel{min-height:240px;margin-top:14px}
-.scopeNote{margin:0 6px 10px;font-size:13px;font-weight:500;line-height:1.6;color:var(--wk-muted)}
-.scopeClosed{display:flex;flex-direction:column;align-items:center;gap:12px;margin:0;padding:36px 20px;border-radius:22px;background:var(--wk-soft);font-size:15px;font-weight:600;line-height:1.7;color:var(--wk-muted);text-align:center}
-.scopeClosed svg{width:34px;height:34px;color:#a5ad9b}
-.scopeList{display:flex;flex-direction:column;gap:4px;margin:0;padding:6px;list-style:none;border-radius:22px;background:#f3f7e2;box-shadow:inset 0 2px 6px #26301a12}
-.scopeList li{display:flex;align-items:center;gap:12px;min-height:64px;padding:0 10px;border-radius:16px;background:#fff}
-.scopeMarker{--marker-size:46px;width:46px}
-.scopeName{flex:1;min-width:0;font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.scopeListen{display:grid;place-items:center;flex-shrink:0;width:44px;height:44px;border:0;border-radius:50%;background:#fff;color:var(--wk-on-fill);box-shadow:0 3px 0 var(--wk-line-strong);transition:transform .12s}
-.scopeListen svg{width:18px;height:18px}.scopeListen[aria-pressed=true]{background:linear-gradient(180deg,#fff3ad,var(--wk-sun));box-shadow:none}
-.scopeListen:active{transform:scale(.92)}
-.scopeAdd{display:inline-flex;align-items:center;gap:6px;min-height:44px;min-width:96px;justify-content:center;padding:0 16px;border:0;border-radius:999px;background:var(--wk-selected-fill);color:var(--wk-on-fill);font-size:14px;font-weight:800;box-shadow:var(--wk-selected-lift);transition:transform .12s}
-.scopeAdd svg{width:16px;height:16px}
-.scopeAdd:disabled{background:var(--wk-soft);color:var(--wk-muted);box-shadow:none;cursor:default}
-.scopeAdd:active:not(:disabled){transform:scale(.95)}
-.makeNew{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;margin-top:12px;border:0;border-radius:999px;background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift);font-size:15px;font-weight:800}
-.makeNew svg{width:20px;height:20px}
-
-/* ---------- motion ---------- */
-@keyframes rise{from{opacity:0;transform:translateY(12px)}}
-@keyframes bubbleIn{from{opacity:0;scale:.94}}
-@keyframes pop{0%{transform:scale(.93)}60%{transform:scale(1.05)}100%{transform:scale(1)}}
-@keyframes bob{50%{transform:translateY(-6px) rotate(-3deg)}}
 @keyframes pulse{50%{opacity:.4}}
-@keyframes breathe{50%{scale:1.06}}
-@media(prefers-reduced-motion:reduce){
- .palette,.stageColumn,.toolbar{animation:none}
- .placed,.placedMarker{transition:none}
- .placed[data-sounding] .placedMarker,.paletteItem[data-selected] .paletteMarker,.listen[data-waiting] .listenIcon,.playAll[data-busy] .playIcon,.dropTarget{animation:none}
- .pick,.moodOption,.backButton,.playAll,.finish{transition:none}
+@media(--reduced-motion){
+ .stageColumn{animation:none}
+ .playAll[data-busy] .playIcon{animation:none}
+ .backButton,.playAll,.finish{transition:none}
 }
-
-/* ---------- responsive ---------- */
-/* Shorter laptop screens (1366 × 768, 1280 × 720): same layout, tighter rhythm, still one screen. */
-@media(min-width:901px) and (max-height:820px){
- .palette{padding:14px 12px 10px}.palette h2{font-size:17px;margin-bottom:8px}
- .pick{min-height:82px}.paletteMarker{--marker-size:62px;width:62px}.listen{left:82px;bottom:6px}.pickText{padding-bottom:36px}
- .more{min-height:46px;font-size:15px}.scopes{margin-top:2px}
- .inspiration{min-height:46px}.inspirationBadge svg{width:28px;height:28px}
- .field{padding:8px 18px 6px 10px}.fieldHead{margin-bottom:4px}
- .mood{padding-top:8px}.moodOption{min-height:44px}.moodFace{width:26px;height:26px}
- .actions{padding-top:8px}.backButton,.playAll,.finish{min-height:48px;font-size:15px}
+@media(--short){
+ .actions{padding-top:8px}
+ .backButton,.playAll,.finish{min-height:48px;font-size:var(--font-body)}
 }
-@media(min-width:901px) and (max-height:720px){.field{--mk:clamp(52px,8.6vh,80px)}}
-@media(max-width:1180px){
- .moodTitle{display:none}
+@media(--narrow){
  .playAll{min-width:0}
  .backButton,.playAll,.finish{padding:0 18px}
 }
-@media(max-width:900px){
+@media(--one-column){
  .page{min-height:0;padding:0 20px 32px}
  .workspace{grid-template-columns:minmax(0,1fr);gap:16px}
- .palette{min-width:0}
- .palette{padding:14px 12px 10px}
- /* Sounds become a horizontal strip above the field. */
- .paletteList{flex-direction:row;overflow-x:auto;overflow-y:visible;padding:2px 2px 6px;scroll-snap-type:x proximity}
- .paletteItem{width:220px;scroll-snap-align:start}
- .paletteFoot{display:flex;flex-direction:row;align-items:center;gap:10px;padding-top:8px}.inspiration{flex:1.2;width:auto}.more{flex:1}.scopes{flex:1.3;margin:0}
- .field{min-height:440px}
  .actions{grid-template-columns:auto 1fr auto}
 }
-@media(max-width:700px){
+@media(--phone){
  .page{padding:0 14px 0}
- .palette{border-radius:22px}.palette h2{font-size:16px}
- .paletteItem{width:176px}
- .pick{min-height:78px;gap:8px}.paletteMarker{--marker-size:56px;width:56px}.listen{left:70px;bottom:4px;font-size:13px}.pickText{padding-bottom:36px}.pickText b{font-size:14px}
- .pickText small{white-space:nowrap;font-size:11px;gap:4px}.pickText em{padding:0 5px}
- .paletteFoot{flex-direction:column;align-items:stretch;gap:8px}.more{min-height:46px;font-size:15px}
- .field{--mk:50px;min-height:400px;padding:12px 10px 8px 6px;border-radius:22px}
- .field[data-rows="4"]{--mk:44px}.field[data-rows="5"]{--mk:40px}
- .fieldGrid{grid-template-columns:30px minmax(0,1fr);gap:4px}
- .rowButton span{width:22px;height:22px;font-size:11px}.rowButton svg{width:12px;height:12px;padding:3px}
- /* Narrow field: the number on each marker identifies it; the name shows for the selected one only. */
- .placedName{display:none;font-size:11px;padding:0 6px;max-width:96px}.placed[data-selected] .placedName{display:block}
- .placed{transform:translate(-50%,-50%)}
- .fieldHead{flex-wrap:wrap;gap:6px;margin:0 0 8px 34px}.fieldHint{flex-basis:100%;font-size:12px}
- .exampleBadge{flex:1}.exampleBadge span{padding:4px 10px;font-size:12px}
- .ruler span{font-size:11px}
- .tail{height:18px}.tailBar{height:10px}.tailText{font-size:10px;right:4px}
- .toolbar button{min-width:56px;min-height:52px;padding:4px 6px;font-size:11px}
- /* The narrow field has room for the tools only when centred on it. */
- .toolbar,.toolbar[data-edge]{left:50%!important;--tx:-50%}
- .mood{flex-direction:column;align-items:stretch;gap:8px;padding:14px 2px 0}
- .moodTitle{display:block;font-size:14px}
- .moodOptions{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.moodOption{min-height:48px;font-size:13px}
- .span span{display:none}.span button{min-width:46px}
- .notice{margin:8px 2px 0;font-size:13px}
  /* Actions stay reachable at the bottom of the screen. */
  .actions{position:sticky;bottom:0;z-index:5;grid-template-columns:auto 1fr;gap:8px;margin:0 -14px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#ffffff00,#fff 26%)}
- .backButton{width:52px;padding:0;font-size:0;gap:0}.backButton svg{width:20px;height:20px}
- .playAll{min-height:52px;font-size:15px}
- .finish{grid-column:1/-1;order:-1;min-height:44px;font-size:15px;justify-self:stretch}
+ .backButton{width:52px;padding:0;font-size:0;gap:0}
+ .backButton svg{width:20px;height:20px}
+ .playAll{min-height:52px;font-size:var(--font-body)}
+ .finish{grid-column:1/-1;order:-1;min-height:44px;font-size:var(--font-body);justify-self:stretch}
 }
-@media(max-width:359px){.paletteItem{width:160px}.toolbar button{min-width:50px}}
-
-/* ---------- 剪一剪 ---------- */
-dialog[open].clipSheet{width:min(720px,calc(100vw - 32px))}
-.clipBody{margin-top:18px}
-.clipLoading{margin:0;padding:60px 0;text-align:center;font-size:15px;color:var(--wk-muted)}
-.clipWave{position:relative;height:132px;border-radius:20px;background:#f3f7e2;box-shadow:inset 0 2px 6px #26301a12;touch-action:none;cursor:pointer;user-select:none}
-.clipWave svg{position:absolute;inset:12px 0;width:100%;height:calc(100% - 24px)}
-.clipBar{fill:#cdd3c6}.clipBarIn{fill:var(--wk-green-text)}
-.clipWindow{position:absolute;top:0;bottom:0;border-radius:14px;background:#c0e64f33;box-shadow:inset 0 0 0 3px var(--wk-green-deep);cursor:grab;touch-action:none}
-.clipWindow:active{cursor:grabbing}
-.clipHandle{position:absolute;top:50%;display:grid;place-items:center;width:28px;height:56px;border-radius:12px;background:var(--wk-selected-fill);transform:translate(-50%,-50%);cursor:ew-resize;touch-action:none;box-shadow:var(--wk-selected-lift)}
-.clipHandle::before{content:"";position:absolute;inset:-10px -8px}
-.clipHandle[data-edge=start]{left:0}.clipHandle[data-edge=end]{left:100%}
-.clipHandle i{width:4px;height:22px;border-radius:2px;background:var(--wk-on-fill);opacity:.55}
-.clipHandle:focus-visible{outline:3px solid var(--wk-ink);outline-offset:2px}
-.clipPlayhead{position:absolute;top:6px;bottom:6px;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--wk-sun-deep);pointer-events:none}
-.clipScale{display:flex;justify-content:space-between;margin:6px 4px 0;font-size:12px;font-weight:700;color:var(--wk-muted);font-variant-numeric:tabular-nums}
-.clipReadout{margin:14px 0 0;text-align:center;font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
-.clipHeard{margin:4px 0 0;text-align:center;font-size:13px;font-weight:600;color:var(--wk-muted)}
-.clipTools{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:14px}
-.clipTools button{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;border:0;border-radius:999px;background:#fff;color:var(--wk-on-fill);font-size:14px;font-weight:700;box-shadow:inset 0 0 0 2px var(--wk-lime);transition:transform .12s}
-.clipTools button svg{width:16px;height:16px}
-.clipTools button[aria-pressed=true]{background:linear-gradient(180deg,#fff3ad,var(--wk-sun));color:var(--wk-on-fill);box-shadow:none}
-.clipTools button:active{transform:scale(.96)}
-.clipActions{display:flex;justify-content:center;gap:12px;margin-top:22px}
-.clipCancel,.clipApply{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:150px;min-height:50px;padding:0 22px;border:0;border-radius:999px;font-size:15px;font-weight:800;transition:transform .12s}
-.clipCancel{background:var(--wk-soft);color:#4c5640;box-shadow:inset 0 0 0 1px var(--wk-line-strong)}
-.clipApply{background:var(--wk-selected-fill);color:var(--wk-on-fill);box-shadow:var(--wk-selected-lift)}
-.clipApply svg{width:18px;height:18px}
-.clipApply:disabled{opacity:.5;cursor:default}
-.clipCancel:active,.clipApply:active:not(:disabled){transform:scale(.96)}
-@media(max-width:700px){
- dialog[open].clipSheet{padding:44px 16px 20px}
- .clipWave{height:110px}.clipHandle{width:30px;height:52px}
- .clipReadout{font-size:15px}.clipTools button{padding:0 12px;font-size:13px}
- .clipCancel,.clipApply{min-width:0;flex:1}
+@container(max-width:600px){
+ .actions{grid-template-columns:auto minmax(0,1fr)}
+ .backButton,.playAll,.finish{white-space:normal}
+ .finish{grid-column:1/-1;grid-row:1;justify-self:stretch}
+ .backButton{grid-column:1;grid-row:2}
+ .playAll{grid-column:2/-1;grid-row:2}
 }

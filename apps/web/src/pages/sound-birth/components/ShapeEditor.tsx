@@ -10,7 +10,8 @@ import {Equalizer} from './Equalizer';
 import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon';
 import type {PaperTone} from '../../../shared/ui/PaperIcon';
 import {ShapeGlyph} from './ShapeGlyph';
-import styles from '../SoundBirthPage.module.css';
+import styles from './ShapeEditor.module.css';
+import {ui} from '../../../shared/ui/controls';
 
 type Birth=ReturnType<typeof useSoundBirth>;
 const label=(dimension:SoundDimension,value:string)=>(dimensionCopy[dimension].options as Record<string,string>)[value];
@@ -25,7 +26,6 @@ const ADVANCE_MS=1500;
  */
 export function ShapeEditor({birth,onBack,active,onActive,ref}:{birth:Birth;onBack:()=>void;active:SoundDimension|null;onActive:(dimension:SoundDimension|null)=>void;ref?:Ref<HTMLElement>}){
  const {state}=birth,rows=useRef<HTMLDivElement>(null),advance=useRef(0);
- const editorNotice=state.notice?.area==='editor'?state.notice:null;
  const done=SOUND_DIMENSIONS.length-remainingDimensions(state.shape).length;
  useEffect(()=>()=>clearTimeout(advance.current),[]);
  // Tapping the chosen option again takes it back; otherwise choose it. Every row is optional (unchosen = original).
@@ -69,10 +69,9 @@ export function ShapeEditor({birth,onBack,active,onActive,ref}:{birth:Birth;onBa
     </div>;
    })}
   </div>
-  <p className={styles.notice} role="status" aria-live="polite" data-tone={editorNotice?.tone}>{editorNotice?.text??''}</p>
   <div className={styles.actions}>
-   <button type="button" className={styles.backButton} onClick={onBack}><Glyph name="back"/>{birthCopy.backEntry}</button>
-   <button type="button" className={styles.finish} data-ready={ready&&!birth.blocked||undefined} aria-disabled={birth.blocked||undefined} onClick={birth.finish}>
+   <button type="button" className={`${ui.pill} ${ui.back} ${styles.backButton}`} onClick={onBack}><Glyph name="back"/>{birthCopy.backEntry}</button>
+   <button type="button" className={`${ui.pill} ${ui.forward} ${styles.finish}`} data-ready={ready&&!birth.blocked||undefined} aria-disabled={birth.blocked||undefined} onClick={birth.finish}>
     {birth.blocked?birthCopy.finishUnavailable:birthCopy.finish}<Glyph name="arrow"/>
    </button>
   </div>

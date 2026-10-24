@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {MAKER_NAME_MAX} from '@wanwu-v2/contracts/sound';
 import {markerNumber} from '../../../shared/markers/markers';
 import {birthCopy} from '../config/copy';
-import styles from '../SoundBirthPage.module.css';
+import styles from './MakerLabel.module.css';
 
 /** The marker's label: who made this sound. Shows the number until a name is written; tap to edit in place. */
 export function MakerLabel({maker,index,onChange}:{maker:string|null;index:number;onChange:(name:string)=>void}){

@@ -7,20 +7,20 @@ import type {LibraryScope} from '../services/soundWorldRepository';
 
 export const worldCopy={
  title:'把声音摆一摆，听听会发生什么',
- subtitle:'先选一个声音，再点空白处放下。点摆好的声音就能听；尾巴有多长，声音就响多久。',
+ subtitle:'越往右越晚响起；尾巴有多长，声音就响多久。',
  // Palette
  paletteTitle:'选一个声音',listen:'试听',stop:'停',example:'示例',placedTimes:(count:number)=>`放了 ${count} 次`,
  more:'找更多声音',
  inspiration:'课本灵感',
  // Field
  fieldLabel:'声场',rowName:(row:number)=>`第 ${row} 行`,
- fieldHint:'左边先响，右边后响 · 上下只是错开摆',
+ // Invisible layout reference only: preserve the pre-removal spacing at every font/viewport size.
+ fieldHintLayout:'左边先响，右边后响 · 上下只是错开摆',
  seconds:(value:string)=>`${value}秒`,
  tailLabel:(name:string,seconds:string)=>`剪一剪「${name}」，现在响 ${seconds} 秒`,
  addRow:'加一行',removeRow:'去掉空行',
  spanLabel:'声场长度',spanOption:(seconds:SpanSeconds)=>`${seconds}秒`,
  exampleBadge:'示例摆放',clearExample:'清空，自己摆',
- emptyField:'点左边的声音，再点这里放下',
  placeInRow:(name:string,row:number)=>`把「${name}」放到第 ${row} 行末尾`,
  moveToRow:(row:number)=>`搬到第 ${row} 行`,
  eventLabel:(number:string,name:string,order:number,total:number,seconds:string)=>`${number} ${name}，第 ${order} 个响起（共 ${total} 个），响 ${seconds} 秒`,

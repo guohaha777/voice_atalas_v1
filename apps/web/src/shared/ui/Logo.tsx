@@ -3,6 +3,7 @@ import {ArtPicture} from '../media/ArtPicture';
 import {soundMarkers} from '../markers/markers';
 import {spiritPoses} from '../markers/spiritPoses';
 import styles from './Logo.module.css';
+import {media} from '../../styles/breakpoints';
 
 // 万物声谱 as one emblem (reference: the approved logo sketch). Each sound marker belongs to one character and weaves
 // through it: its body sits behind or in front of the strokes, its hands grip a stroke from the front, and the ones
@@ -79,7 +80,7 @@ function Pebble({stone,still}:{stone:Stone;still:boolean}){
 
 /** The brand: the word at the caller's size with the sound markers woven through its characters. */
 export function Logo({text='万物声谱'}:{text?:string}){
- const still=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const still=typeof matchMedia==='function'&&matchMedia(media['reduced-motion']).matches;
  return <span className={styles.logo}>
   <span className={styles.ground} aria-hidden="true"/>
   {[...text].map((char,i)=><span key={i} className={styles.char}>{char}

@@ -3,7 +3,8 @@ import {Glyph,PaperIcon} from '../../../shared/ui/PaperIcon';
 import {composeCopy} from '../config/copy';
 import {discoveryText} from '../config/discoveryCopy';
 import type {Compose} from '../model/useCompose';
-import styles from '../ComposePage.module.css';
+import styles from './FooterBar.module.css';
+import {ui} from '../../../shared/ui/controls';
 
 /**
  * 音乐小发现 on the left — the bulb opens 这首音乐有什么特征: each feature of this piece with the music idea behind it
@@ -32,11 +33,11 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{compose:Compose;onSav
    {discoveries.length>1&&<button type="button" className={styles.discoveryNext} onClick={()=>setIndex(value=>value+1)}>{composeCopy.discoveryNext}</button>}
   </section>
   <div className={styles.footerActions}>
-   <button type="button" className={styles.saveButton} data-saved={compose.shelved||undefined} onClick={onSave}>
+   <button type="button" className={`${ui.pill} ${ui.go} ${styles.saveButton}`} data-saved={compose.shelved||undefined} onClick={onSave}>
     <Glyph name={compose.shelved?'check':'save'}/>{compose.shelved?composeCopy.saved:composeCopy.save}
    </button>
-   <button type="button" className={styles.backButton} onClick={onBack}><Glyph name="back"/>{composeCopy.back}</button>
-   <button type="button" className={styles.againButton} onClick={onAgain}><Glyph name="plus"/>{composeCopy.again}</button>
+   <button type="button" className={`${ui.pill} ${ui.back} ${styles.backButton}`} onClick={onBack}><Glyph name="back"/>{composeCopy.back}</button>
+   <button type="button" className={`${ui.pill} ${ui.outline} ${styles.againButton}`} onClick={onAgain}><Glyph name="plus"/>{composeCopy.again}</button>
    <p className={styles.saveMeta}>
     <button type="button" onClick={onSave}>{composeCopy.saveSettings}<span aria-hidden="true">▾</span></button>
     <i aria-hidden="true"/><span><Glyph name="lock"/>{composeCopy.saveVisibility}</span>
@@ -49,7 +50,8 @@ export function FooterBar({compose,onSave,onBack,onAgain}:{compose:Compose;onSav
     <button type="button" className={styles.teachClose} aria-label={composeCopy.bulbClose} onClick={()=>setTeaching(false)}><Glyph name="plus"/></button>
    </header>
    <p className={styles.teachLead}>{composeCopy.teachLead}</p>
-   <ol>
+   {/* Only this list scrolls (wheel, touch, or arrow keys once focused); the title row above stays in place. */}
+   <ol tabIndex={0} aria-label={composeCopy.teachTitle}>
     {discoveries.map((item,i)=>{
      const text=discoveryText(item);
      return <li key={`${item.kind}-${i}`}>

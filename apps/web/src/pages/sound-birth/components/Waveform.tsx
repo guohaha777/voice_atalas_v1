@@ -1,7 +1,7 @@
 import {useId,useMemo} from 'react';
 import {computePeaks} from '../../../shared/audio/shapingRules';
 import {Glyph} from '../../../shared/ui/PaperIcon';
-import styles from '../SoundBirthPage.module.css';
+import styles from './Waveform.module.css';
 
 const BINS=64,W=320,MID=32,AMP=26;
 const clock=(seconds:number)=>`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(Math.floor(seconds%60)).padStart(2,'0')}`;
@@ -18,13 +18,13 @@ function wavePath(peaks:readonly number[]){
  * Real peaks of the buffer being shown, drawn as a wave; the played part darkens from the shared audio clock.
  * `ghost` (the original) is drawn behind as a dotted line, so the shaped version can be compared at a glance.
  */
-export function Waveform({buffer,ghost=null,progress,label,playing,onPlay}:{buffer:AudioBuffer|null;ghost?:AudioBuffer|null;progress:number;label:string;playing?:boolean;onPlay?:()=>void}){
+export function Waveform({buffer,ghost=null,progress,label,playing,onPlay,className}:{buffer:AudioBuffer|null;ghost?:AudioBuffer|null;progress:number;label:string;playing?:boolean;onPlay?:()=>void;className?:string}){
  const clip='wave'+useId().replace(/[^a-zA-Z0-9_-]/g,'');
  const now=useMemo(()=>{const peaks=peaksOf(buffer);return peaks&&wavePath(peaks);},[buffer]);
  const behind=useMemo(()=>{const peaks=peaksOf(ghost);return peaks&&wavePath(peaks);},[ghost]);
  if(!buffer||!now)return null;
  const head=progress*W;
- return <div className={styles.wave} data-has-play={!!onPlay||undefined}>
+ return <div className={className?`${styles.wave} ${className}`:styles.wave} data-has-play={!!onPlay||undefined}>
   {onPlay&&<button type="button" className={styles.wavePlay} aria-label={`${playing?'停止':'播放'}${label}`} aria-pressed={playing} onClick={onPlay}><Glyph name={playing?'stop':'play'}/></button>}
   <div className={styles.waveBox}>
    <svg viewBox={`0 0 ${W} 64`} preserveAspectRatio="none" role="img" aria-label={label}>
